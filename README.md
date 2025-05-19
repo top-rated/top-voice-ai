@@ -37,8 +37,8 @@ This API provides backend services for the LinkedIn Top Voices GPT, including:
 1. Clone the repository
 
 ```bash
-git clone https://github.com/RaheesAhmed/LinkedInGPT-V2.git
-cd LinkedInGPT-V2
+git clone https://github.com/top-rated/top-voice-ai.git
+cd top-voice-ai
 ```
 
 2. Install dependencies
