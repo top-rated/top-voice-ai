@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const messageElement = document.createElement("div");
     messageElement.className =
-      "flex items-start w-full max-w-2xl mb-4 animate-slide-up";
+      "flex items-start w-full max-w-2xl mb-4 animate-slide-up mx-auto";
     messageElement.innerHTML = `
       <div class="flex-shrink-0 mr-3 mt-1">
         <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function addBotMessage() {
     const messageElement = document.createElement("div");
     messageElement.className =
-      "flex items-start w-full max-w-2xl mb-4 animate-fade-in";
+      "flex items-start w-full max-w-2xl mb-4 animate-fade-in mx-auto";
 
     // Add bot icon
     const iconDiv = document.createElement("div");
@@ -606,7 +606,8 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Error:", error);
       // Handle error - show error message in chat
       const errorElement = document.createElement("div");
-      errorElement.className = "text-red-500 text-center my-4";
+      errorElement.className =
+        "text-red-500 text-center my-4 w-full max-w-2xl mx-auto";
       errorElement.textContent =
         "Sorry, there was an error processing your request. Please try again.";
       chatContainer.appendChild(errorElement);

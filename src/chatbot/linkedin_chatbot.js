@@ -1,10 +1,9 @@
 const { ChatOpenAI } = require("@langchain/openai");
-const { tool } = require("@langchain/core/tools");
-const { z } = require("zod");
 const { createReactAgent } = require("@langchain/langgraph/prebuilt");
 const dotenv = require("dotenv");
 const { MemorySaver } = require("@langchain/langgraph");
 const { SYSTEM_PROMPT } = require("../utils/system_prompt");
+const { getAllApiTools } = require("../utils/api_tools");
 
 dotenv.config();
 
@@ -13,27 +12,8 @@ const model = new ChatOpenAI({
   model: "gpt-4o",
 });
 
-// Define tools
-const getWeather = tool(
-  (input) => {
-    if (
-      ["sf", "san francisco", "san francisco, ca"].includes(
-        input.location.toLowerCase()
-      )
-    ) {
-      return "It's 60 degrees and foggy.";
-    } else {
-      return "It's 90 degrees and sunny.";
-    }
-  },
-  {
-    name: "get_weather",
-    description: "Call to get the current weather.",
-    schema: z.object({
-      location: z.string().describe("Location to get the weather for."),
-    }),
-  }
-);
+// Get all API tools
+const apiTools = getAllApiTools();
 
 const prompt = SYSTEM_PROMPT;
 
@@ -56,7 +36,7 @@ async function processQuery(threadId, query) {
   // Create agent with thread-specific memory
   const agent = createReactAgent({
     llm: model,
-    tools: [getWeather],
+    tools: apiTools,
     checkpointSaver: memory,
     stateModifier: prompt,
   });
@@ -67,29 +47,18 @@ async function processQuery(threadId, query) {
   };
 
   // Process the query with thread_id in the configurable
-  const stream = await agent.stream(inputs, {
-    streamMode: "values",
+  const result = await agent.invoke(inputs, {
     configurable: {
       thread_id: threadId,
     },
   });
 
-  // Collect the response
-  let response = "";
-  for await (const { messages } of stream) {
-    const msg = messages[messages?.length - 1];
-    if (msg?.content) {
-      response = msg.content;
-    } else if (msg?.tool_calls?.length > 0) {
-      // For tool calls, we might want to handle differently
-      // For now, just convert to string
-      response = JSON.stringify(msg.tool_calls);
-    } else {
-      response = JSON.stringify(msg);
-    }
-  }
+  // Get the final response from the last message
+  const messages = result.messages;
+  const lastMessage = messages[messages.length - 1];
 
-  return response;
+  // Return the content of the last message
+  return lastMessage.content;
 }
 
 module.exports = {

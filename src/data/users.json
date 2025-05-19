@@ -6,7 +6,20 @@
     "createdAt": "2025-04-09T21:52:43.745Z",
     "subscriptionType": "premium",
     "updatedAt": "2025-04-09T22:09:06.312Z",
-    "active": true
+    "active": true,
+    "subscription": {
+      "verified": true,
+      "verifiedAt": "2025-05-19T02:18:50.407Z",
+      "localData": {
+        "id": "free_1744235563745_h0m1qc3xkgg",
+        "email": "john@example.com",
+        "type": "premium",
+        "active": true,
+        "source": "manual",
+        "createdAt": "2025-04-09T21:52:43.745Z",
+        "updatedAt": "2025-05-19T02:17:41.303Z"
+      }
+    }
   },
   "raheesahmed256@gmail.com": {
     "email": "raheesahmed256@gmail.com",
