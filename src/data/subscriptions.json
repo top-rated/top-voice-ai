@@ -1,0 +1,385 @@
+{
+  "free_1744235563745_h0m1qc3xkgg": {
+    "id": "free_1744235563745_h0m1qc3xkgg",
+    "email": "john@example.com",
+    "type": "premium",
+    "active": true,
+    "source": "manual",
+    "createdAt": "2025-04-09T21:52:43.745Z",
+    "updatedAt": "2025-05-13T15:30:05.651Z"
+  },
+  "email:john@example.com": {
+    "free_1744235563745_h0m1qc3xkgg": true
+  },
+  "free_1744235644798_9tglujqql1c": {
+    "id": "free_1744235644798_9tglujqql1c",
+    "email": "raheesahmed256@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "manual",
+    "createdAt": "2025-04-09T21:54:04.798Z",
+    "updatedAt": "2025-05-13T15:37:55.928Z"
+  },
+  "email:raheesahmed256@gmail.com": {
+    "free_1744235644798_9tglujqql1c": true
+  },
+  "gumroad_direct_RCTj6ta89RcnV3voys6naA==": {
+    "id": "gumroad_direct_RCTj6ta89RcnV3voys6naA==",
+    "email": "perihan.abdelghaly@bfconsulting.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-07T17:45:43.669Z",
+    "updatedAt": "2025-05-14T15:49:14.583Z",
+    "gumroadSubscriptionId": "RCTj6ta89RcnV3voys6naA==",
+    "gumroadPurchaseId": "2rx_J-GDd3sJpbee_4g3hw==",
+    "gumroadData": {
+      "purchaseId": "2rx_J-GDd3sJpbee_4g3hw==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "RCTj6ta89RcnV3voys6naA==",
+      "refunded": false
+    }
+  },
+  "email:perihan.abdelghaly@bfconsulting.com": {
+    "gumroad_direct_RCTj6ta89RcnV3voys6naA==": true
+  },
+  "gumroad_direct_S0I4unGR1RWBcbwjrhK5BA==": {
+    "id": "gumroad_direct_S0I4unGR1RWBcbwjrhK5BA==",
+    "email": "camilocayazaya@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-07T17:45:43.678Z",
+    "updatedAt": "2025-05-13T16:07:51.869Z",
+    "gumroadSubscriptionId": "S0I4unGR1RWBcbwjrhK5BA==",
+    "gumroadPurchaseId": "tI5TVgTd0U4BpJYvk2pjXg==",
+    "gumroadData": {
+      "purchaseId": "tI5TVgTd0U4BpJYvk2pjXg==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "S0I4unGR1RWBcbwjrhK5BA=="
+    }
+  },
+  "email:camilocayazaya@gmail.com": {
+    "gumroad_direct_S0I4unGR1RWBcbwjrhK5BA==": true
+  },
+  "gumroad_direct_1iSaMqy8by6iHyJGq5k5Vw==": {
+    "id": "gumroad_direct_1iSaMqy8by6iHyJGq5k5Vw==",
+    "email": "kristyp333@outlook.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:43.691Z",
+    "updatedAt": "2025-05-13T15:37:58.037Z"
+  },
+  "email:kristyp333@outlook.com": {
+    "gumroad_direct_1iSaMqy8by6iHyJGq5k5Vw==": true
+  },
+  "gumroad_direct_ez1UKCvQsrXfNMjHxdyvjQ==": {
+    "id": "gumroad_direct_ez1UKCvQsrXfNMjHxdyvjQ==",
+    "email": "njm1040@icloud.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:43.709Z",
+    "updatedAt": "2025-05-13T15:37:58.278Z"
+  },
+  "email:njm1040@icloud.com": {
+    "gumroad_direct_ez1UKCvQsrXfNMjHxdyvjQ==": true
+  },
+  "gumroad_direct_wuhZXuC880XxOEqAjpnpKg==": {
+    "id": "gumroad_direct_wuhZXuC880XxOEqAjpnpKg==",
+    "email": "matheus.fonseca@leapy.com.br",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:43.735Z",
+    "updatedAt": "2025-05-13T15:37:58.518Z"
+  },
+  "email:matheus.fonseca@leapy.com.br": {
+    "gumroad_direct_wuhZXuC880XxOEqAjpnpKg==": true
+  },
+  "gumroad_direct_lCArL0O9xzbtWvFc5s-_Hg==": {
+    "id": "gumroad_direct_lCArL0O9xzbtWvFc5s-_Hg==",
+    "email": "dshatyr@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:43.742Z",
+    "updatedAt": "2025-05-13T15:38:05.697Z"
+  },
+  "email:dshatyr@gmail.com": {
+    "gumroad_direct_lCArL0O9xzbtWvFc5s-_Hg==": true
+  },
+  "gumroad_direct_u_jFKzSVFDKEZBZGZLx2QQ==": {
+    "id": "gumroad_direct_u_jFKzSVFDKEZBZGZLx2QQ==",
+    "email": "hpemarshall@me.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:43.757Z",
+    "updatedAt": "2025-05-13T15:38:05.781Z"
+  },
+  "email:hpemarshall@me.com": {
+    "gumroad_direct_u_jFKzSVFDKEZBZGZLx2QQ==": true
+  },
+  "gumroad_direct_-g1ZGkeE9adB5QtdL5zcZw==": {
+    "id": "gumroad_direct_-g1ZGkeE9adB5QtdL5zcZw==",
+    "email": "fedorenko.marusha@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:43.788Z",
+    "updatedAt": "2025-05-13T15:38:05.885Z"
+  },
+  "email:fedorenko.marusha@gmail.com": {
+    "gumroad_direct_-g1ZGkeE9adB5QtdL5zcZw==": true
+  },
+  "gumroad_direct_i93DtkEgWCUmi34MjrL4cw==": {
+    "id": "gumroad_direct_i93DtkEgWCUmi34MjrL4cw==",
+    "email": "ahmedkoubaa50@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:44.169Z",
+    "updatedAt": "2025-05-13T15:38:05.968Z"
+  },
+  "email:ahmedkoubaa50@gmail.com": {
+    "gumroad_direct_i93DtkEgWCUmi34MjrL4cw==": true
+  },
+  "gumroad_direct_Y4tD2JAqNr63g-QBVJFKbw==": {
+    "id": "gumroad_direct_Y4tD2JAqNr63g-QBVJFKbw==",
+    "email": "marinababich@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-07T17:45:44.406Z",
+    "updatedAt": "2025-05-13T15:38:43.234Z"
+  },
+  "email:marinababich@gmail.com": {
+    "gumroad_direct_Y4tD2JAqNr63g-QBVJFKbw==": true
+  },
+  "email:rahees@test2.com": {},
+  "gumroad_dGVzdEBl_1746815412177": {
+    "id": "gumroad_dGVzdEBl_1746815412177",
+    "email": "test@example.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad",
+    "createdAt": "2025-05-09T18:30:12.206Z",
+    "updatedAt": "2025-05-13T15:38:43.788Z"
+  },
+  "email:test@example.com": {
+    "gumroad_dGVzdEBl_1746815412177": true
+  },
+  "gumroad_direct_Ejvn-Hn6ZlB7usx7JpH16w==": {
+    "id": "gumroad_direct_Ejvn-Hn6ZlB7usx7JpH16w==",
+    "email": "cgconant@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:02.211Z",
+    "updatedAt": "2025-05-14T15:49:14.581Z",
+    "gumroadSubscriptionId": "Ejvn-Hn6ZlB7usx7JpH16w==",
+    "gumroadPurchaseId": "9HBCZgm9mcUduAlw0Po98w==",
+    "gumroadData": {
+      "purchaseId": "9HBCZgm9mcUduAlw0Po98w==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "Ejvn-Hn6ZlB7usx7JpH16w==",
+      "refunded": false
+    }
+  },
+  "email:cgconant@gmail.com": {
+    "gumroad_direct_Ejvn-Hn6ZlB7usx7JpH16w==": true
+  },
+  "gumroad_direct_RnPs1B77BwcHCeVfvdnNvQ==": {
+    "id": "gumroad_direct_RnPs1B77BwcHCeVfvdnNvQ==",
+    "email": "sofi.ndvs@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:02.231Z",
+    "updatedAt": "2025-05-14T15:49:14.591Z",
+    "gumroadSubscriptionId": "RnPs1B77BwcHCeVfvdnNvQ==",
+    "gumroadPurchaseId": "w1o4jR7jour5ODcvFF4OXg==",
+    "gumroadData": {
+      "purchaseId": "w1o4jR7jour5ODcvFF4OXg==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 0,
+      "subscriptionId": "RnPs1B77BwcHCeVfvdnNvQ=="
+    }
+  },
+  "email:sofi.ndvs@gmail.com": {
+    "gumroad_direct_RnPs1B77BwcHCeVfvdnNvQ==": true
+  },
+  "gumroad_direct_qtbLbFQ9VulU21wCcjSa8g==": {
+    "id": "gumroad_direct_qtbLbFQ9VulU21wCcjSa8g==",
+    "email": "aleenacube@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:02.271Z",
+    "updatedAt": "2025-05-14T15:49:14.596Z",
+    "gumroadSubscriptionId": "qtbLbFQ9VulU21wCcjSa8g==",
+    "gumroadPurchaseId": "gkLT5DwUYmGAi4PUlCiVBg==",
+    "gumroadData": {
+      "purchaseId": "gkLT5DwUYmGAi4PUlCiVBg==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 0,
+      "subscriptionId": "qtbLbFQ9VulU21wCcjSa8g=="
+    }
+  },
+  "email:aleenacube@gmail.com": {
+    "gumroad_direct_qtbLbFQ9VulU21wCcjSa8g==": true
+  },
+  "gumroad_direct_9mzx_zJbt9gX9cGZP0fUzA==": {
+    "id": "gumroad_direct_9mzx_zJbt9gX9cGZP0fUzA==",
+    "email": "vikasspatil7@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:02.453Z",
+    "updatedAt": "2025-05-14T15:49:14.599Z",
+    "gumroadSubscriptionId": "9mzx_zJbt9gX9cGZP0fUzA==",
+    "gumroadPurchaseId": "N2eEFcHVXwJzI1PFwF_Ztw==",
+    "gumroadData": {
+      "purchaseId": "N2eEFcHVXwJzI1PFwF_Ztw==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 0,
+      "subscriptionId": "9mzx_zJbt9gX9cGZP0fUzA=="
+    }
+  },
+  "email:vikasspatil7@gmail.com": {
+    "gumroad_direct_9mzx_zJbt9gX9cGZP0fUzA==": true
+  },
+  "gumroad_direct_8wRZjYRampytEOk6cTWKGg==": {
+    "id": "gumroad_direct_8wRZjYRampytEOk6cTWKGg==",
+    "email": "ahmadbouzoubaa@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:02.602Z",
+    "updatedAt": "2025-05-14T15:49:14.608Z",
+    "gumroadSubscriptionId": "8wRZjYRampytEOk6cTWKGg==",
+    "gumroadPurchaseId": "Xnt1Ri5JsjwtEsWO25o5ug==",
+    "gumroadData": {
+      "purchaseId": "Xnt1Ri5JsjwtEsWO25o5ug==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "8wRZjYRampytEOk6cTWKGg==",
+      "refunded": false
+    }
+  },
+  "email:ahmadbouzoubaa@gmail.com": {
+    "gumroad_direct_8wRZjYRampytEOk6cTWKGg==": true
+  },
+  "gumroad_direct_6s3oCS8llbWl9Kyp1EYU5w==": {
+    "id": "gumroad_direct_6s3oCS8llbWl9Kyp1EYU5w==",
+    "email": "gingerattaway@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:02.900Z",
+    "updatedAt": "2025-05-14T15:49:14.613Z",
+    "gumroadSubscriptionId": "6s3oCS8llbWl9Kyp1EYU5w==",
+    "gumroadPurchaseId": "0lElpxL5TD-HCJMmKt2TWA==",
+    "gumroadData": {
+      "purchaseId": "0lElpxL5TD-HCJMmKt2TWA==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "6s3oCS8llbWl9Kyp1EYU5w=="
+    }
+  },
+  "email:gingerattaway@gmail.com": {
+    "gumroad_direct_6s3oCS8llbWl9Kyp1EYU5w==": true
+  },
+  "gumroad_direct_fNf9cOzMM7RjqWVytUdX_w==": {
+    "id": "gumroad_direct_fNf9cOzMM7RjqWVytUdX_w==",
+    "email": "linditardif@gmail.com",
+    "type": "premium",
+    "active": true,
+    "source": "gumroad_api_linked",
+    "createdAt": "2025-05-13T15:30:03.052Z",
+    "updatedAt": "2025-05-14T15:49:14.648Z",
+    "gumroadSubscriptionId": "fNf9cOzMM7RjqWVytUdX_w==",
+    "gumroadPurchaseId": "pjTdZ4B0jimSdIrZgZVBcw==",
+    "gumroadData": {
+      "purchaseId": "pjTdZ4B0jimSdIrZgZVBcw==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "fNf9cOzMM7RjqWVytUdX_w=="
+    }
+  },
+  "email:linditardif@gmail.com": {
+    "gumroad_direct_fNf9cOzMM7RjqWVytUdX_w==": true
+  },
+  "manual_cmFoZWVz_1747151430363": {
+    "id": "manual_cmFoZWVz_1747151430363",
+    "active": false,
+    "type": "premium",
+    "email": "raheestesting@gmail.com",
+    "source": "manual",
+    "notes": "for testing",
+    "createdAt": "2025-05-13T15:50:30.363Z",
+    "updatedAt": "2025-05-13T16:07:42.324Z",
+    "status": "deactivated"
+  },
+  "email:raheestesting@gmail.com": {
+    "manual_cmFoZWVz_1747151430363": true
+  },
+  "gumroad_direct_EOR4n9px7CX96Lx3K2Hpnw==": {
+    "id": "gumroad_direct_EOR4n9px7CX96Lx3K2Hpnw==",
+    "email": "gabormeszarosh@gmail.com",
+    "active": true,
+    "type": "premium",
+    "source": "gumroad_api",
+    "gumroadSubscriptionId": "EOR4n9px7CX96Lx3K2Hpnw==",
+    "gumroadPurchaseId": "TxXBOiQAomfbCFiPTTElUA==",
+    "createdAt": "2025-05-14T09:04:00Z",
+    "updatedAt": "2025-05-14T15:49:14.567Z",
+    "gumroadData": {
+      "purchaseId": "TxXBOiQAomfbCFiPTTElUA==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "EOR4n9px7CX96Lx3K2Hpnw==",
+      "refunded": false
+    }
+  },
+  "email:gabormeszarosh@gmail.com": {
+    "gumroad_direct_EOR4n9px7CX96Lx3K2Hpnw==": true
+  },
+  "gumroad_direct_fvd12Nmqhr_YGy4tcgvGgg==": {
+    "id": "gumroad_direct_fvd12Nmqhr_YGy4tcgvGgg==",
+    "email": "andreasneef@yahoo.de",
+    "active": true,
+    "type": "premium",
+    "source": "gumroad_api",
+    "gumroadSubscriptionId": "fvd12Nmqhr_YGy4tcgvGgg==",
+    "gumroadPurchaseId": "dwJKctQpCChTCmil-ayipQ==",
+    "createdAt": "2025-05-13T16:25:05Z",
+    "updatedAt": "2025-05-14T15:49:14.575Z",
+    "gumroadData": {
+      "purchaseId": "dwJKctQpCChTCmil-ayipQ==",
+      "productId": "pgqFM4RebBN6QTqYIFzwWw==",
+      "productName": "Become a Top Voice: Boost LinkedIn Organic",
+      "price": 900,
+      "subscriptionId": "fvd12Nmqhr_YGy4tcgvGgg==",
+      "refunded": false
+    }
+  },
+  "email:andreasneef@yahoo.de": {
+    "gumroad_direct_fvd12Nmqhr_YGy4tcgvGgg==": true
+  }
+}

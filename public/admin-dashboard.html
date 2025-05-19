@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdnjs.cloudflare.com fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.tailwindcss.com unpkg.com cdn.jsdelivr.net api.leadpipe.com; font-src 'self' cdnjs.cloudflare.com fonts.gstatic.com fonts.googleapis.com; connect-src 'self' api.leadpipe.com"
+    />
+    <title>Admin Dashboard | LinkedIn API</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              dark: {
+                800: "#1a2035",
+                900: "#12172b",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Axios for API calls -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      crossorigin="anonymous"
+    />
+    <style>
+      /* Consistent loading spinner */
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border-left-color: #ffffff;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .spinner-dark {
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border-left-color: #3b82f6; /* Blue */
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      /* Subtle fade-in animation */
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+      }
+      /* Ensure consistent focus rings */
+      input:focus,
+      select:focus,
+      button:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+      }
+      /* Custom checkbox style */
+      input[type="checkbox"]:checked + div {
+        background-color: #3b82f6; /* Blue-600 when checked */
+      }
+      input[type="checkbox"]:checked + div > div {
+        transform: translateX(
+          calc(100% - 2px)
+        ); /* Adjust for padding/border if needed */
+        background-color: white;
+      }
+      input[type="checkbox"] + div {
+        transition: background-color 0.2s ease;
+      }
+      input[type="checkbox"] + div > div {
+        transition: transform 0.2s ease;
+      }
+
+      /* Pattern background */
+      .pattern {
+        background-color: rgba(255, 255, 255, 0.05);
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+
+      /* Admin dashboard specific styles */
+      .dashboard-gradient {
+        background: linear-gradient(
+          135deg,
+          #1e3a8a 0%,
+          #1e40af 50%,
+          #312e81 100%
+        );
+      }
+
+      /* Logo pulse animation */
+      .logo-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.8;
+        }
+      }
+
+      .sidebar-link.active {
+        background: rgba(59, 130, 246, 0.1);
+        border-left: 3px solid #3b82f6;
+      }
+
+      /* Custom scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 10px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
+
+      /* Fix for page layout */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        background-color: #12172b;
+      }
+
+      /* Basic icon set for when Font Awesome fails to load */
+      .icon-users {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='currentColor' d='M319.9 320c57.41 0 103.1-46.56 103.1-104s-46.54-104-103.1-104c-57.41 0-103.1 46.56-103.1 104s46.59 104 103.1 104zm61.97 32h-123.9c-87.68 0-158.1 71.19-158.1 159.4 0 44.78 36.19 81.09 81.05 81.09h277.9c44.78 0 81.05-36.28 81.05-81.09.01-88.2-70.39-159.4-158-159.4z'/%3E%3C/svg%3E");
+      }
+      .icon-chart {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='currentColor' d='M396.8 352h22.4c6.4 0 12.8-6.4 12.8-12.8V108.8c0-6.4-6.4-12.8-12.8-12.8h-22.4c-6.4 0-12.8 6.4-12.8 12.8v230.4c0 6.4 6.4 12.8 12.8 12.8zm-192 0h22.4c6.4 0 12.8-6.4 12.8-12.8V140.8c0-6.4-6.4-12.8-12.8-12.8h-22.4c-6.4 0-12.8 6.4-12.8 12.8v198.4c0 6.4 6.4 12.8 12.8 12.8zm96 0h22.4c6.4 0 12.8-6.4 12.8-12.8V204.8c0-6.4-6.4-12.8-12.8-12.8h-22.4c-6.4 0-12.8 6.4-12.8 12.8v134.4c0 6.4 6.4 12.8 12.8 12.8zM496 400H48V80c0-8.84-7.16-16-16-16H16C7.16 64 0 71.16 0 80v336c0 17.67 14.33 32 32 32h464c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16z'/%3E%3C/svg%3E");
+      }
+      .icon-credit-card {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='currentColor' d='M0 432c0 26.5 21.5 48 48 48h480c26.5 0 48-21.5 48-48v-96H0v96zm192-68c0-6.6 5.4-12 12-12h136c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H204c-6.6 0-12-5.4-12-12v-40zm-128 0c0-6.6 5.4-12 12-12h72c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM576 80v192H0V80c0-26.5 21.5-48 48-48h480c26.5 0 48 21.5 48 48z'/%3E%3C/svg%3E");
+      }
+      .icon-bullhorn {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='currentColor' d='M576 240c0-23.63-12.95-44.04-32-55.12V32.01C544 23.26 537.02 0 512 0c-7.12 0-14.19 2.38-19.98 7.02l-85.03 68.03C364.28 109.19 310.66 128 256 128H64c-35.35 0-64 28.65-64 64v96c0 35.35 28.65 64 64 64h33.7c-1.39 10.48-2.18 21.14-2.18 32 0 39.77 9.26 77.35 25.56 110.94 5.19 10.69 16.52 17.06 28.4 17.06h74.28c26.05 0 41.69-29.84 25.9-50.56-16.4-21.52-26.15-48.36-26.15-77.44 0-11.11 1.62-21.79 4.41-32H256c54.66 0 108.28 18.81 150.98 52.95l85.03 68.03a32.023 32.023 0 0 0 19.98 7.02c24.92 0 32-22.78 32-32V295.13C563.05 284.04 576 263.63 576 240zm-96 141.42l-33.05-26.44C392.95 311.78 325.12 288 256 288v-96c69.12 0 136.95-23.78 190.95-66.98L480 98.58v282.84z'/%3E%3C/svg%3E");
+      }
+
+      /* Custom icon style */
+      .inline-icon {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body class="bg-dark-900 min-h-screen font-sans antialiased">
+    <div id="admin-app" class="flex flex-col min-h-screen w-full">
+      <!-- Login Form -->
+      <div
+        v-if="!isAuthenticated"
+        class="flex-grow flex items-center justify-center p-4 dashboard-gradient pattern min-h-screen w-full"
+      >
+        <div
+          class="w-full max-w-md bg-white/10 backdrop-blur-sm p-8 rounded-xl shadow-2xl transform transition-all animate-fade-in border border-white/20 text-white"
+        >
+          <div class="text-center mb-8">
+            <div
+              class="h-20 w-20 mx-auto rounded-full bg-white/10 flex items-center justify-center logo-pulse"
+            >
+              <!-- Chart Line Icon SVG -->
+              <svg
+                class="w-10 h-10 text-blue-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                />
+              </svg>
+            </div>
+            <h1 class="text-2xl font-semibold text-white mb-1 mt-4">
+              Admin Dashboard
+            </h1>
+            <p class="text-sm text-blue-200/80">
+              Access the system control panel
+            </p>
+          </div>
+
+          <div
+            v-if="loginError"
+            class="bg-red-900/30 border border-red-500/30 text-red-200 px-4 py-3 rounded-md mb-6 text-sm flex items-start"
+          >
+            <svg
+              class="w-4 h-4 mr-2 mt-0.5 flex-shrink-0"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span>{{ loginError }}</span>
+          </div>
+
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-medium text-blue-200 mb-1.5"
+                >Email</label
+              >
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <svg
+                    class="w-5 h-5 text-blue-300/70"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"
+                    />
+                    <path
+                      d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="email"
+                  v-model="loginForm.email"
+                  class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-white"
+                  placeholder="admin@example.com"
+                  @keyup.enter="login"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-blue-200 mb-1.5"
+                >Password</label
+              >
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                  <svg
+                    class="w-5 h-5 text-blue-300/70"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-1 1H5a2 2 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 100 2H9z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="password"
+                  v-model="loginForm.password"
+                  class="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-white"
+                  placeholder="••••••••"
+                  @keyup.enter="login"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            @click="login"
+            class="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-500 text-white px-4 py-3 rounded-lg font-medium hover:shadow-lg hover:from-blue-700 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 flex justify-center items-center text-base disabled:opacity-70 disabled:cursor-not-allowed"
+            :disabled="loading"
+          >
+            <span v-if="!loading" class="flex items-center">
+              <svg class="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fill-rule="evenodd"
+                  d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                /></svg
+              >Login
+            </span>
+            <span v-if="loading" class="flex items-center"
+              ><div class="spinner mr-2"></div>
+              Logging in...</span
+            >
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Dashboard -->
+      <template v-if="isAuthenticated">
+        <!-- Header -->
+        <header
+          class="bg-dark-900 shadow-lg sticky top-0 z-40 border-b border-gray-800 text-white"
+        >
+          <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+              <div class="flex items-center">
+                <div
+                  class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center mr-3 logo-pulse"
+                >
+                  <svg
+                    class="w-6 h-6 text-blue-300"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                    />
+                  </svg>
+                </div>
+                <h1 class="text-xl font-semibold text-white">
+                  Admin Dashboard
+                </h1>
+              </div>
+              <div class="flex items-center space-x-4">
+                <span class="text-sm text-blue-200 flex items-center">
+                  <svg
+                    class="w-4 h-4 mr-2 text-blue-300/70"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >{{ adminEmail }}
+                </span>
+                <button
+                  @click="logout"
+                  title="Logout"
+                  class="bg-red-600/80 hover:bg-red-700 text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-md px-3 py-1.5 flex items-center text-sm font-medium"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Global Spinner Overlay -->
+        <div
+          v-if="loading"
+          class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-60 z-50 backdrop-blur-sm"
+        >
+          <div
+            class="bg-white p-6 rounded-lg shadow-xl flex items-center space-x-4"
+          >
+            <div class="spinner-dark"></div>
+            <p class="text-gray-700 font-medium">Loading data...</p>
+          </div>
+        </div>
+
+        <div class="flex flex-1 w-full bg-dark-900">
+          <!-- Sidebar Navigation -->
+          <nav
+            class="w-64 bg-dark-800 border-r border-gray-800 p-4 hidden md:block sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto flex-shrink-0 custom-scrollbar"
+          >
+            <ul class="space-y-2">
+              <li>
+                <button
+                  @click="activeTab = 'users'"
+                  :class="[
+                        'w-full text-left px-3 py-3 rounded-md flex items-center text-sm font-medium transition-all duration-150 group',
+                        activeTab === 'users' ? 'bg-blue-600/20 text-blue-300 shadow-sm border-l-4 border-blue-500' : 'text-gray-300 hover:bg-white/5 hover:text-blue-300 border-l-4 border-transparent'
+                        ]"
+                >
+                  <svg
+                    class="w-5 h-5 mr-3"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"
+                    />
+                  </svg>
+                  Users
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="activeTab = 'subscriptions'"
+                  :class="[
+                        'w-full text-left px-3 py-3 rounded-md flex items-center text-sm font-medium transition-all duration-150 group',
+                        activeTab === 'subscriptions' ? 'bg-blue-600/20 text-blue-300 shadow-sm border-l-4 border-blue-500' : 'text-gray-300 hover:bg-white/5 hover:text-blue-300 border-l-4 border-transparent'
+                        ]"
+                >
+                  <svg
+                    class="w-5 h-5 mr-3"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                    />
+                  </svg>
+                  Subscriptions
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="activeTab = 'analytics'"
+                  :class="[
+                        'w-full text-left px-3 py-3 rounded-md flex items-center text-sm font-medium transition-all duration-150 group',
+                        activeTab === 'analytics' ? 'bg-blue-600/20 text-blue-300 shadow-sm border-l-4 border-blue-500' : 'text-gray-300 hover:bg-white/5 hover:text-blue-300 border-l-4 border-transparent'
+                        ]"
+                >
+                  <svg
+                    class="w-5 h-5 mr-3"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
+                    />
+                  </svg>
+                  Analytics
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="activeTab = 'top-voices'"
+                  :class="[
+                        'w-full text-left px-3 py-3 rounded-md flex items-center text-sm font-medium transition-all duration-150 group',
+                        activeTab === 'top-voices' ? 'bg-blue-600/20 text-blue-300 shadow-sm border-l-4 border-blue-500' : 'text-gray-300 hover:bg-white/5 hover:text-blue-300 border-l-4 border-transparent'
+                        ]"
+                >
+                  <svg
+                    class="w-5 h-5 mr-3"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Top Voices
+                </button>
+              </li>
+            </ul>
+          </nav>
+
+          <!-- Mobile Bottom Navigation -->
+          <div
+            class="fixed bottom-0 left-0 right-0 bg-dark-800 border-t border-gray-800 p-2 flex justify-around md:hidden z-40 shadow-top"
+          >
+            <button
+              @click="activeTab = 'users'"
+              :class="['flex flex-col items-center px-2 py-1.5 rounded-md focus:outline-none transition-colors duration-150', activeTab === 'users' ? 'text-blue-300' : 'text-gray-400 hover:text-blue-200']"
+            >
+              <svg
+                class="w-6 h-6 mb-0.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4zM12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+                />
+              </svg>
+              <span class="text-xs font-medium">Users</span>
+            </button>
+            <button
+              @click="activeTab = 'subscriptions'"
+              :class="['flex flex-col items-center px-2 py-1.5 rounded-md focus:outline-none transition-colors duration-150', activeTab === 'subscriptions' ? 'text-blue-300' : 'text-gray-400 hover:text-blue-200']"
+            >
+              <svg
+                class="w-6 h-6 mb-0.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                />
+              </svg>
+              <span class="text-xs font-medium">Subs</span>
+            </button>
+            <button
+              @click="activeTab = 'analytics'"
+              :class="['flex flex-col items-center px-2 py-1.5 rounded-md focus:outline-none transition-colors duration-150', activeTab === 'analytics' ? 'text-blue-300' : 'text-gray-400 hover:text-blue-200']"
+            >
+              <svg
+                class="w-6 h-6 mb-0.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14z"
+                />
+              </svg>
+              <span class="text-xs font-medium">Stats</span>
+            </button>
+            <button
+              @click="activeTab = 'top-voices'"
+              :class="['flex flex-col items-center px-2 py-1.5 rounded-md focus:outline-none transition-colors duration-150', activeTab === 'top-voices' ? 'text-blue-300' : 'text-gray-400 hover:text-blue-200']"
+            >
+              <svg
+                class="w-6 h-6 mb-0.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9H4zm11.5 3c0-1.33-.58-2.53-1.5-3.35v6.69c.92-.81 1.5-2.01 1.5-3.34z"
+                />
+              </svg>
+              <span class="text-xs font-medium">Voices</span>
+            </button>
+          </div>
+
+          <!-- Main Content Area -->
+          <main
+            class="flex-1 p-4 sm:p-6 lg:p-8 bg-dark-800 text-white overflow-y-auto pb-20 md:pb-8 custom-scrollbar"
+          >
+            <!-- Users Tab -->
+            <section
+              v-if="activeTab === 'users'"
+              class="space-y-6 animate-fade-in"
+            >
+              <div
+                class="flex flex-col md:flex-row justify-between md:items-center gap-4"
+              >
+                <h2 class="text-xl font-semibold text-white flex items-center">
+                  <i class="fas fa-users mr-2 text-blue-400"></i>User Management
+                </h2>
+                <div class="flex space-x-2 items-stretch">
+                  <div class="relative flex-grow">
+                    <div
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                      <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input
+                      type="text"
+                      v-model="userSearch"
+                      placeholder="Search email or name..."
+                      @keyup.enter="searchUsers"
+                      class="w-full pl-10 pr-4 py-2 bg-dark-700 border border-dark-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-sm text-white"
+                    />
+                  </div>
+                  <button
+                    @click="searchUsers"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-150 flex items-center text-sm font-medium shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <i class="fas fa-search mr-1.5 text-xs"></i>Search
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="bg-dark-700 rounded-lg shadow-sm border border-dark-600 overflow-hidden"
+              >
+                <div class="overflow-x-auto table-scrollbar">
+                  <table class="min-w-full divide-y divide-dark-600">
+                    <thead class="bg-dark-800">
+                      <tr>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Email
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Name
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Subscription
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Created
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Status
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-dark-700 divide-y divide-dark-600">
+                      <tr
+                        v-for="user in users"
+                        :key="user.email"
+                        class="hover:bg-dark-600 transition-colors duration-100"
+                      >
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          {{ user.email }}
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          {{ user.name || '-' }}
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          <span
+                            :class="[
+                            'px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center',
+                            user.subscriptionType === 'premium' ? 'bg-green-900 text-green-200' : 'bg-yellow-900 text-yellow-200'
+                          ]"
+                          >
+                            <!-- Crown/User Icon -->
+                            <svg
+                              v-if="user.subscriptionType === 'premium'"
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M11.053 2.458A2 2 0 009.01 2.027L5.03 5.006 3.99 3.965a1 1 0 00-1.414 1.414l1.586 1.586a1.979 1.979 0 002.8 0l4.47-4.47a1.998 1.998 0 00-.379-2.037zM14.97 5.006L10.99 2.027A2 2 0 0112.93 2.46l.023.024a1.998 1.998 0 01-.379 2.036L8.1 8.996l1.586-1.586a1 1 0 10-1.414-1.414L6.964 7.293 10.943 4.31a2.001 2.001 0 012.829 0l4.07 4.07a1 1 0 11-1.415 1.415L14.97 8.33v1.146a2.5 2.5 0 11-5 0V9.476l-1.447 1.447a1 1 0 01-1.414 0L2 6.414V16a2 2 0 002 2h12a2 2 0 002-2V6.414l-3.03-3.03V5.006z"
+                              />
+                            </svg>
+                            <svg
+                              v-else
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            {{ user.subscriptionType === 'premium' ? 'Premium' :
+                            (user.subscriptionType ? user.subscriptionType :
+                            'Free') }}
+                          </span>
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-300 whitespace-nowrap"
+                        >
+                          {{ formatDate(user.createdAt) }}
+                        </td>
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <span
+                            :class="[
+                            'px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center',
+                            user.active ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'
+                          ]"
+                          >
+                            <!-- Check/X Icon -->
+                            <svg
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"
+                                v-if="user.active"
+                              />
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd"
+                                v-else
+                              />
+                            </svg>
+                            {{ user.active ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <div class="flex items-center space-x-3">
+                            <!-- Edit User Button -->
+                            <button
+                              @click="editUser(user)"
+                              title="Edit User"
+                              class="text-blue-400 hover:text-blue-300 transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
+                                />
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                            <!-- View User Details Button -->
+                            <button
+                              @click="viewUserDetails(user)"
+                              title="View Details"
+                              class="text-gray-300 hover:text-white transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                            <!-- Deactivate User Button -->
+                            <button
+                              v-if="user.active"
+                              title="Deactivate User"
+                              @click="deactivateUser(user)"
+                              class="text-yellow-400 hover:text-yellow-300 transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                            <!-- Activate User Button -->
+                            <button
+                              v-else
+                              title="Activate User"
+                              @click="activateUser(user)"
+                              class="text-green-400 hover:text-green-300 transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                            <!-- Delete User Button -->
+                            <button
+                              @click="deleteUser(user)"
+                              title="Delete User"
+                              class="text-red-400 hover:text-red-300 transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <!-- Empty state -->
+                      <tr v-if="users.length === 0">
+                        <td colspan="6" class="py-12 text-center text-gray-400">
+                          <div class="flex flex-col items-center">
+                            <i
+                              class="fas fa-users text-gray-500 text-4xl mb-3"
+                            ></i>
+                            <p class="text-sm">
+                              No users found matching your criteria.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div
+                class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-300"
+              >
+                <div>
+                  Showing <span class="font-medium">{{ users.length }}</span> {{
+                  users.length === 1 ? 'user' : 'users' }}
+                  <!-- Add total count if available -->
+                </div>
+                <div class="flex space-x-2 mt-3 md:mt-0">
+                  <button
+                    @click="prevPage"
+                    :disabled="currentPage === 1"
+                    class="px-3 py-1.5 border border-dark-600 rounded-md bg-dark-700 hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  >
+                    <i class="fas fa-chevron-left mr-1 text-xs"></i>Previous
+                  </button>
+                  <span
+                    class="py-1.5 px-3 bg-dark-700 rounded-md border border-dark-600 font-medium"
+                    >Page {{ currentPage }}</span
+                  >
+                  <button
+                    @click="nextPage"
+                    :disabled="!hasMorePages"
+                    class="px-3 py-1.5 border border-dark-600 rounded-md bg-dark-700 hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  >
+                    Next<i class="fas fa-chevron-right ml-1 text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Subscriptions Tab -->
+            <section
+              v-if="activeTab === 'subscriptions'"
+              class="space-y-6 animate-fade-in"
+            >
+              <div
+                class="flex flex-col md:flex-row justify-between md:items-center gap-4"
+              >
+                <h2 class="text-xl font-semibold text-white flex items-center">
+                  <svg
+                    class="w-5 h-5 mr-2 text-blue-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Subscription Management
+                </h2>
+                <button
+                  @click="refreshSubscriptionData"
+                  class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-150 flex items-center text-sm font-medium shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Refresh Data
+                </button>
+              </div>
+
+              <!-- Stats Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div
+                  class="bg-gradient-to-br from-green-900 to-green-700 text-white p-5 rounded-lg shadow-md border border-green-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3
+                      class="text-sm font-medium opacity-90 flex items-center"
+                    >
+                      <svg
+                        class="w-4 h-4 mr-2"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clip-rule="evenodd"
+                        /></svg
+                      >Active Subscriptions
+                    </h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M12 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4zM12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-3xl font-semibold">
+                    {{ stats.activeSubscriptions }}
+                  </p>
+                </div>
+                <div
+                  class="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-5 rounded-lg shadow-md border border-blue-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3
+                      class="text-sm font-medium opacity-90 flex items-center"
+                    >
+                      <svg
+                        class="w-4 h-4 mr-2"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm12-2a2 2 0 00-2-2H6a2 2 0 00-2 2v1.5a2.5 2.5 0 015 0V4a1 1 0 011-1h2a1 1 0 011 1v1.5a2.5 2.5 0 015 0V4a2 2 0 00-2-2z"
+                          clip-rule="evenodd"
+                        /></svg
+                      >Monthly Revenue
+                    </h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-3xl font-semibold">
+                    {{ formatCurrency(stats.monthlyRevenue) }}
+                  </p>
+                </div>
+                <div
+                  class="bg-gradient-to-br from-indigo-900 to-indigo-700 text-white p-5 rounded-lg shadow-md border border-indigo-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3
+                      class="text-sm font-medium opacity-90 flex items-center"
+                    >
+                      <svg
+                        class="w-4 h-4 mr-2"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clip-rule="evenodd"
+                        /></svg
+                      >Free Users
+                    </h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-3xl font-semibold">{{ stats.freeUsers }}</p>
+                </div>
+              </div>
+
+              <!-- Subscription Actions -->
+              <div class="flex justify-end mb-4 space-x-3">
+                <button
+                  @click="scanForMissingSubscriptions"
+                  class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-150 flex items-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  title="Scan for missing subscriptions"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Scan Missing
+                </button>
+                <button
+                  @click="resetSubscriptionForm(); showAddSubscriptionModal = true"
+                  class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-150 flex items-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Add Subscription
+                </button>
+              </div>
+
+              <div
+                class="bg-dark-700 rounded-lg shadow-sm border border-dark-600 overflow-hidden"
+              >
+                <div class="overflow-x-auto table-scrollbar">
+                  <table class="min-w-full divide-y divide-dark-600">
+                    <thead class="bg-dark-800">
+                      <tr>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          ID
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          User
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Type
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Started
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Last Updated
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Status
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-dark-700 divide-y divide-dark-600">
+                      <tr
+                        v-for="sub in subscriptions"
+                        :key="sub.id"
+                        class="hover:bg-dark-600 transition-colors duration-100"
+                      >
+                        <td
+                          class="py-3 px-4 text-sm text-gray-400 whitespace-nowrap font-mono"
+                        >
+                          {{ sub.id ? sub.id.substring(0, 8) + '...' : 'N/A' }}
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          {{ sub.email }}
+                        </td>
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <span
+                            :class="[
+                            'px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center',
+                            sub.type === 'premium' ? 'bg-green-900 text-green-200' : 'bg-yellow-900 text-yellow-200'
+                          ]"
+                          >
+                            <!-- Crown/User Icon -->
+                            <svg
+                              v-if="sub.type === 'premium'"
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M11.053 2.458A2 2 0 009.01 2.027L5.03 5.006 3.99 3.965a1 1 0 00-1.414 1.414l1.586 1.586a1.979 1.979 0 002.8 0l4.47-4.47a1.998 1.998 0 00-.379-2.037zM14.97 5.006L10.99 2.027A2 2 0 0112.93 2.46l.023.024a1.998 1.998 0 01-.379 2.036L8.1 8.996l1.586-1.586a1 1 0 10-1.414-1.414L6.964 7.293 10.943 4.31a2.001 2.001 0 012.829 0l4.07 4.07a1 1 0 11-1.415 1.415L14.97 8.33v1.146a2.5 2.5 0 11-5 0V9.476l-1.447 1.447a1 1 0 01-1.414 0L2 6.414V16a2 2 0 002 2h12a2 2 0 002-2V6.414l-3.03-3.03V5.006z"
+                              />
+                            </svg>
+                            <svg
+                              v-else
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            {{ sub.type === 'premium' ? 'Premium' : (sub.type ?
+                            sub.type : 'Free') }}
+                          </span>
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-300 whitespace-nowrap"
+                        >
+                          {{ formatDate(sub.createdAt) }}
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-300 whitespace-nowrap"
+                        >
+                          {{ formatDate(sub.updatedAt) }}
+                        </td>
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <span
+                            :class="[
+                            'px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center',
+                            sub.active ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'
+                          ]"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"
+                                v-if="sub.active"
+                              />
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd"
+                                v-else
+                              />
+                            </svg>
+                            {{ sub.active ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <div class="flex items-center space-x-3">
+                            <button
+                              @click="viewSubscriptionDetails(sub)"
+                              title="View Details"
+                              class="text-gray-300 hover:text-white transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              v-if="sub.active"
+                              title="Deactivate Subscription"
+                              @click="deactivateSubscription(sub)"
+                              class="text-red-400 hover:text-red-300 transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              v-else
+                              title="Activate Subscription"
+                              @click="activateSubscription(sub)"
+                              class="text-green-400 hover:text-green-300 transition-colors duration-150"
+                            >
+                              <svg
+                                class="w-4 h-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                                  clip-rule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <!-- Empty state -->
+                      <tr v-if="subscriptions.length === 0">
+                        <td colspan="7" class="py-12 text-center text-gray-400">
+                          <div class="flex flex-col items-center">
+                            <svg
+                              class="w-12 h-12 text-gray-500 mb-3"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+                              />
+                            </svg>
+                            <p class="text-sm">No subscriptions found.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <!-- Analytics Tab -->
+            <section
+              v-if="activeTab === 'analytics'"
+              class="space-y-6 animate-fade-in"
+            >
+              <h2 class="text-xl font-semibold text-white flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 text-blue-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
+                  /></svg
+                >System Analytics
+              </h2>
+
+              <!-- Overview Stats Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div
+                  class="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-5 rounded-lg shadow-md border border-blue-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-medium opacity-90">Total Users</h3>
+                    <div class="p-2 bg-white/10 rounded-full">
+                      <svg
+                        class="w-4 h-4 text-white opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M12 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4zM12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-2xl font-semibold">{{ stats.totalUsers }}</p>
+                  <p
+                    class="text-xs text-blue-200 opacity-80 mt-1 flex items-center"
+                  >
+                    <svg
+                      class="w-3 h-3 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 10l7-7m0 0l7 7m-7-7v18"
+                      />
+                    </svg>
+                    <span>{{ stats.userGrowthRate || '4.5' }}% growth</span>
+                  </p>
+                </div>
+
+                <div
+                  class="bg-gradient-to-br from-green-900 to-green-700 text-white p-5 rounded-lg shadow-md border border-green-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-medium opacity-90">
+                      API Requests (24h)
+                    </h3>
+                    <div class="p-2 bg-white/10 rounded-full">
+                      <svg
+                        class="w-4 h-4 text-white opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-2xl font-semibold">
+                    {{ stats.apiRequests24h }}
+                  </p>
+                  <p
+                    class="text-xs text-green-200 opacity-80 mt-1 flex items-center"
+                  >
+                    <svg
+                      class="w-3 h-3 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                      />
+                    </svg>
+                    <span>{{ stats.apiRequestRate || '3.2' }}k/hour avg</span>
+                  </p>
+                </div>
+
+                <div
+                  class="bg-gradient-to-br from-purple-900 to-purple-700 text-white p-5 rounded-lg shadow-md border border-purple-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-medium opacity-90">
+                      New Users (7d)
+                    </h3>
+                    <div class="p-2 bg-white/10 rounded-full">
+                      <svg
+                        class="w-4 h-4 text-white opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-2xl font-semibold">{{ stats.newUsers7d }}</p>
+                  <p
+                    class="text-xs text-purple-200 opacity-80 mt-1 flex items-center"
+                  >
+                    <svg
+                      class="w-3 h-3 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 10l7-7m0 0l7 7m-7-7v18"
+                      />
+                    </svg>
+                    <span>{{ stats.newUserRate || '12.8' }}% increase</span>
+                  </p>
+                </div>
+
+                <div
+                  class="bg-gradient-to-br from-amber-900 to-amber-700 text-white p-5 rounded-lg shadow-md border border-amber-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-medium opacity-90">
+                      Conversion Rate
+                    </h3>
+                    <div class="p-2 bg-white/10 rounded-full">
+                      <svg
+                        class="w-4 h-4 text-white opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-2xl font-semibold">
+                    {{ stats.conversionRate }}%
+                  </p>
+                  <p
+                    class="text-xs text-amber-200 opacity-80 mt-1 flex items-center"
+                  >
+                    <svg
+                      class="w-3 h-3 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 10l7-7m0 0l7 7m-7-7v18"
+                      />
+                    </svg>
+                    <span
+                      >{{ stats.conversionGrowth || '2.1' }}% prev. month</span
+                    >
+                  </p>
+                </div>
+              </div>
+
+              <!-- Additional Stats Section -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- System Health -->
+                <div
+                  class="bg-dark-700 p-5 rounded-lg border border-dark-600 shadow-sm"
+                >
+                  <h3
+                    class="text-lg font-medium text-white mb-4 flex items-center"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-2 text-red-400"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                      /></svg
+                    >System Health
+                  </h3>
+                  <div class="space-y-4">
+                    <div>
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-300">Server CPU</span>
+                        <span class="text-sm font-medium text-white"
+                          >{{ stats.cpuUsage || '32' }}%</span
+                        >
+                      </div>
+                      <div class="w-full bg-gray-600 rounded-full h-1.5">
+                        <div
+                          class="bg-blue-500 h-1.5 rounded-full"
+                          :style="`width: ${stats.cpuUsage || 32}%`"
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-300">Memory Usage</span>
+                        <span class="text-sm font-medium text-white"
+                          >{{ stats.memoryUsage || '45' }}%</span
+                        >
+                      </div>
+                      <div class="w-full bg-gray-600 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          :style="`width: ${stats.memoryUsage || 45}%`"
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-300"
+                          >API Response Time</span
+                        >
+                        <span class="text-sm font-medium text-white"
+                          >{{ stats.apiResponseTime || '120' }}ms</span
+                        >
+                      </div>
+                      <div class="w-full bg-gray-600 rounded-full h-1.5">
+                        <div
+                          class="bg-yellow-500 h-1.5 rounded-full"
+                          :style="`width: ${Math.min(100, (stats.apiResponseTime || 120) / 2)}%`"
+                        ></div>
+                        <!-- Cap width at 100% -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- User Distribution -->
+                <div
+                  class="bg-dark-700 p-5 rounded-lg border border-dark-600 shadow-sm"
+                >
+                  <h3
+                    class="text-lg font-medium text-white mb-4 flex items-center"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-2 text-purple-400"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M10 3.22l-.61-.6a10.02 10.02 0 00-14.78 14.78l.61.6A10.02 10.02 0 0010 3.22zm1.41 1.41a8.01 8.01 0 11-11.32 11.32A8.01 8.01 0 0111.41 4.63zM11 8v6h2V8h-2zm0 8h2v2h-2v-2z"
+                      />
+                      <path
+                        d="M13.36 2.64l-.61-.6A10.02 10.02 0 0010 0c-5.52 0-10 4.48-10 10 0 1.36.27 2.66.78 3.85l.61.6A10.02 10.02 0 0024 10c0-5.52-4.48-10-10-10a9.96 9.96 0 00-.64.03zM12 2a8.01 8.01 0 018 8 8.01 8.01 0 01-8 8 8.01 8.01 0 01-8-8 8.01 8.01 0 018-8z"
+                      /></svg
+                    >User Distribution
+                  </h3>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div
+                      class="bg-dark-600 p-4 rounded-lg border border-dark-500"
+                    >
+                      <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-sm font-medium text-gray-300">
+                          Free Users
+                        </h4>
+                        <svg
+                          class="w-4 h-4 text-yellow-400"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                          />
+                        </svg>
+                      </div>
+                      <p class="text-xl font-semibold text-white">
+                        {{ stats.freeUsers }}
+                      </p>
+                      <p class="text-xs text-gray-400 mt-0.5">
+                        {{ stats.freeUserPercentage || '75' }}% of total
+                      </p>
+                    </div>
+                    <div
+                      class="bg-dark-600 p-4 rounded-lg border border-dark-500"
+                    >
+                      <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-sm font-medium text-gray-300">
+                          Premium Users
+                        </h4>
+                        <svg
+                          class="w-4 h-4 text-green-400"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"
+                          />
+                        </svg>
+                      </div>
+                      <p class="text-xl font-semibold text-white">
+                        {{ stats.premiumUsers || (stats.totalUsers -
+                        stats.freeUsers) }}
+                      </p>
+                      <p class="text-xs text-gray-400 mt-0.5">
+                        {{ stats.premiumUserPercentage || '25' }}% of total
+                      </p>
+                    </div>
+                    <div
+                      class="bg-dark-600 p-4 rounded-lg border border-dark-500"
+                    >
+                      <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-sm font-medium text-gray-300">
+                          New This Month
+                        </h4>
+                        <svg
+                          class="w-4 h-4 text-blue-400"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                          />
+                        </svg>
+                      </div>
+                      <p class="text-xl font-semibold text-white">
+                        {{ stats.newUsersThisMonth || '128' }}
+                      </p>
+                      <p class="text-xs text-green-400 mt-0.5">
+                        {{ stats.newUserMonthlyGrowth || '+15' }}% growth
+                      </p>
+                    </div>
+                    <div
+                      class="bg-dark-600 p-4 rounded-lg border border-dark-500"
+                    >
+                      <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-sm font-medium text-gray-300">
+                          Churn Rate (Mo)
+                        </h4>
+                        <svg
+                          class="w-4 h-4 text-red-400"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zM19 8l-1.41-1.41-2.54 2.54-1.41-1.41L12 9.17l-1.64-1.64L9 8.94 6.41 6.35 5 7.76l2.59 2.59L5 12.94l1.41 1.41L9 11.76l1.41 1.41L12 11.76l1.64 1.64L15 11.95l2.59 2.59L19 13.13l-2.59-2.59L19 8z"
+                          />
+                        </svg>
+                      </div>
+                      <p class="text-xl font-semibold text-white">
+                        {{ stats.churnRate || '3.2' }}%
+                      </p>
+                      <p class="text-xs text-red-400 mt-0.5">
+                        {{ stats.churnRateChange || '-0.5' }}% change
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Activity Table -->
+              <div
+                class="bg-dark-700 rounded-lg shadow-sm border border-dark-600 overflow-hidden"
+              >
+                <h3
+                  class="text-lg font-medium text-white p-5 border-b border-dark-600 flex items-center"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                    /></svg
+                  >Recent Activity
+                </h3>
+                <div class="overflow-x-auto table-scrollbar">
+                  <table class="min-w-full divide-y divide-dark-600">
+                    <thead class="bg-dark-800">
+                      <tr>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Time
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          User
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Action
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Details
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-dark-700 divide-y divide-dark-600">
+                      <tr
+                        v-for="(activity, index) in recentActivity"
+                        :key="index"
+                        class="hover:bg-dark-600 transition-colors duration-100"
+                      >
+                        <td
+                          class="py-3 px-4 text-sm text-gray-400 whitespace-nowrap"
+                        >
+                          {{ formatDateTime(activity.timestamp) }}
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          {{ activity.user }}
+                        </td>
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <span
+                            :class="[
+                            'px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center capitalize',
+                            activity.action.includes('login') ? 'bg-blue-900 text-blue-200' :
+                            activity.action.includes('create') ? 'bg-green-900 text-green-200' :
+                            activity.action.includes('delete') || activity.action.includes('deactivate') ? 'bg-red-900 text-red-200' :
+                            activity.action.includes('update') || activity.action.includes('activate') ? 'bg-yellow-900 text-yellow-200' :
+                            'bg-purple-900 text-purple-200'
+                            ]"
+                          >
+                            <!-- Action Icons -->
+                            <svg
+                              v-if="activity.action.includes('login')"
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            <svg
+                              v-else-if="activity.action.includes('create')"
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            <svg
+                              v-else-if="activity.action.includes('delete') || activity.action.includes('deactivate')"
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            <svg
+                              v-else-if="activity.action.includes('update') || activity.action.includes('activate')"
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
+                              />
+                              <path
+                                fill-rule="evenodd"
+                                d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            <svg
+                              v-else
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.226.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.226-1.566.379-1.566 2.6 0 2.978a1.532 1.532 0 01.947 2.226c-.835 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.226.948c.379 1.566 2.6 1.566 2.978 0a1.533 1.533 0 012.226-.948c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.226c1.566-.379 1.566-2.6 0-2.978a1.532 1.532 0 01-.947-2.226c.835-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.226-.948zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            {{ activity.action }}
+                          </span>
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-300 whitespace-nowrap"
+                        >
+                          {{ activity.details }}
+                        </td>
+                      </tr>
+                      <!-- Empty state -->
+                      <tr v-if="recentActivity.length === 0">
+                        <td colspan="4" class="py-12 text-center text-gray-400">
+                          <div class="flex flex-col items-center">
+                            <svg
+                              class="w-12 h-12 text-gray-500 mb-3"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                              />
+                            </svg>
+                            <p class="text-sm">No recent activity logged.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <!-- Top Voices Tab -->
+            <section
+              v-if="activeTab === 'top-voices'"
+              class="space-y-6 animate-fade-in"
+            >
+              <div
+                class="flex flex-col md:flex-row justify-between md:items-center gap-4"
+              >
+                <h2 class="text-xl font-semibold text-white flex items-center">
+                  <svg
+                    class="w-5 h-5 mr-2 text-blue-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Top Voices Management
+                </h2>
+                <button
+                  @click="refreshTopVoicesData"
+                  class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-150 flex items-center text-sm font-medium shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <svg
+                    class="w-4 h-4 mr-1.5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                      clip-rule="evenodd"
+                    /></svg
+                  >Refresh Data
+                </button>
+              </div>
+
+              <!-- Stats Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div
+                  class="bg-gradient-to-br from-blue-900 to-blue-700 text-white p-5 rounded-lg shadow-md border border-blue-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium opacity-90">Total Topics</h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.91 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-3xl font-semibold">
+                    {{ topVoicesStats.totalTopics || 0 }}
+                  </p>
+                </div>
+                <div
+                  class="bg-gradient-to-br from-green-900 to-green-700 text-white p-5 rounded-lg shadow-md border border-green-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium opacity-90">
+                      Total Authors
+                    </h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-3xl font-semibold">
+                    {{ topVoicesStats.totalAuthors || 0 }}
+                  </p>
+                </div>
+                <div
+                  class="bg-gradient-to-br from-purple-900 to-purple-700 text-white p-5 rounded-lg shadow-md border border-purple-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium opacity-90">Total Posts</h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-3xl font-semibold">
+                    {{ topVoicesStats.totalPosts || 0 }}
+                  </p>
+                </div>
+                <div
+                  class="bg-gradient-to-br from-amber-900 to-amber-700 text-white p-5 rounded-lg shadow-md border border-amber-600/30 pattern"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium opacity-90">Last Updated</h3>
+                    <div
+                      class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-6 h-6 text-xl opacity-80"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-lg font-medium">
+                    {{ formatDateTime(topVoicesStats.lastUpdated) }}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="bg-dark-700 rounded-lg shadow-sm border border-dark-600 overflow-hidden"
+              >
+                <h3
+                  class="text-lg font-medium text-white p-5 border-b border-dark-600 flex items-center"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 5.6 1 7v12c0 .55.45 1 1 1h20c.55 0 1-.45 1-1V7c-1.45-1.4-3.55-2.5-5.5-2.5zm-5.5 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zM21 18h-8v-1.5c0-1.66 2.67-2.5 4-2.5s4 .84 4 2.5V18zM3 18v-1.5c0-1.66 2.67-2.5 4-2.5s4 .84 4 2.5V18H3z"
+                    /></svg
+                  >Topics Overview
+                </h3>
+                <div class="overflow-x-auto table-scrollbar">
+                  <table class="min-w-full divide-y divide-dark-600">
+                    <thead class="bg-dark-800">
+                      <tr>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Topic
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Author Count
+                        </th>
+                        <th
+                          scope="col"
+                          class="py-3 px-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          Post Count
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-dark-700 divide-y divide-dark-600">
+                      <tr
+                        v-for="(topic, index) in topVoicesStats.topicStats"
+                        :key="index"
+                        class="hover:bg-dark-600 transition-colors duration-100"
+                      >
+                        <td class="py-3 px-4 text-sm whitespace-nowrap">
+                          <span
+                            class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900 text-blue-200 inline-flex items-center"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M9.243 3.243a1 1 0 011.514 0l5 5a1 1 0 01-1.414 1.414L10 5.414 5.157 10.26a1 1 0 01-1.414-1.414l5-5zM4 9a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zm5.03 7.47a.75.75 0 00-1.06 0l-3 3a.75.75 0 101.06 1.06L9 17.81l2.47 2.47a.75.75 0 101.06-1.06l-3-3z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                            {{ topic.topic }}
+                          </span>
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          <div class="flex items-center">
+                            <svg
+                              class="w-4 h-4 text-gray-400 mr-2"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                              />
+                            </svg>
+                            {{ topic.authorCount }}
+                          </div>
+                        </td>
+                        <td
+                          class="py-3 px-4 text-sm text-gray-200 whitespace-nowrap"
+                        >
+                          <div class="flex items-center">
+                            <svg
+                              class="w-4 h-4 text-gray-400 mr-2"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+                              />
+                            </svg>
+                            {{ topic.postCount }}
+                          </div>
+                        </td>
+                      </tr>
+                      <!-- Empty state -->
+                      <tr
+                        v-if="!topVoicesStats.topicStats || topVoicesStats.topicStats.length === 0"
+                      >
+                        <td colspan="3" class="py-12 text-center text-gray-400">
+                          <div class="flex flex-col items-center">
+                            <svg
+                              class="w-12 h-12 text-gray-500 mb-3"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path
+                                d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.91 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"
+                              />
+                            </svg>
+                            <p class="text-sm">No topics found.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+
+        <!-- Modal Component -->
+        <div
+          v-if="showModal"
+          class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+          @click.self="closeModal"
+        >
+          <div
+            class="bg-dark-800 rounded-lg shadow-xl w-full max-w-xl animate-fade-in max-h-[90vh] flex flex-col border border-dark-700 pattern"
+          >
+            <!-- Modal Header -->
+            <div
+              class="p-5 border-b border-dark-700 flex justify-between items-center sticky top-0 bg-dark-800 rounded-t-lg flex-shrink-0"
+            >
+              <h3 class="text-lg font-semibold text-white flex items-center">
+                <i
+                  :class="[
+                'mr-2 text-blue-400',
+                modalType === 'editUser' ? 'fas fa-user-edit' :
+                modalType === 'userDetails' ? 'fas fa-user' :
+                'fas fa-credit-card'
+              ]"
+                ></i>
+                {{ modalTitle }}
+              </h3>
+              <button
+                @click="closeModal"
+                class="text-gray-400 hover:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <i class="fas fa-times text-xl"></i>
+              </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div
+              class="p-6 space-y-5 overflow-y-auto flex-grow text-white custom-scrollbar"
+            >
+              <!-- User Edit Form -->
+              <div v-if="modalType === 'editUser'" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-1"
+                    >Name</label
+                  >
+                  <div class="relative">
+                    <div
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                      <i class="fas fa-user text-gray-500"></i>
+                    </div>
+                    <input
+                      type="text"
+                      v-model="selectedUser.name"
+                      class="w-full pl-10 pr-3 py-2 bg-dark-700 border border-dark-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-1"
+                    >Email</label
+                  >
+                  <div class="relative">
+                    <div
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                      <i class="fas fa-envelope text-gray-500"></i>
+                    </div>
+                    <input
+                      type="email"
+                      v-model="selectedUser.email"
+                      class="w-full pl-10 pr-3 py-2 bg-dark-700 border border-dark-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out cursor-not-allowed text-gray-400"
+                      readonly
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-1"
+                    >Subscription Type</label
+                  >
+                  <div class="relative">
+                    <div
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                      <i class="fas fa-tag text-gray-500"></i>
+                    </div>
+                    <select
+                      v-model="selectedUser.subscriptionType"
+                      class="w-full pl-10 pr-8 py-2 bg-dark-700 border border-dark-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out appearance-none text-white"
+                    >
+                      <option value="free">Free</option>
+                      <option value="premium">Premium</option>
+                    </select>
+                    <div
+                      class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+                    >
+                      <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-1.5"
+                    >Status</label
+                  >
+                  <label
+                    for="userStatusToggle"
+                    class="flex items-center cursor-pointer"
+                  >
+                    <div class="relative">
+                      <input
+                        type="checkbox"
+                        v-model="selectedUser.active"
+                        id="userStatusToggle"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="block bg-dark-600 peer-checked:bg-blue-600 w-10 h-6 rounded-full transition"
+                      ></div>
+                      <div
+                        class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform peer-checked:translate-x-full"
+                      ></div>
+                    </div>
+                    <div class="ml-3 text-sm text-gray-300 font-medium">
+                      {{ selectedUser.active ? 'Active' : 'Inactive' }}
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- User/Subscription Details View -->
+              <div
+                v-if="modalType === 'userDetails' || modalType === 'subscriptionDetails'"
+                class="space-y-3"
+              >
+                <div
+                  v-for="(value, key) in (modalType === 'userDetails' ? selectedUser : selectedSubscription)"
+                  :key="key"
+                  class="flex items-start py-2 border-b border-dark-700 last:border-b-0"
+                >
+                  <div class="w-1/3 shrink-0 pr-4">
+                    <span
+                      class="text-sm font-medium text-gray-400 flex items-center"
+                    >
+                      <i
+                        :class="[
+                        'mr-2 text-blue-400 fa-fw text-xs',
+                        key === 'email' ? 'fas fa-envelope' :
+                        key === 'name' ? 'fas fa-user' :
+                        key === 'id' ? 'fas fa-id-card' :
+                        key === 'subscriptionType' || key === 'type' ? 'fas fa-tag' :
+                        key === 'active' ? 'fas fa-toggle-on' :
+                        key === 'createdAt' ? 'fas fa-calendar-plus' :
+                        key === 'updatedAt' ? 'fas fa-calendar-check' :
+                        'fas fa-info-circle'
+                        ]"
+                      ></i>
+                      {{ formatLabel(key) }}
+                    </span>
+                  </div>
+                  <div class="w-2/3 break-words">
+                    <span class="text-sm text-gray-200">
+                      <span v-if="typeof value === 'boolean'">
+                        <span
+                          :class="['px-2 py-0.5 rounded text-xs font-medium', value ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200']"
+                        >
+                          {{ value ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                      <span
+                        v-else-if="(key === 'subscriptionType' || key === 'type') && value"
+                      >
+                        <span
+                          class="px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center capitalize"
+                          :class="value === 'premium' ? 'bg-green-900 text-green-200' : 'bg-yellow-900 text-yellow-200'"
+                        >
+                          <i
+                            :class="['mr-1 text-xs', value === 'premium' ? 'fas fa-crown' : 'fas fa-user']"
+                          ></i>
+                          {{ formatValue(value) }}
+                        </span>
+                      </span>
+                      <span
+                        v-else-if="key === 'id' && value"
+                        class="font-mono text-gray-400 text-xs"
+                        >{{ value }}</span
+                      >
+                      <span
+                        v-else-if="(key === 'createdAt' || key === 'updatedAt') && value"
+                        class="text-gray-400"
+                        >{{ formatDateTime(value) }}</span
+                      >
+                      <span v-else>{{ formatValue(value) || '-' }}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div
+              class="p-4 bg-dark-700 border-t border-dark-700 flex justify-end space-x-3 sticky bottom-0 rounded-b-lg flex-shrink-0"
+            >
+              <button
+                @click="closeModal"
+                class="px-4 py-2 rounded-md border border-dark-600 bg-dark-800 text-gray-300 hover:bg-dark-600 text-sm font-medium transition-colors duration-150 flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-800 focus:ring-dark-400"
+              >
+                <i class="fas fa-times mr-1.5"></i>Cancel
+              </button>
+              <button
+                v-if="modalType === 'editUser'"
+                @click="saveUserChanges"
+                class="bg-gradient-to-r from-blue-600 to-indigo-500 text-white px-4 py-2 rounded-md hover:from-blue-700 hover:to-indigo-600 text-sm font-medium transition-colors duration-150 flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-800 focus:ring-blue-400"
+              >
+                <i class="fas fa-save mr-1.5"></i>Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Add Subscription Modal (Moved inside #admin-app) -->
+      <div
+        v-if="showAddSubscriptionModal"
+        id="add-subscription-modal"
+        class="fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="modal-title"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+        >
+          <!-- Background overlay -->
+          <div
+            class="fixed inset-0 bg-black bg-opacity-75 transition-opacity"
+            aria-hidden="true"
+            @click="closeSubscriptionModal"
+          ></div>
+
+          <!-- Modal panel -->
+          <div class="inline-block align-bottom bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div class="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10"
+              >
+                <svg
+                  class="h-6 w-6 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3
+                  class="text-lg leading-6 font-medium text-white"
+                  id="modal-title"
+                >
+                  Add Subscription
+                </h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-400">
+                    Add a new subscription for a user. This will create a
+                    premium subscription and activate the user account.
+                    When selecting "Gumroad", the system will:
+                    1. Check if the user already has a subscription in Gumroad
+                    2. If found, link to the existing subscription
+                    3. If not found, create a new subscription in Gumroad
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-4">
+              <div>
+                <label
+                  for="subscription-email"
+                  class="block text-sm font-medium text-gray-300"
+                  >Email Address</label
+                >
+                <input
+                  type="email"
+                  id="subscription-email"
+                  v-model="newSubscription.email"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="user@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  for="subscription-type"
+                  class="block text-sm font-medium text-gray-300"
+                  >Subscription Type</label
+                >
+                <select
+                  id="subscription-type"
+                  v-model="newSubscription.type"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="premium">Premium</option>
+                  <option value="free">Free</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  for="subscription-source"
+                  class="block text-sm font-medium text-gray-300"
+                  >Source</label
+                >
+                <select
+                  id="subscription-source"
+                  v-model="newSubscription.source"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="gumroad">Gumroad</option>
+                  <option value="stripe">Stripe</option>
+                  <option value="manual">Manual</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div v-if="newSubscription.source === 'gumroad'">
+                <label
+                  for="gumroad-id"
+                  class="block text-sm font-medium text-gray-300"
+                  >Gumroad Subscription ID (Optional)</label
+                >
+                <input
+                  type="text"
+                  id="gumroad-id"
+                  v-model="newSubscription.gumroadSubscriptionId"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Gumroad subscription ID"
+                />
+              </div>
+
+              <div v-if="newSubscription.source === 'stripe'">
+                <label
+                  for="stripe-subscription-id"
+                  class="block text-sm font-medium text-gray-300"
+                  >Stripe Subscription ID (Required)</label
+                >
+                <input
+                  type="text"
+                  id="stripe-subscription-id"
+                  v-model="newSubscription.stripeSubscriptionId"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="sub_1234567890"
+                  required
+                />
+              </div>
+
+              <div v-if="newSubscription.source === 'stripe'">
+                <label
+                  for="stripe-customer-id"
+                  class="block text-sm font-medium text-gray-300"
+                  >Stripe Customer ID (Optional)</label
+                >
+                <input
+                  type="text"
+                  id="stripe-customer-id"
+                  v-model="newSubscription.stripeCustomerId"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="cus_1234567890"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="subscription-notes"
+                  class="block text-sm font-medium text-gray-300"
+                  >Notes (Optional)</label
+                >
+                <textarea
+                  id="subscription-notes"
+                  v-model="newSubscription.notes"
+                  rows="2"
+                  class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Additional notes about this subscription"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-gray-100 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"
+          >
+            <button
+              @click="addSubscription"
+              type="button"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Add Subscription
+            </button>
+            <button
+              @click="closeSubscriptionModal"
+              type="button"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Add Subscription Modal -->
+
+    <script src="/admin.js"></script>
+  </body>
+</html>

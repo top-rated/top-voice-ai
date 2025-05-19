@@ -1,0 +1,825 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LinkedIn GPT API",
+    "description": "API for accessing LinkedIn data, including top voices, search, profiles, and authentication.",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://db828f2e-5d46-40d2-9a43-3f782fc3f1d8-00-2nhlwjy3wyleq.sisko.replit.dev/api/v1"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "Register a new user (simplified for GPT)",
+        "operationId": "registerUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "User's email address"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "User's name (optional)"
+                  }
+                },
+                "required": ["email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "tags": ["Authentication"]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "Login a user and get subscription ID",
+        "operationId": "loginUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "User's email address"
+                  }
+                },
+                "required": ["email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "tags": ["Authentication"]
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "description": "Search LinkedIn posts by keywords (GET method for GPT compatibility)",
+        "operationId": "directSearch",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "description": "Time period for search (past-24h, past-week, past-month, day, week, month)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "past-24h"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID for premium features",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Search started"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Subscription required"
+          }
+        },
+        "tags": ["Search"]
+      }
+    },
+    "/api/v1/search/keywords": {
+      "post": {
+        "description": "Search LinkedIn posts by keywords",
+        "operationId": "searchByKeywords",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keywords": {
+                    "type": "string",
+                    "description": "Keywords to search for"
+                  },
+                  "timeframe": {
+                    "type": "string",
+                    "description": "Time period for search (past-24h, past-week, past-month)",
+                    "default": "past-24h"
+                  },
+                  "subscriptionId": {
+                    "type": "string",
+                    "description": "Subscription ID for premium features"
+                  }
+                },
+                "required": ["keywords", "subscriptionId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Search started"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Subscription required"
+          }
+        },
+        "tags": ["Search"]
+      }
+    },
+    "/api/v1/search/results/{searchId}": {
+      "get": {
+        "description": "Get results of a previous search",
+        "operationId": "getSearchResults",
+        "parameters": [
+          {
+            "name": "searchId",
+            "in": "path",
+            "description": "Search ID from a previous search request",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results"
+          },
+          "400": {
+            "description": "Invalid request or search not completed"
+          },
+          "404": {
+            "description": "Search not found or expired"
+          }
+        },
+        "tags": ["Search"]
+      }
+    },
+    "/api/v1/search/recent": {
+      "get": {
+        "description": "Get recent searches",
+        "operationId": "getRecentSearches",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent searches"
+          },
+          "403": {
+            "description": "Subscription required"
+          }
+        },
+        "tags": ["Search"]
+      }
+    },
+    "/api/v1/search/{searchId}": {
+      "delete": {
+        "description": "Delete a search",
+        "operationId": "deleteSearch",
+        "parameters": [
+          {
+            "name": "searchId",
+            "in": "path",
+            "description": "Search ID to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search deleted successfully"
+          },
+          "403": {
+            "description": "Unauthorized access"
+          },
+          "404": {
+            "description": "Search not found"
+          }
+        },
+        "tags": ["Search"]
+      }
+    },
+    "/api/v1/profiles/analyze": {
+      "post": {
+        "description": "Analyze LinkedIn profile",
+        "operationId": "analyzeProfiles",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profileUrl": {
+                    "type": "string",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "LinkedIn profile URL to analyze"
+                  },
+                  "subscriptionId": {
+                    "type": "string",
+                    "description": "Subscription ID for premium features"
+                  }
+                },
+                "required": ["profileUrls", "subscriptionId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile analysis "
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Subscription required"
+          }
+        },
+        "tags": ["Profile"]
+      }
+    },
+    "/api/v1/profiles/posts/{profileId}": {
+      "get": {
+        "description": "Get posts from a specific LinkedIn profile",
+        "operationId": "getProfilePosts",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "LinkedIn profile ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile posts"
+          },
+          "403": {
+            "description": "Subscription required"
+          },
+          "404": {
+            "description": "Profile not found"
+          }
+        },
+        "tags": ["Profiles"]
+      }
+    },
+    "/api/v1/profiles/status/{requestId}": {
+      "get": {
+        "description": "Check status of a profile analysis request",
+        "operationId": "getAnalysisStatus",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Request ID from analyze call",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID for verification",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analysis status"
+          },
+          "403": {
+            "description": "Unauthorized access"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        },
+        "tags": ["Profiles"]
+      }
+    },
+    "/api/v1/profiles/recent": {
+      "get": {
+        "description": "Get recently analyzed profiles",
+        "operationId": "getRecentProfiles",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent profiles"
+          },
+          "403": {
+            "description": "Subscription required"
+          }
+        },
+        "tags": ["Profiles"]
+      }
+    },
+    "/api/v1/profiles/{profileId}": {
+      "delete": {
+        "description": "Delete a profile analysis",
+        "operationId": "deleteProfileAnalysis",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Profile ID to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscriptionId",
+            "in": "query",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile analysis deleted"
+          },
+          "403": {
+            "description": "Unauthorized access"
+          },
+          "404": {
+            "description": "Profile not found"
+          }
+        },
+        "tags": ["Profiles"]
+      }
+    },
+    "/api/v1/top-voices": {
+      "get": {
+        "description": "Get all top voices data",
+        "operationId": "getAllTopVoices",
+        "responses": {
+          "200": {
+            "description": "Top voices data"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/top-voices/topics": {
+      "get": {
+        "description": "Get all available topics",
+        "operationId": "getTopics",
+        "responses": {
+          "200": {
+            "description": "Available topics"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/top-voices/topic/{topicId}": {
+      "get": {
+        "description": "Get top voices by topic",
+        "operationId": "getTopVoicesByTopic",
+        "parameters": [
+          {
+            "name": "topicId",
+            "in": "path",
+            "description": "Topic ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Top voices for topic"
+          },
+          "404": {
+            "description": "Topic not found"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/top-voices/trending": {
+      "get": {
+        "description": "Get trending posts from top voices",
+        "operationId": "getTrendingPosts",
+        "responses": {
+          "200": {
+            "description": "Trending posts"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/top-voices/posts": {
+      "get": {
+        "description": "Get all posts across all topics and authors",
+        "operationId": "getAllPosts",
+        "responses": {
+          "200": {
+            "description": "All posts"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/top-voices/author/{authorId}": {
+      "get": {
+        "description": "Get posts by a specific top voice author",
+        "operationId": "getAuthorPosts",
+        "parameters": [
+          {
+            "name": "authorId",
+            "in": "path",
+            "description": "Author ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Author posts"
+          },
+          "404": {
+            "description": "Author not found"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/top-voices/refresh-all": {
+      "get": {
+        "description": "Force refresh all data by clearing cache and reloading",
+        "operationId": "refreshAllData",
+        "responses": {
+          "200": {
+            "description": "Data refreshed"
+          }
+        },
+        "tags": ["Top Voices"]
+      }
+    },
+    "/api/v1/license/verify": {
+      "post": {
+        "description": "Verify a Gumroad subscription using email, enables premium features",
+        "operationId": "verifySubscription",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "User's email address to verify subscription"
+                  }
+                },
+                "required": ["email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "subscriptionId": {
+                      "type": "string",
+                      "description": "Subscription ID to use for premium features"
+                    },
+                    "subscriptionType": {
+                      "type": "string",
+                      "enum": ["free", "premium"]
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or no active subscription found"
+          },
+          "500": {
+            "description": "Server error during subscription verification"
+          }
+        },
+        "tags": ["License"]
+      }
+    },
+    "/api/v1/license/check/{email}": {
+      "get": {
+        "description": "Check if a user has a valid subscription",
+        "operationId": "checkSubscription",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "User's email to check subscription for",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Valid subscription found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "subscriptionId": {
+                      "type": "string"
+                    },
+                    "subscriptionType": {
+                      "type": "string",
+                      "enum": ["free", "premium"]
+                    },
+                    "verifiedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No valid subscription found for this user"
+          },
+          "500": {
+            "description": "Server error during subscription check"
+          }
+        },
+        "tags": ["License"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "author": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "profileUrl": {
+                "type": "string"
+              }
+            }
+          },
+          "content": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "engagementStats": {
+            "type": "object",
+            "properties": {
+              "likes": {
+                "type": "integer"
+              },
+              "comments": {
+                "type": "integer"
+              },
+              "shares": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "headline": {
+            "type": "string"
+          },
+          "pictureUrl": {
+            "type": "string"
+          },
+          "profileUrl": {
+            "type": "string"
+          },
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          }
+        }
+      },
+      "TopVoice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "pictureUrl": {
+            "type": "string"
+          },
+          "profileUrl": {
+            "type": "string"
+          },
+          "followers": {
+            "type": "integer"
+          },
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          }
+        }
+      },
+      "Topic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "voiceCount": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

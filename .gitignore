@@ -1,1 +1,17 @@
+/node_modules
+/test/coverage
+/test/reports
+/test/results
+/test/results.xml
+/test/results.json
+feedback.md
+/test/results.html
 test-keys.md
+
+keys.md
+.env
+/gpts/
+test.env
+gpts.md
+
+project_details.md

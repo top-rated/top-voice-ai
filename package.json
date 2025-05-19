@@ -1,0 +1,39 @@
+{
+  "name": "linkedin-gpt-api",
+  "version": "1.0.0",
+  "description": "API for LinkedIn Top Voices GPT",
+  "type": "commonjs",
+  "main": "src/index.js",
+  
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "test:all": "node test/run-tests.js",
+    "test:profile": "node test/run-tests.js profile",
+    "test:search": "node test/run-tests.js search",
+    "test:user": "node test/run-tests.js user",
+    "test:voices": "node test/run-tests.js voices",
+    "test:auth": "node test/run-tests.js auth"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.56",
+    "@langchain/langgraph": "^0.2.72",
+    "@langchain/openai": "^0.5.10",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
+    "stripe": "^14.25.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
+  }
+}
