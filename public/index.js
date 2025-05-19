@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const promptCards = document.querySelectorAll(".prompt-card");
   const chatHistoryList = document.getElementById("chat-history-list");
   const miniChatHistory = document.getElementById("mini-chat-history");
-  const upgradeButtonMini = document.getElementById("upgrade-button-mini");
 
   // Create overlay element for mobile sidebar
   const overlay = document.createElement("div");
@@ -79,28 +78,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // New chat functionality from mini sidebar
   newChatMiniButton.addEventListener("click", function () {
     createNewChat();
-  });
-
-  // Upgrade functionality from mini sidebar
-  upgradeButtonMini.addEventListener("click", function () {
-    // Use the same functionality as the main upgrade button
-    const upgradeMessage =
-      "To upgrade to Premium and unlock all features, please visit our website at https://top-rated.pro/l/gpt or contact our sales team at sales@top-rated.pro";
-
-    // Hide the welcome container if it's visible
-    if (welcomeContainer.style.display !== "none") {
-      welcomeContainer.style.display = "none";
-    }
-
-    // Add a fake user message
-    addUserMessage("How do I upgrade to Premium?");
-
-    // Add bot response
-    const botMessageElement = addBotMessage();
-    streamText(botMessageElement, upgradeMessage);
-
-    // Make sure input is cleared
-    messageInput.value = "";
   });
 
   // Mobile menu toggle
@@ -201,38 +178,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Handle upgrade button
-  const upgradeButton = document.getElementById("upgrade-button");
-  if (upgradeButton) {
-    upgradeButton.addEventListener("click", function () {
-      // Add a bot message about upgrading
-      const upgradeMessage =
-        "To upgrade to Premium and unlock all features, please visit our website at https://top-rated.pro/l/gpt or contact our sales team at sales@top-rated.pro";
-
-      // Hide the welcome container if it's visible
-      if (welcomeContainer.style.display !== "none") {
-        welcomeContainer.style.display = "none";
-      }
-
-      // Close mobile sidebar if open
-      if (sidebar.classList.contains("open")) {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("open");
-        setTimeout(() => {
-          sidebar.classList.add("hidden");
-          sidebar.classList.remove("sidebar-mobile");
-        }, 300);
-      }
-
-      // Add a fake user message
-      addUserMessage("How do I upgrade to Premium?");
-
-      // Add bot response
-      const botMessageElement = addBotMessage();
-      streamText(botMessageElement, upgradeMessage);
-
-      // Make sure input is cleared
-      messageInput.value = "";
+  // Handle delete all chats mini button
+  const deleteAllChatsMiniButton = document.getElementById(
+    "delete-all-chats-mini"
+  );
+  if (deleteAllChatsMiniButton) {
+    deleteAllChatsMiniButton.addEventListener("click", function () {
+      deleteAllChats();
     });
   }
 
@@ -379,7 +331,7 @@ document.addEventListener("DOMContentLoaded", function () {
           messageElement.innerHTML = `
             <div class="flex-shrink-0 mr-3 mt-1">
               <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                <span class="icon-user text-white text-sm"></span>
+                <span class="icon-user text-white text-sm flex items-center justify-center w-full h-full"></span>
               </div>
             </div>
             <div class="rounded-lg p-3 flex-grow markdown">
@@ -397,7 +349,7 @@ document.addEventListener("DOMContentLoaded", function () {
           iconDiv.className = "flex-shrink-0 mr-3 mt-1";
           iconDiv.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-              <span class="icon-robot text-white text-sm"></span>
+              <span class="icon-robot text-white text-sm flex items-center justify-center w-full h-full"></span>
             </div>
           `;
           messageElement.appendChild(iconDiv);
@@ -478,7 +430,7 @@ document.addEventListener("DOMContentLoaded", function () {
     messageElement.innerHTML = `
       <div class="flex-shrink-0 mr-3 mt-1">
         <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-          <span class="icon-user text-white text-sm"></span>
+          <span class="icon-user text-white text-sm flex items-center justify-center w-full h-full"></span>
         </div>
       </div>
       <div class="rounded-lg p-3 flex-grow markdown">
@@ -504,7 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
     iconDiv.className = "flex-shrink-0 mr-3 mt-1";
     iconDiv.innerHTML = `
       <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-        <span class="icon-robot text-white text-sm"></span>
+        <span class="icon-robot text-white text-sm flex items-center justify-center w-full h-full"></span>
       </div>
     `;
     messageElement.appendChild(iconDiv);

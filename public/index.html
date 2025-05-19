@@ -6,6 +6,8 @@
   <title>Top Voices AI</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome from cdnjs (allowed in CSP) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <script>
     tailwind.config = {
       theme: {
@@ -45,7 +47,7 @@
     };
   </script>
   <!-- Highlight.js for code syntax highlighting (using allowed CDN) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
   <link rel="stylesheet" href="./index.css" >
 </head>
@@ -60,14 +62,12 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <div class="h-10 w-10 rounded-full dashboard-gradient flex items-center justify-center mr-3 logo-pulse">
-                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
+                <i class="fas fa-chart-bar text-white flex items-center justify-center w-6 h-6"></i>
               </div>
               <h1 class="text-xl font-semibold text-white">Top Voices AI</h1>
             </div>
             <button id="sidebar-toggle" class="text-gray-400 hover:text-white transition-colors">
-              <span class="icon-chevron-left"></span>
+              <i class="fas fa-chevron-left flex items-center justify-center w-5 h-5"></i>
             </button>
           </div>
         </div>
@@ -77,13 +77,10 @@
           <!-- Chat Controls -->
           <div class="mb-6">
             <button id="new-chat" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-colors mb-2">
-              <span class="icon-plus-circle w-5 h-5 mr-3 text-white flex items-center justify-center"></span>
+              <i class="fas fa-plus-circle w-5 h-5 mr-3 text-white flex items-center justify-center"></i>
               New Chat
             </button>
-            <button id="delete-all-chats" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-red-300 transition-colors">
-              <span class="icon-trash-alt w-5 h-5 mr-3 text-gray-400 flex items-center justify-center"></span>
-              Delete All Chats
-            </button>
+
           </div>
 
           <!-- Chat History -->
@@ -94,14 +91,11 @@
             </div>
           </div>
 
-          <!-- Upgrade Card -->
-          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-4 shadow-lg pattern mt-4">
-            <h3 class="text-white font-medium mb-2">Upgrade to Premium</h3>
-            <p class="text-blue-100 text-sm mb-3">Get access to all premium features and unlock the full potential of Top Voices AI.</p>
-            <button id="upgrade-button" class="w-full bg-white text-indigo-600 px-3 py-1.5 rounded text-sm font-medium hover:bg-blue-50 transition-colors">
-              Upgrade Now
-            </button>
-          </div>
+          <!-- Delete All Chats Button at Bottom -->
+          <button id="delete-all-chats" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium bg-gradient-to-r from-red-700 to-red-800 text-white hover:from-red-800 hover:to-red-900 transition-colors mt-4">
+            <i class="fas fa-trash-alt w-5 h-5 mr-3 text-white flex items-center justify-center"></i>
+            Delete All Chats
+          </button>
         </nav>
       </div>
 
@@ -110,20 +104,18 @@
         <!-- Mini Logo -->
         <div class="mini-logo">
           <div class="h-10 w-10 rounded-full dashboard-gradient flex items-center justify-center logo-pulse">
-            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-            </svg>
+            <i class="fas fa-chart-bar text-white flex items-center justify-center w-6 h-6"></i>
           </div>
         </div>
 
         <!-- Mini Expand Button -->
         <button id="sidebar-expand-mini" class="mini-button mb-4">
-          <span class="icon-chevron-right"></span>
+          <i class="fas fa-chevron-right flex items-center justify-center w-5 h-5"></i>
         </button>
 
         <!-- Mini New Chat Button -->
         <button id="new-chat-mini" class="mini-button bg-gradient-to-r from-blue-600 to-indigo-600">
-          <span class="icon-plus-circle text-white"></span>
+          <i class="fas fa-plus-circle text-white flex items-center justify-center w-5 h-5"></i>
         </button>
 
         <!-- Mini Chat History -->
@@ -131,9 +123,9 @@
           <!-- Mini chat history items will be added here dynamically -->
         </div>
 
-        <!-- Mini Upgrade Button -->
-        <button id="upgrade-button-mini" class="mini-button bg-gradient-to-r from-blue-600 to-indigo-600 mt-auto">
-          <span class="icon-crown text-white"></span>
+        <!-- Mini Delete All Button -->
+        <button id="delete-all-chats-mini" class="mini-button bg-gradient-to-r from-red-700 to-red-800 mt-auto">
+          <i class="fas fa-trash-alt text-white flex items-center justify-center w-5 h-5"></i>
         </button>
       </div>
     </div>
@@ -146,24 +138,20 @@
           <div class="flex items-center">
             <!-- Mobile menu button -->
             <button id="mobile-menu-button" class="md:hidden mr-3 text-gray-400 hover:text-white">
-              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <i class="fas fa-bars flex items-center justify-center w-6 h-6"></i>
             </button>
 
             <div class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center mr-3 md:hidden">
-              <svg class="w-6 h-6 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-              </svg>
+              <i class="fas fa-chart-bar text-blue-300 flex items-center justify-center w-6 h-6"></i>
             </div>
             <h1 class="text-xl font-semibold text-white md:hidden">Top Voices AI</h1>
           </div>
           <div class="flex items-center space-x-3">
             <button id="delete-all-chats-mobile" class="md:hidden text-gray-400 hover:text-white transition-colors">
-              <span class="icon-trash-alt w-5 h-5 flex items-center justify-center"></span>
+              <i class="fas fa-trash-alt w-5 h-5 flex items-center justify-center"></i>
             </button>
             <button id="new-chat-mobile" class="md:hidden text-gray-400 hover:text-white transition-colors ml-3">
-              <span class="icon-plus-circle w-5 h-5 flex items-center justify-center"></span>
+              <i class="fas fa-plus-circle w-5 h-5 flex items-center justify-center"></i>
             </button>
           </div>
         </div>
@@ -182,9 +170,7 @@
               <div class="prompt-card bg-blue-700 rounded-lg p-3 shadow-md border border-blue-600/30 hover:shadow-lg hover:translate-y-[-2px] transition-all duration-300 cursor-pointer">
                 <div class="flex items-center justify-between mb-2">
                   <div class="text-white text-sm font-medium">Trending Topics</div>
-                  <svg class="w-4 h-4 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
+                  <i class="fas fa-chart-line w-4 h-4 text-blue-300"></i>
                 </div>
                 <p class="text-blue-100 text-xs">Discover what's hot on LinkedIn right now</p>
               </div>
@@ -238,7 +224,7 @@
               type="text"
             />
             <button type="submit" class="absolute right-2 bottom-1/2 transform translate-y-1/2 text-blue-400 hover:text-blue-300 transition-colors">
-              <span class="icon-paper-plane w-5 h-5 flex items-center justify-center pr-4"></span>
+              <i class="fas fa-paper-plane w-5 h-5 flex items-center justify-center pr-4"></i>
             </button>
           </div>
         </form>
