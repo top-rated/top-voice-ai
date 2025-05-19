@@ -44,8 +44,9 @@
       }
     };
   </script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+  <!-- Highlight.js for code syntax highlighting (using allowed CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
   <link rel="stylesheet" href="./index.css" >
 </head>
 <body class="bg-dark-900 min-h-screen font-sans antialiased text-gray-200">
@@ -66,7 +67,7 @@
               <h1 class="text-xl font-semibold text-white">Top Voices AI</h1>
             </div>
             <button id="sidebar-toggle" class="text-gray-400 hover:text-white transition-colors">
-              <i class="fas fa-chevron-left"></i>
+              <span class="icon-chevron-left"></span>
             </button>
           </div>
         </div>
@@ -76,11 +77,11 @@
           <!-- Chat Controls -->
           <div class="mb-6">
             <button id="new-chat" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-colors mb-2">
-              <i class="fas fa-plus-circle w-5 h-5 mr-3 text-white flex items-center justify-center"></i>
+              <span class="icon-plus-circle w-5 h-5 mr-3 text-white flex items-center justify-center"></span>
               New Chat
             </button>
             <button id="delete-all-chats" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-red-300 transition-colors">
-              <i class="fas fa-trash-alt w-5 h-5 mr-3 text-gray-400 flex items-center justify-center"></i>
+              <span class="icon-trash-alt w-5 h-5 mr-3 text-gray-400 flex items-center justify-center"></span>
               Delete All Chats
             </button>
           </div>
@@ -117,12 +118,12 @@
 
         <!-- Mini Expand Button -->
         <button id="sidebar-expand-mini" class="mini-button mb-4">
-          <i class="fas fa-chevron-right"></i>
+          <span class="icon-chevron-right"></span>
         </button>
 
         <!-- Mini New Chat Button -->
         <button id="new-chat-mini" class="mini-button bg-gradient-to-r from-blue-600 to-indigo-600">
-          <i class="fas fa-plus-circle text-white"></i>
+          <span class="icon-plus-circle text-white"></span>
         </button>
 
         <!-- Mini Chat History -->
@@ -132,7 +133,7 @@
 
         <!-- Mini Upgrade Button -->
         <button id="upgrade-button-mini" class="mini-button bg-gradient-to-r from-blue-600 to-indigo-600 mt-auto">
-          <i class="fas fa-crown text-white"></i>
+          <span class="icon-crown text-white"></span>
         </button>
       </div>
     </div>
@@ -159,10 +160,10 @@
           </div>
           <div class="flex items-center space-x-3">
             <button id="delete-all-chats-mobile" class="md:hidden text-gray-400 hover:text-white transition-colors">
-              <i class="fas fa-trash-alt w-5 h-5 flex items-center justify-center"></i>
+              <span class="icon-trash-alt w-5 h-5 flex items-center justify-center"></span>
             </button>
             <button id="new-chat-mobile" class="md:hidden text-gray-400 hover:text-white transition-colors ml-3">
-              <i class="fas fa-plus-circle w-5 h-5 flex items-center justify-center"></i>
+              <span class="icon-plus-circle w-5 h-5 flex items-center justify-center"></span>
             </button>
           </div>
         </div>
@@ -237,7 +238,7 @@
               type="text"
             />
             <button type="submit" class="absolute right-2 bottom-1/2 transform translate-y-1/2 text-blue-400 hover:text-blue-300 transition-colors">
-              <i class="fas fa-paper-plane w-5 h-5 flex items-center justify-center pr-4"></i>
+              <span class="icon-paper-plane w-5 h-5 flex items-center justify-center pr-4"></span>
             </button>
           </div>
         </form>

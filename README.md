@@ -1,4 +1,6 @@
-# LinkedIn Top Voices API
+# LinkedIn Top Voices
+
+![LinkedIn Top Voices Screenshot](/public/screenshot.png)
 
 API server for the LinkedIn Top Voices GPT - an intelligent tool that helps users research trending topics and generate authentic LinkedIn posts based on top influencers' content style.
 

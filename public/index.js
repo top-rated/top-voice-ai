@@ -1,4 +1,34 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Initialize highlight.js with auto-detection
+  hljs.configure({
+    languages: [
+      "javascript",
+      "python",
+      "html",
+      "css",
+      "json",
+      "bash",
+      "shell",
+      "typescript",
+      "java",
+      "c",
+      "cpp",
+      "csharp",
+      "php",
+      "ruby",
+      "go",
+      "rust",
+      "sql",
+      "xml",
+      "markdown",
+      "yaml",
+      "swift",
+      "plaintext",
+      "powershell",
+      "jsx",
+      "tsx",
+    ],
+  });
   // DOM Elements
   const chatForm = document.getElementById("chat-form");
   const messageInput = document.getElementById("message-input");
@@ -12,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const newChatMobileButton = document.getElementById("new-chat-mobile");
   const mobileMenuButton = document.getElementById("mobile-menu-button");
   const sidebar = document.getElementById("sidebar");
-  const mainContent = document.getElementById("main-content");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebarExpandMini = document.getElementById("sidebar-expand-mini");
   const promptCards = document.querySelectorAll(".prompt-card");
@@ -69,6 +98,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add bot response
     const botMessageElement = addBotMessage();
     streamText(botMessageElement, upgradeMessage);
+
+    // Make sure input is cleared
+    messageInput.value = "";
   });
 
   // Mobile menu toggle
@@ -120,6 +152,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       messageInput.value = promptText;
       sendMessage(promptText);
+
+      // Clear the input after sending
+      messageInput.value = "";
     });
   });
 
@@ -195,6 +230,9 @@ document.addEventListener("DOMContentLoaded", function () {
       // Add bot response
       const botMessageElement = addBotMessage();
       streamText(botMessageElement, upgradeMessage);
+
+      // Make sure input is cleared
+      messageInput.value = "";
     });
   }
 
@@ -256,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
             : "text-gray-300 hover:bg-white/5 hover:text-blue-300"
         } transition-colors`;
         historyItem.innerHTML = `
-          <i class="fas fa-comment w-4 h-4 mr-2 flex-shrink-0 text-gray-400 flex items-center justify-center"></i>
+          <span class="icon-comment w-4 h-4 mr-2 flex-shrink-0 text-gray-400 flex items-center justify-center"></span>
           <span class="truncate w-full">${escapeHtml(title)}</span>
         `;
 
@@ -268,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const deleteButton = document.createElement("button");
         deleteButton.className =
           "p-1 ml-1 flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors";
-        deleteButton.innerHTML = `<i class="fas fa-times"></i>`;
+        deleteButton.innerHTML = `<span class="icon-times"></span>`;
         deleteButton.title = "Delete this chat";
 
         // Add event listener to delete button
@@ -291,7 +329,7 @@ document.addEventListener("DOMContentLoaded", function () {
             threadId === currentThreadId ? "active" : ""
           }`;
           miniHistoryItem.title = title;
-          miniHistoryItem.innerHTML = `<i class="fas fa-comment"></i>`;
+          miniHistoryItem.innerHTML = `<span class="icon-comment"></span>`;
 
           miniHistoryItem.addEventListener("click", () => {
             loadChat(threadId);
@@ -341,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function () {
           messageElement.innerHTML = `
             <div class="flex-shrink-0 mr-3 mt-1">
               <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                <i class="fas fa-user text-white text-sm"></i>
+                <span class="icon-user text-white text-sm"></span>
               </div>
             </div>
             <div class="rounded-lg p-3 flex-grow markdown">
@@ -359,7 +397,7 @@ document.addEventListener("DOMContentLoaded", function () {
           iconDiv.className = "flex-shrink-0 mr-3 mt-1";
           iconDiv.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-              <i class="fas fa-robot text-white text-sm"></i>
+              <span class="icon-robot text-white text-sm"></span>
             </div>
           `;
           messageElement.appendChild(iconDiv);
@@ -374,6 +412,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Apply syntax highlighting to code blocks
+      applyHighlighting();
     }
 
     // Update UI to show active chat
@@ -437,7 +478,7 @@ document.addEventListener("DOMContentLoaded", function () {
     messageElement.innerHTML = `
       <div class="flex-shrink-0 mr-3 mt-1">
         <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-          <i class="fas fa-user text-white text-sm"></i>
+          <span class="icon-user text-white text-sm"></span>
         </div>
       </div>
       <div class="rounded-lg p-3 flex-grow markdown">
@@ -463,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
     iconDiv.className = "flex-shrink-0 mr-3 mt-1";
     iconDiv.innerHTML = `
       <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-        <i class="fas fa-robot text-white text-sm"></i>
+        <span class="icon-robot text-white text-sm"></span>
       </div>
     `;
     messageElement.appendChild(iconDiv);
@@ -494,16 +535,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Note: Typing indicator is now handled directly in the addBotMessage function
 
+  // Apply syntax highlighting to code blocks
+  function applyHighlighting() {
+    document.querySelectorAll("pre code").forEach((block) => {
+      hljs.highlightElement(block);
+    });
+  }
+
   // Process markdown in text
   function processMarkdown(text) {
-    // This is a simple implementation - for production, use a proper markdown library
-
-    // Process code blocks
-    text = text.replace(/```([\s\S]*?)```/g, function (_, code) {
-      return `<pre><code>${escapeHtml(
-        code.trim()
-      )}</code><button class="copy-button" onclick="copyToClipboard(this)">Copy</button></pre>`;
-    });
+    // Process code blocks with language support
+    text = text.replace(
+      /```([\w-]*)\s*\n([\s\S]*?)```/g,
+      function (_, language, code) {
+        const languageClass = language ? ` class="language-${language}"` : "";
+        return `<pre><code${languageClass}>${escapeHtml(
+          code.trim()
+        )}</code><button class="copy-button" onclick="copyToClipboard(this)">Copy</button></pre>`;
+      }
+    );
 
     // Process inline code
     text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
@@ -561,30 +611,11 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (err) {
       console.error("Failed to copy text: ", err);
 
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-
-      try {
-        document.execCommand("copy");
-
-        // Change button text temporarily
-        const originalText = button.textContent;
-        button.textContent = "Copied!";
-        setTimeout(() => {
-          button.textContent = originalText;
-        }, 2000);
-      } catch (e) {
-        console.error("Fallback copy failed: ", e);
-        button.textContent = "Copy failed";
-        setTimeout(() => {
-          button.textContent = "Copy";
-        }, 2000);
-      }
-
-      document.body.removeChild(textArea);
+      // Show error message on button
+      button.textContent = "Copy failed";
+      setTimeout(() => {
+        button.textContent = "Copy";
+      }, 2000);
     }
   };
 
@@ -596,6 +627,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Process markdown and set the HTML
       element.innerHTML = processMarkdown(text);
+
+      // Apply syntax highlighting to code blocks
+      applyHighlighting();
 
       // Scroll to bottom to show the new content
       chatContainer.scrollTop = chatContainer.scrollHeight;

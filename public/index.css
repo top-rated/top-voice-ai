@@ -1,4 +1,35 @@
 
+/* Font Awesome Icon Replacements */
+.icon-chevron-left::before {
+  content: "←";
+}
+.icon-chevron-right::before {
+  content: "→";
+}
+.icon-plus-circle::before {
+  content: "+";
+}
+.icon-trash-alt::before {
+  content: "🗑️";
+}
+.icon-comment::before {
+  content: "💬";
+}
+.icon-times::before {
+  content: "✕";
+}
+.icon-user::before {
+  content: "👤";
+}
+.icon-robot::before {
+  content: "🤖";
+}
+.icon-paper-plane::before {
+  content: "📤";
+}
+.icon-crown::before {
+  content: "👑";
+}
 
 /* Consistent loading spinner */
 .spinner {
@@ -261,6 +292,7 @@ pre {
   overflow-x: auto;
   margin: 1rem 0;
   position: relative;
+  border: 1px solid rgba(71, 85, 105, 0.3);
 }
 
 pre code {
@@ -268,6 +300,19 @@ pre code {
   font-size: 0.875rem;
   line-height: 1.5;
   color: #e2e8f0;
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Inline code styling */
+p code, li code {
+  background-color: rgba(30, 41, 59, 0.8);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.85em;
+  border: 1px solid rgba(71, 85, 105, 0.3);
 }
 
 .copy-button {
@@ -281,6 +326,8 @@ pre code {
   color: #cbd5e1;
   cursor: pointer;
   transition: all 0.2s;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  z-index: 10;
 }
 
 .copy-button:hover {
