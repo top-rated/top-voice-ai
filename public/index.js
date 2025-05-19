@@ -8,11 +8,17 @@ document.addEventListener("DOMContentLoaded", function () {
     "delete-all-chats-mobile"
   );
   const newChatButton = document.getElementById("new-chat");
+  const newChatMiniButton = document.getElementById("new-chat-mini");
   const newChatMobileButton = document.getElementById("new-chat-mobile");
   const mobileMenuButton = document.getElementById("mobile-menu-button");
-  const sidebar = document.querySelector(".w-64.bg-dark-800");
+  const sidebar = document.getElementById("sidebar");
+  const mainContent = document.getElementById("main-content");
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  const sidebarExpandMini = document.getElementById("sidebar-expand-mini");
   const promptCards = document.querySelectorAll(".prompt-card");
   const chatHistoryList = document.getElementById("chat-history-list");
+  const miniChatHistory = document.getElementById("mini-chat-history");
+  const upgradeButtonMini = document.getElementById("upgrade-button-mini");
 
   // Create overlay element for mobile sidebar
   const overlay = document.createElement("div");
@@ -22,6 +28,48 @@ document.addEventListener("DOMContentLoaded", function () {
   // Chat history storage
   let chatHistory = {};
   let currentThreadId = "thread_" + Date.now();
+
+  // Check if sidebar state is stored in localStorage
+  const sidebarCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+  if (sidebarCollapsed) {
+    sidebar.classList.add("collapsed");
+  }
+
+  // Sidebar toggle functionality
+  sidebarToggle.addEventListener("click", function () {
+    sidebar.classList.add("collapsed");
+    localStorage.setItem("sidebarCollapsed", "true");
+  });
+
+  // Sidebar expand functionality from mini sidebar
+  sidebarExpandMini.addEventListener("click", function () {
+    sidebar.classList.remove("collapsed");
+    localStorage.setItem("sidebarCollapsed", "false");
+  });
+
+  // New chat functionality from mini sidebar
+  newChatMiniButton.addEventListener("click", function () {
+    createNewChat();
+  });
+
+  // Upgrade functionality from mini sidebar
+  upgradeButtonMini.addEventListener("click", function () {
+    // Use the same functionality as the main upgrade button
+    const upgradeMessage =
+      "To upgrade to Premium and unlock all features, please visit our website at https://top-rated.pro/l/gpt or contact our sales team at sales@top-rated.pro";
+
+    // Hide the welcome container if it's visible
+    if (welcomeContainer.style.display !== "none") {
+      welcomeContainer.style.display = "none";
+    }
+
+    // Add a fake user message
+    addUserMessage("How do I upgrade to Premium?");
+
+    // Add bot response
+    const botMessageElement = addBotMessage();
+    streamText(botMessageElement, upgradeMessage);
+  });
 
   // Mobile menu toggle
   mobileMenuButton.addEventListener("click", function () {
@@ -177,6 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Update chat history UI in sidebar
   function updateChatHistoryUI() {
     chatHistoryList.innerHTML = "";
+    miniChatHistory.innerHTML = "";
 
     // Sort threads by last message timestamp (newest first)
     const sortedThreads = Object.keys(chatHistory).sort((a, b) => {
@@ -185,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return bTimestamp - aTimestamp;
     });
 
-    sortedThreads.forEach((threadId) => {
+    sortedThreads.forEach((threadId, index) => {
       const thread = chatHistory[threadId];
       if (thread.messages && thread.messages.length > 0) {
         const firstUserMessage = thread.messages.find((m) => m.role === "user");
@@ -234,6 +283,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Add the container to the chat history list
         chatHistoryList.appendChild(historyItemContainer);
+
+        // Create mini sidebar history item (only show first 5 for space)
+        if (index < 5) {
+          const miniHistoryItem = document.createElement("button");
+          miniHistoryItem.className = `mini-button ${
+            threadId === currentThreadId ? "active" : ""
+          }`;
+          miniHistoryItem.title = title;
+          miniHistoryItem.innerHTML = `<i class="fas fa-comment"></i>`;
+
+          miniHistoryItem.addEventListener("click", () => {
+            loadChat(threadId);
+          });
+
+          miniChatHistory.appendChild(miniHistoryItem);
+        }
       }
     });
   }
