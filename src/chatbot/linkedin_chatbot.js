@@ -45,20 +45,15 @@ async function processQuery(threadId, query) {
   const inputs = {
     messages: [{ role: "user", content: query }],
   };
-
-  // Process the query with thread_id in the configurable
-  const result = await agent.invoke(inputs, {
-    configurable: {
-      thread_id: threadId,
-    },
+  const config = { configurable: { thread_id: threadId } };
+  // Process the query with thread_id in the configurable and stream the response
+  const stream = agent.stream(inputs, {
+    ...config,
+    streamMode: "values", // Ensures we get structured updates
   });
 
-  // Get the final response from the last message
-  const messages = result.messages;
-  const lastMessage = messages[messages.length - 1];
-
-  // Return the content of the last message
-  return lastMessage.content;
+  // Return the stream to be handled by the API route
+  return stream;
 }
 
 module.exports = {

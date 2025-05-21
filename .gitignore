@@ -8,6 +8,8 @@ feedback.md
 /test/results.html
 /src/data/
 test-keys.md
+/langgraph_docs/
+/.windsurf/
 
 keys.md
 .env

@@ -1,4 +1,4 @@
-// Test script for the chatbot with API tools
+// Test script for the fixed chatbot with API tools
 const { processQuery } = require('./src/chatbot/linkedin_chatbot');
 
 async function testChatbot() {

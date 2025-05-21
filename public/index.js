@@ -447,51 +447,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Add bot message to chat
   function addBotMessage() {
-    const messageElement = document.createElement("div");
-    messageElement.className =
-      "flex items-start w-full max-w-2xl mb-4 animate-fade-in mx-auto";
+    const messageContainer = document.createElement("div");
+    messageContainer.className = "flex items-start w-full max-w-2xl mb-4 animate-slide-up mx-auto";
 
-    // Add bot icon
-    const iconDiv = document.createElement("div");
-    iconDiv.className = "flex-shrink-0 mr-3 mt-1";
-    iconDiv.innerHTML = `
+    // Create avatar container similar to user message
+    const avatarDiv = document.createElement("div");
+    avatarDiv.className = "flex-shrink-0 mr-3 mt-1";
+    avatarDiv.innerHTML = `
       <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-        <span class="icon-robot text-white text-sm flex items-center justify-center w-full h-full"></span>
+        <img src="/top-voices.png" alt="AI" class="w-6 h-6 object-cover rounded-full" />
       </div>
     `;
-    messageElement.appendChild(iconDiv);
-
-    // Create the message content div
+    
+    // Create message content container
     const contentDiv = document.createElement("div");
     contentDiv.className = "rounded-lg p-3 flex-grow markdown";
-    contentDiv.id = "bot-message-" + Date.now();
-
-    // Add typing indicator initially
-    contentDiv.innerHTML = `
-      <div class="typing-indicator">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    `;
-
-    // Assemble the message element
-    messageElement.appendChild(contentDiv);
-
-    // Add to chat and scroll to bottom
-    chatContainer.appendChild(messageElement);
+    
+    // Create text content area for actual message content
+    const textContent = document.createElement("div");
+    textContent.className = "text-content text-sm text-white";
+    contentDiv.appendChild(textContent);
+  
+    // Create typing indicator (will be hidden when content is displayed)
+    const typingIndicator = document.createElement("div");
+    typingIndicator.className = "typing-indicator";
+    typingIndicator.innerHTML = `<span>_Processing your request..._</span>`;
+    contentDiv.appendChild(typingIndicator);
+    
+    // Assemble the message
+    messageContainer.appendChild(avatarDiv);
+    messageContainer.appendChild(contentDiv);
+    chatContainer.appendChild(messageContainer);
     chatContainer.scrollTop = chatContainer.scrollHeight;
-
-    return contentDiv;
+    
+    return messageContainer;
   }
 
   // Note: Typing indicator is now handled directly in the addBotMessage function
 
-  // Apply syntax highlighting to code blocks
-  function applyHighlighting() {
-    document.querySelectorAll("pre code").forEach((block) => {
-      hljs.highlightElement(block);
+  // Apply syntax highlighting to code blocks within a specific element
+  function applyHighlightingInElement(element) {
+    element.querySelectorAll("pre code").forEach((block) => {
+      // Check if already highlighted to prevent re-highlighting
+      if (!block.classList.contains("hljs-added")) {
+        hljs.highlightElement(block);
+        block.classList.add("hljs-added"); // Mark as highlighted
+      }
     });
+  }
+
+  // Global highlighting function (can be called after major DOM changes if needed)
+  function applyHighlighting() {
+    applyHighlightingInElement(document.body); // Apply to the whole body or a specific container
   }
 
   // Process markdown in text
@@ -571,120 +578,414 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  // Render the response text with markdown formatting
-  function streamText(element, text) {
-    return new Promise((resolve) => {
-      // Clear the typing indicator
+  // Render the response text with markdown formatting, with append option
+  async function streamText(element, text, append = false) {
+    // Clear previous content except for typing indicator if it exists and not appending
+    const typingIndicator = element.querySelector(".typing-indicator");
+    if (!append && !typingIndicator) {
       element.innerHTML = "";
+    }
 
-      // Process markdown and set the HTML
-      element.innerHTML = processMarkdown(text);
+    // Process Markdown for the new chunk of text
+    const processedText = processMarkdown(text);
 
-      // Apply syntax highlighting to code blocks
-      applyHighlighting();
+    // Append the new text. DOMPurify is not used here as processMarkdown should handle sanitization.
+    // If direct HTML injection is a concern from markdown, consider adding DOMPurify here.
+    element.innerHTML += processedText;
 
-      // Scroll to bottom to show the new content
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+  // Process bold
+  text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
 
-      resolve();
+  // Process italic
+  text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+  // Process links
+  text = text.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+
+  // Process lists (simple implementation)
+  text = text.replace(/^\s*-\s+(.+)$/gm, "<li>$1</li>");
+  text = text.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
+
+  // Process paragraphs (simple implementation)
+  text = text.replace(/^(.+)$/gm, function (match) {
+    if (match.startsWith("<")) return match; // Skip HTML
+    return "<p>" + match + "</p>";
+  });
+
+  return text;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Copy code to clipboard
+window.copyToClipboard = async function (button) {
+  const codeBlock = button.previousSibling;
+  const text = codeBlock.textContent;
+
+  try {
+    // Use the modern Clipboard API
+    await navigator.clipboard.writeText(text);
+
+    // Change button text temporarily
+    const originalText = button.textContent;
+    button.textContent = "Copied!";
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  } catch (err) {
+    console.error("Failed to copy text: ", err);
+
+    // Show error message on button
+    button.textContent = "Copy failed";
+    setTimeout(() => {
+      button.textContent = "Copy";
+    }, 2000);
+  }
+};
+
+// Render the response text with markdown formatting, with append option
+async function streamText(element, text, append = false) {
+  // Clear previous content except for typing indicator if it exists and not appending
+  const typingIndicator = element.querySelector(".typing-indicator");
+  if (!append && !typingIndicator) {
+    element.innerHTML = "";
+  }
+
+  // Hide the typing indicator in the parent container when content is being displayed
+  const parentContainer = element.closest('.rounded-lg');
+  if (parentContainer) {
+    const typingIndicator = parentContainer.querySelector('.typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.style.display = 'none';
+    }
+  }
+
+  // Process Markdown for the new chunk of text
+  const processedText = processMarkdown(text);
+
+  // If not appending, clear the element first
+  if (!append) {
+    element.innerHTML = "";
+  }
+
+  // Append the new text. DOMPurify is not used here as processMarkdown should handle sanitization.
+  // If direct HTML injection is a concern from markdown, consider adding DOMPurify here.
+  element.innerHTML += processedText;
+
+  // Apply highlighting to any new code blocks within the element
+  applyHighlightingInElement(element);
+
+  // Scroll to bottom of the chat container to ensure new content is visible
+  const chatContainer = document.getElementById("chat-container");
+  if (chatContainer) {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+}
+
+// Store current bot message element for streaming text
+let currentBotMessageContentElement = null;
+
+// Store tool call elements for reference when updating with results
+let currentToolCallElements = {};
+
+// Helper to create/get the current bot message element for text streaming
+function ensureCurrentBotMessageElement() {
+  // Find the last bot message using the new class structure
+  let lastBotMessage = chatContainer.querySelector(".flex.items-start.mx-auto:last-child");
+  
+  // Check if the currentBotMessageContentElement is valid and part of the DOM
+  if (currentBotMessageContentElement && document.body.contains(currentBotMessageContentElement)) {
+    return currentBotMessageContentElement;
+  }
+
+  // If no last bot message, create one
+  if (!lastBotMessage) {
+    lastBotMessage = addBotMessage();
+    currentBotMessageContentElement = lastBotMessage.querySelector(".text-content");
+    return currentBotMessageContentElement;
+  }
+
+  // Find the text content element in the last bot message
+  let textElement = lastBotMessage.querySelector(".text-content");
+  
+  // If no text element found, or it's part of a tool UI, create a new one
+  if (!textElement || textElement.closest('.tool-invocation-item')) {
+    // Create a new text element
+    const newTextElement = document.createElement("div");
+    newTextElement.className = "text-content text-sm text-white";
+    
+    // Find the content div to append to
+    const contentDiv = lastBotMessage.querySelector(".rounded-lg.p-3.flex-grow");
+    if (contentDiv) {
+      contentDiv.appendChild(newTextElement);
+    } else {
+      // Fallback if content div not found
+      lastBotMessage.appendChild(newTextElement);
+    }
+    textElement = newTextElement;
+  }
+  
+  currentBotMessageContentElement = textElement;
+  return currentBotMessageContentElement;
+}
+
+// Handles tool invocation message processing without displaying in the UI
+function addToolInvocationMessage(toolInvocations, botMessageDiv) {
+  if (!botMessageDiv) {
+    console.error("Bot message div not provided for tool invocation");
+    botMessageDiv = addBotMessage(); // Fallback, though it should be passed
+  }
+
+  // Hide typing indicator
+  const typingIndicator = botMessageDiv.querySelector(".typing-indicator");
+  if (typingIndicator) {
+    typingIndicator.style.display = 'none';
+  }
+
+  // Find the content div and text content element
+  const contentDiv = botMessageDiv.querySelector(".rounded-lg.p-3.flex-grow");
+  let textContentElement = botMessageDiv.querySelector(".text-content");
+  
+  if (!textContentElement) {
+    // If .text-content doesn't exist, create it
+    textContentElement = document.createElement('div');
+    textContentElement.className = 'text-content text-sm text-white';
+    if (contentDiv) {
+      contentDiv.appendChild(textContentElement);
+    } else {
+      botMessageDiv.appendChild(textContentElement);
+    }
+  }
+
+  // Store tool invocations in memory without displaying them
+  toolInvocations.forEach((toolInvo) => {
+    const toolCallId = toolInvo.id || `tool-call-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    // Just store a reference to the tool call without creating UI elements
+    currentToolCallElements[toolCallId] = {
+      name: toolInvo.name,
+      args: toolInvo.args
+    };
+  });
+
+  // Set the current bot message content element for future text responses
+  currentBotMessageContentElement = textContentElement;
+}
+
+// Processes tool results without displaying them in the UI
+function updateToolResultMessage(toolResult) {
+  if (!toolResult || !toolResult.tool_call_id) {
+    console.warn('Skipping tool_result due to missing tool_call_id:', toolResult);
+    return;
+  }
+  const toolCallId = toolResult.tool_call_id;
+  const toolCallElement = currentToolCallElements[toolCallId];
+
+  if (toolCallElement) {
+    // Just update the stored data without modifying the UI
+    toolCallElement.result = toolResult.content;
+    toolCallElement.completed = true;
+    
+    // Log for debugging purposes only
+    console.debug(`Tool ${toolResult.name || toolCallId} executed successfully`);
+  } else {
+    console.warn("No matching tool invocation found for result:", toolResult);
+    // We don't need to display a fallback message anymore since we're hiding tool results
+  }
+  
+  // We don't force a new message bubble since we're not displaying tool results
+}
+
+
+// Send message to API and handle response via SSE
+async function sendMessage(message) {
+  if (welcomeContainer.style.display !== "none") {
+    welcomeContainer.style.display = "none";
+  }
+
+  addUserMessage(message);
+
+  if (!chatHistory[currentThreadId]) {
+    chatHistory[currentThreadId] = { messages: [], lastMessageTime: Date.now() };
+  }
+  chatHistory[currentThreadId].messages.push({ role: "user", content: message });
+  chatHistory[currentThreadId].lastMessageTime = Date.now();
+  saveChatHistory();
+
+  currentBotMessageContentElement = null; // Ensure a fresh element is fetched/created by ensureCurrentBotMessageElement
+  let accumulatedResponseForHistory = "";
+  const typingIndicator = document.getElementById("typing-indicator");
+  if (typingIndicator) typingIndicator.remove();
+
+  // Create a bot message bubble and get its text content area
+  const botMessageBubble = addBotMessage(); // Always create a fresh bot message bubble
+  const initialBotTextElement = botMessageBubble.querySelector('.text-content');
+  
+  if (initialBotTextElement) {
+    streamText(initialBotTextElement, "_Processing your request..._", false);
+  } else {
+    console.error("Could not find .text-content in newly created bot message");
+  }
+  
+  // Set currentBotMessageContentElement to the initial text element
+  currentBotMessageContentElement = initialBotTextElement;
+
+  let hasClearedProcessingMessage = false;
+  let isEchoedQueryProcessed = false;
+
+  try {
+    console.log("Sending chat request to server:", message);
+    const response = await fetch("/api/v1/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: message, threadId: currentThreadId }),
     });
-  }
 
-  // Send message to API and handle response
-  async function sendMessage(message) {
-    try {
-      // Initialize chat history for this thread if it doesn't exist
-      if (!chatHistory[currentThreadId]) {
-        chatHistory[currentThreadId] = {
-          messages: [],
-          lastMessageTime: Date.now(),
-        };
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Server error." }));
+      const errorText = `Error: ${errorData.message || response.statusText}`;
+      if (initialBotTextElement) streamText(initialBotTextElement, errorText, false);
+      else {
+        const errElem = ensureCurrentBotMessageElement();
+        if (errElem) streamText(errElem, errorText, false);
       }
-
-      // Save user message to chat history
-      chatHistory[currentThreadId].messages.push({
-        role: "user",
-        content: message,
-        timestamp: Date.now(),
-      });
-
-      // Update last message time
-      chatHistory[currentThreadId].lastMessageTime = Date.now();
-
-      // Save to local storage
+      accumulatedResponseForHistory = errorText;
+      chatHistory[currentThreadId].messages.push({ role: "assistant", content: accumulatedResponseForHistory });
       saveChatHistory();
+      return;
+    }
 
-      // Add user message to chat
-      addUserMessage(message);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
 
-      // Add bot typing indicator
-      const botMessageElement = addBotMessage();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let boundary;
+      while ((boundary = buffer.indexOf("\n\n")) !== -1) {
+        const sseMessage = buffer.substring(0, boundary);
+        buffer = buffer.substring(boundary + 2);
+        if (sseMessage.startsWith("data: ")) {
+          const jsonData = sseMessage.substring(6);
+          try {
+            const eventData = JSON.parse(jsonData);
+            console.log("Parsed event:", eventData.type, eventData.data);
 
-      // Send request to API
-      const response = await fetch("/api/v1/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          threadId: currentThreadId,
-          query: message,
-        }),
-      });
+            // Ensure currentBotMessageContentElement is up-to-date, especially after tool calls
+            const activeTextElement = ensureCurrentBotMessageElement(); 
 
-      if (!response.ok) {
-        throw new Error("API request failed");
+            if (eventData.type === "connected") {
+              console.log("Connection established with server");
+            } else if (eventData.type === "content_chunk") {
+              const content = eventData.data;
+              if (!isEchoedQueryProcessed && content === message) {
+                isEchoedQueryProcessed = true;
+                console.log("Skipped echoed user query:", content);
+                accumulatedResponseForHistory += content; // Echoed query is part of history
+              } else {
+                const isLikelyJson = (str) => {
+                    if (typeof str !== 'string') return false;
+                    str = str.trim();
+                    return (str.startsWith('{') && str.endsWith('}')) || (str.startsWith('[') && str.endsWith(']'));
+                };
+                if (isLikelyJson(content)) {
+                  console.log("Skipped rendering likely JSON data:", content);
+                  accumulatedResponseForHistory += content; 
+                } else {
+                  // Always clear the processing message when we get actual content
+                  if (!hasClearedProcessingMessage) {
+                    // Find and hide all typing indicators
+                    const typingIndicators = document.querySelectorAll(".typing-indicator");
+                    typingIndicators.forEach(indicator => {
+                      indicator.style.display = 'none';
+                    });
+                    
+                    if (initialBotTextElement) streamText(initialBotTextElement, "", false); // Clear "Processing..." from initial element
+                    hasClearedProcessingMessage = true;
+                  }
+                  if (activeTextElement) streamText(activeTextElement, content, true);
+                  accumulatedResponseForHistory += content;
+                }
+              }
+            } else if (eventData.type === "tool_invocation") {
+              // Handle tool invocation silently without displaying in UI
+              if (!hasClearedProcessingMessage && initialBotTextElement) {
+                hasClearedProcessingMessage = true;
+              }
+              
+              // If botMessageBubble is somehow null (shouldn't happen now), create a new one
+              if (!botMessageBubble) {
+                console.warn("botMessageBubble was null, creating a new one");
+                botMessageBubble = addBotMessage();
+              }
+              
+              // Process tool invocation without displaying in UI
+              addToolInvocationMessage(eventData.data, botMessageBubble);
+              console.debug("Tool invocation processed silently:", eventData.data.map(t => t.name).join(', '));
+            } else if (eventData.type === "tool_result") {
+              // Process tool result without displaying in UI
+              updateToolResultMessage(eventData.data);
+              // We don't add tool results to the accumulated response anymore 
+            } else if (eventData.type === "error") {
+              if (activeTextElement) streamText(activeTextElement, `Error: ${eventData.data}`, true);
+              accumulatedResponseForHistory += `\nError: ${eventData.data}\n`;
+            }
+          } catch (e) {
+            console.error("Error parsing SSE JSON:", e, "Raw:", jsonData);
+          }
+        }
       }
+    }
 
-      const data = await response.json();
-
-      // Stream the response text
-      await streamText(botMessageElement, data.response);
-
-      // Save bot response to chat history
-      chatHistory[currentThreadId].messages.push({
-        role: "assistant",
-        content: data.response,
-        timestamp: Date.now(),
-      });
-
+    if (currentBotMessageContentElement && currentBotMessageContentElement.innerHTML.trim() !== "") {
+      applyHighlightingInElement(currentBotMessageContentElement);
+    }
+    
+    const trimmedHistoryResponse = accumulatedResponseForHistory.trim();
+    if (trimmedHistoryResponse.length > 0) {
+      console.log("Saving response to history:", trimmedHistoryResponse);
+      const lastHistory = chatHistory[currentThreadId].messages;
+      if (lastHistory.length > 0 && lastHistory[lastHistory.length - 1].role === 'user') {
+        lastHistory.push({ role: "assistant", content: trimmedHistoryResponse });
+      } else if (lastHistory.length > 0 && lastHistory[lastHistory.length - 1].role === 'assistant') {
+        // Append to existing assistant message or create new if significantly different
+        // For now, let's just update if it's the same logical turn, or add if new turn after tool results
+        lastHistory[lastHistory.length - 1].content = trimmedHistoryResponse; // Simplistic update for now
+      } else {
+        lastHistory.push({ role: "assistant", content: trimmedHistoryResponse });
+      }
       chatHistory[currentThreadId].lastMessageTime = Date.now();
       saveChatHistory();
-
-      // Scroll to bottom after streaming completes
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    } catch (error) {
-      console.error("Error:", error);
-      // Handle error - show error message in chat
-      const errorElement = document.createElement("div");
-      errorElement.className =
-        "text-red-500 text-center my-4 w-full max-w-2xl mx-auto";
-      errorElement.textContent =
-        "Sorry, there was an error processing your request. Please try again.";
-      chatContainer.appendChild(errorElement);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
+
+  } catch (error) {
+    console.error("Error in sendMessage (outer catch):", error);
+    const errorText = "Error: Connection issue or unexpected error. Please try again.";
+    const errElem = ensureCurrentBotMessageElement();
+    if(errElem) streamText(errElem, errorText, false);
+    chatHistory[currentThreadId].messages.push({ role: "assistant", content: errorText });
+    saveChatHistory();
+  } finally {
+    messageInput.disabled = false;
+    messageInput.focus();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    console.log("Chat interaction complete");
   }
+}
 
-  // Handle form submission
-  chatForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const message = messageInput.value.trim();
-    if (message) {
-      sendMessage(message);
-      messageInput.value = "";
-      messageInput.style.height = "auto";
-    }
-  });
-
-  // No clear chat button handlers needed anymore as we've replaced them with delete functionality
-
-  // Handle new chat button
-  newChatButton.addEventListener("click", function () {
-    createNewChat();
-  });
-
-  // Handle new chat mobile button
+// Handle new chat mobile button
   newChatMobileButton.addEventListener("click", function () {
     createNewChat();
 
@@ -704,4 +1005,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Focus input on page load
   messageInput.focus();
+  
+  // Add form submission handler
+  chatForm.addEventListener("submit", function(event) {
+    // Prevent the default form submission which would reload the page
+    event.preventDefault();
+    
+    const message = messageInput.value.trim();
+    if (message) {
+      sendMessage(message);
+      messageInput.value = "";
+    }
+  });
 });
+

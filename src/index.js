@@ -124,8 +124,57 @@ app.get("/api-docs", (req, res) => {
 // chat route
 app.post("/api/v1/chat", async (req, res) => {
   const { threadId, query } = req.body;
-  const response = await processQuery(threadId, query);
-  res.json({ response });
+  console.log(`Chat request received - ThreadID: ${threadId}, Query: ${query}`);
+
+  // Set headers for SSE
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders(); // Flush the headers to establish the connection
+
+  // Send initial connection confirmation event
+  const initialEvent = { type: "connected", data: "Connection established" };
+  res.write(`data: ${JSON.stringify(initialEvent)}\n\n`);
+  console.log("SSE connection established, sent initial event");
+
+  try {
+    console.log("Calling processQuery function...");
+    const stream = await processQuery(threadId, query);
+    console.log("Process query returned a stream, beginning iteration...");
+
+    for await (
+      const { messages } of stream
+    ) {
+      let msg = messages[messages?.length - 1];
+      if (msg?.content) {
+        console.log(msg.content);
+        const contentEvent = { type: "content_chunk", data: msg.content };
+        res.write(`data: ${JSON.stringify(contentEvent)}\n\n`);
+        console.log(`Sent content chunk: ${msg.content}`);
+      } else if (msg?.tool_calls?.length > 0) {
+        console.log(msg.tool_calls);
+        const toolEvent = { type: "tool_invocation", data: msg.tool_calls };
+        res.write(`data: ${JSON.stringify(toolEvent)}\n\n`);
+        console.log(`Sent tool invocation: ${JSON.stringify(msg.tool_calls)}`);
+      } else {
+        console.log(msg);
+        const unknownEvent = { type: "unknown", data: msg };
+        res.write(`data: ${JSON.stringify(unknownEvent)}\n\n`);
+        console.log(`Sent unknown event: ${JSON.stringify(msg)}`);
+      }
+      console.log("-----\n");
+      
+    }
+  } catch (error) {
+    console.error("Error during chat processing:", error);
+    // Send an error event to the client before closing
+    const errorEvent = { type: "error", data: "An error occurred on the server." };
+    res.write(`data: ${JSON.stringify(errorEvent)}\n\n`);
+    console.log("Error event sent to client");
+  } finally {
+    console.log("Ending SSE stream");
+    res.end(); // End the SSE stream
+  }
 });
 
 // Error handling middleware
@@ -146,4 +195,4 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-module.exports = app; // For testing purposes
+module.exports = app; 
