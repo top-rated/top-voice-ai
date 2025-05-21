@@ -79,6 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
   newChatMiniButton.addEventListener("click", function () {
     createNewChat();
   });
+  
+  // Main new chat button functionality
+  newChatButton.addEventListener("click", function () {
+    createNewChat();
+  });
 
   // Mobile menu toggle
   mobileMenuButton.addEventListener("click", function () {
@@ -508,9 +513,10 @@ document.addEventListener("DOMContentLoaded", function () {
       /```([\w-]*)\s*\n([\s\S]*?)```/g,
       function (_, language, code) {
         const languageClass = language ? ` class="language-${language}"` : "";
+        // Use a data attribute instead of an inline onclick handler to avoid CSP issues
         return `<pre><code${languageClass}>${escapeHtml(
           code.trim()
-        )}</code><button class="copy-button" onclick="copyToClipboard(this)">Copy</button></pre>`;
+        )}</code><button class="copy-button" data-copy="true">Copy</button></pre>`;
       }
     );
 
@@ -552,8 +558,8 @@ document.addEventListener("DOMContentLoaded", function () {
       .replace(/'/g, "&#039;");
   }
 
-  // Copy code to clipboard
-  window.copyToClipboard = async function (button) {
+  // Copy code to clipboard function
+  async function copyToClipboard(button) {
     const codeBlock = button.previousSibling;
     const text = codeBlock.textContent;
 
@@ -576,7 +582,15 @@ document.addEventListener("DOMContentLoaded", function () {
         button.textContent = "Copy";
       }, 2000);
     }
-  };
+  }
+  
+  // Set up event delegation for copy buttons to avoid CSP issues with inline handlers
+  document.addEventListener('click', function(event) {
+    // Check if the clicked element is a copy button
+    if (event.target.classList.contains('copy-button') || event.target.hasAttribute('data-copy')) {
+      copyToClipboard(event.target);
+    }
+  });
 
   // Render the response text with markdown formatting, with append option
   async function streamText(element, text, append = false) {
@@ -656,12 +670,6 @@ window.copyToClipboard = async function (button) {
 
 // Render the response text with markdown formatting, with append option
 async function streamText(element, text, append = false) {
-  // Clear previous content except for typing indicator if it exists and not appending
-  const typingIndicator = element.querySelector(".typing-indicator");
-  if (!append && !typingIndicator) {
-    element.innerHTML = "";
-  }
-
   // Hide the typing indicator in the parent container when content is being displayed
   const parentContainer = element.closest('.rounded-lg');
   if (parentContainer) {
@@ -679,8 +687,7 @@ async function streamText(element, text, append = false) {
     element.innerHTML = "";
   }
 
-  // Append the new text. DOMPurify is not used here as processMarkdown should handle sanitization.
-  // If direct HTML injection is a concern from markdown, consider adding DOMPurify here.
+  // Append the processed text directly
   element.innerHTML += processedText;
 
   // Apply highlighting to any new code blocks within the element
@@ -809,6 +816,9 @@ function updateToolResultMessage(toolResult) {
 
 // Send message to API and handle response via SSE
 async function sendMessage(message) {
+  // Reset accumulated content for a new message
+  window.accumulatedContent = "";
+  
   if (welcomeContainer.style.display !== "none") {
     welcomeContainer.style.display = "none";
   }
@@ -912,10 +922,27 @@ async function sendMessage(message) {
                       indicator.style.display = 'none';
                     });
                     
-                    if (initialBotTextElement) streamText(initialBotTextElement, "", false); // Clear "Processing..." from initial element
+                    if (initialBotTextElement) {
+                      // Clear the initial bot message element
+                      initialBotTextElement.innerHTML = "";
+                    }
                     hasClearedProcessingMessage = true;
                   }
-                  if (activeTextElement) streamText(activeTextElement, content, true);
+                  
+                  // Store the accumulated content for this response
+                  if (!window.accumulatedContent) {
+                    window.accumulatedContent = "";
+                  }
+                  
+                  // Add the new chunk to our accumulated content
+                  window.accumulatedContent += content;
+                  
+                  // Render the full accumulated content
+                  if (activeTextElement) {
+                    // Always use append=false to render the full accumulated content
+                    streamText(activeTextElement, window.accumulatedContent, false);
+                  }
+                  
                   accumulatedResponseForHistory += content;
                 }
               }
@@ -1016,6 +1043,11 @@ async function sendMessage(message) {
       sendMessage(message);
       messageInput.value = "";
     }
+  });
+  
+  // Apply event listeners to any existing copy buttons in the DOM
+  document.querySelectorAll('.copy-button').forEach(button => {
+    button.removeAttribute('onclick'); // Remove any existing onclick attributes for safety
   });
 });
 
