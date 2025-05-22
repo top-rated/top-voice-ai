@@ -13,6 +13,7 @@ const profileRoutes = require("./routes/profile.routes");
 const searchRoutes = require("./routes/search.routes");
 const licenseRoutes = require("./routes/license.routes");
 const adminRoutes = require("./routes/admin.routes");
+const stripeRoutes = require("./routes/stripe.routes"); // Added Stripe routes
 
 const { processQuery } = require("./chatbot/linkedin_chatbot");
 
@@ -89,17 +90,9 @@ app.use(`${API_PREFIX}/profiles`, profileRoutes);
 app.use(`${API_PREFIX}/search`, searchRoutes);
 app.use(`${API_PREFIX}/license`, licenseRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
+app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
 
-// Log registered routes
-// console.log(
-//   "Admin routes:",
-//   adminRoutes.stack.map(
-//     (r) =>
-//       `${r.route?.path || "[middleware]"} - ${
-//         r.route?.methods ? Object.keys(r.route.methods) : "N/A"
-//       }`
-//   )
-// );
+
 
 // Root route
 app.get("/", (req, res) => {

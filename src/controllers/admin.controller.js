@@ -6,10 +6,6 @@ const topVoicesController = require("./topVoices.controller");
 const { topVoicesCache } = require("./topVoices.controller");
 const NodeCache = require("node-cache");
 const {
-  getSubscriptions: getGumroadSubscriptions,
-  cancelGumroadSubscription, // Import the new cancel function
-} = require("../utils/gumroad");
-const {
   verifySubscription: verifyStripeSubscription,
   cancelSubscription: cancelStripeSubscription,
 } = require("../utils/stripe");
@@ -398,8 +394,8 @@ const getSubscriptions = async (req, res) => {
           email: user.email,
           type: user.subscriptionType || "premium",
           active: user.active || true,
-          source: user.subscriptionId.includes("gumroad")
-            ? "gumroad"
+          source: user.subscriptionId && user.subscriptionId.includes("stripe")
+            ? "stripe"
             : "manual",
           createdAt: user.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -423,173 +419,6 @@ const getSubscriptions = async (req, res) => {
     console.log(
       `Found ${subscriptions.length} total subscriptions in local storage`
     );
-
-    // Now fetch subscriptions directly from Gumroad API
-    console.log("Fetching subscriptions from Gumroad API...");
-    try {
-      const gumroadResult = await getGumroadSubscriptions();
-
-      // Also check for Stripe subscriptions in our system
-      console.log("Checking for Stripe subscriptions...");
-      const stripeSubscriptions = subscriptions.filter(
-        (sub) => sub.source && sub.source.includes("stripe")
-      );
-      console.log(
-        `Found ${stripeSubscriptions.length} Stripe subscriptions in local storage`
-      );
-
-      if (
-        gumroadResult.success &&
-        gumroadResult.subscriptions &&
-        gumroadResult.subscriptions.length > 0
-      ) {
-        console.log(
-          `Successfully fetched ${gumroadResult.subscriptions.length} subscriptions from Gumroad API`
-        );
-
-        // Create a map of existing subscriptions by email for easy lookup
-        const existingSubscriptionsByEmail = {};
-        subscriptions.forEach((sub) => {
-          if (sub.email) {
-            if (!existingSubscriptionsByEmail[sub.email]) {
-              existingSubscriptionsByEmail[sub.email] = [];
-            }
-            existingSubscriptionsByEmail[sub.email].push(sub);
-          }
-        });
-
-        // Process Gumroad subscriptions
-        for (const gumroadSub of gumroadResult.subscriptions) {
-          // Check if we already have this subscription by Gumroad subscription ID
-          const existingByGumroadId = subscriptions.find(
-            (sub) =>
-              sub.gumroadSubscriptionId === gumroadSub.gumroadSubscriptionId
-          );
-
-          if (existingByGumroadId) {
-            // Update existing subscription with latest data from Gumroad
-            console.log(
-              `Updating existing subscription for ${gumroadSub.email} with Gumroad data`
-            );
-            existingByGumroadId.active = gumroadSub.active;
-            existingByGumroadId.updatedAt = new Date().toISOString();
-            existingByGumroadId.gumroadData = gumroadSub.gumroadData;
-
-            // Save updated subscription
-            await subscriptionStorage.setSubscription(
-              existingByGumroadId.id,
-              existingByGumroadId
-            );
-          } else {
-            // Check if user already has a subscription by email
-            const existingSubsForEmail =
-              existingSubscriptionsByEmail[gumroadSub.email] || [];
-
-            // If user has an active subscription, update it with Gumroad data
-            const activeSubForEmail = existingSubsForEmail.find(
-              (sub) => sub.active
-            );
-
-            if (activeSubForEmail) {
-              console.log(
-                `Updating existing active subscription for ${gumroadSub.email} with Gumroad data`
-              );
-              activeSubForEmail.gumroadSubscriptionId =
-                gumroadSub.gumroadSubscriptionId;
-              activeSubForEmail.gumroadPurchaseId =
-                gumroadSub.gumroadPurchaseId;
-              activeSubForEmail.source = "gumroad_api_linked";
-              activeSubForEmail.updatedAt = new Date().toISOString();
-              activeSubForEmail.gumroadData = gumroadSub.gumroadData;
-
-              // Ensure the subscription has a valid ID before saving
-              if (!activeSubForEmail.id) {
-                console.warn(
-                  `Subscription for ${gumroadSub.email} has undefined ID, generating a new one`
-                );
-                const emailHash = Buffer.from(gumroadSub.email)
-                  .toString("base64")
-                  .substring(0, 8);
-                activeSubForEmail.id = `gumroad_fixed_${emailHash}_${Date.now()}`;
-              }
-
-              // Save updated subscription
-              await subscriptionStorage.setSubscription(
-                activeSubForEmail.id,
-                activeSubForEmail
-              );
-            } else {
-              // This is a new subscription from Gumroad, add it
-              console.log(
-                `Adding new subscription from Gumroad for ${gumroadSub.email}`
-              );
-
-              // Ensure the subscription has a valid ID before saving
-              if (!gumroadSub.id) {
-                console.warn(
-                  `New Gumroad subscription for ${gumroadSub.email} has undefined ID, generating a new one`
-                );
-                const emailHash = Buffer.from(gumroadSub.email)
-                  .toString("base64")
-                  .substring(0, 8);
-                gumroadSub.id = `gumroad_fixed_${emailHash}_${Date.now()}`;
-              }
-
-              // Save the new subscription
-              await subscriptionStorage.setSubscription(
-                gumroadSub.id,
-                gumroadSub
-              );
-
-              // Add to our local array
-              subscriptions.push(gumroadSub);
-
-              // Update user if they exist
-              const user = await userStorage.getUser(gumroadSub.email);
-              if (user) {
-                user.subscriptionId = gumroadSub.id;
-                user.subscriptionType = "premium";
-                user.active = true;
-                user.updatedAt = new Date().toISOString();
-                await userStorage.setUser(gumroadSub.email, user);
-                console.log(
-                  `Updated user ${gumroadSub.email} with Gumroad subscription`
-                );
-              } else {
-                // Create a new user for this subscription
-                const newUser = {
-                  email: gumroadSub.email,
-                  subscriptionId: gumroadSub.id,
-                  subscriptionType: "premium",
-                  active: true,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-                await userStorage.setUser(gumroadSub.email, newUser);
-                console.log(
-                  `Created new user for Gumroad subscription: ${gumroadSub.email}`
-                );
-              }
-            }
-          }
-        }
-
-        // Refresh the subscriptions array after all updates
-        subscriptions = Object.values(
-          await subscriptionStorage.getAllSubscriptions()
-        );
-      } else {
-        console.log(
-          "No subscriptions returned from Gumroad API or request failed"
-        );
-        if (!gumroadResult.success) {
-          console.error("Gumroad API error:", gumroadResult.message);
-        }
-      }
-    } catch (gumroadError) {
-      console.error("Error fetching subscriptions from Gumroad:", gumroadError);
-      // Continue with local subscriptions only
-    }
 
     console.log(`Final count: ${subscriptions.length} total subscriptions`);
 
@@ -802,7 +631,7 @@ const deactivateSubscription = async (req, res) => {
 };
 
 /**
- * Delete a subscription (locally and from Gumroad if applicable)
+ * Delete a subscription (locally and attempt cancellation on external provider if applicable)
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  */
@@ -826,34 +655,6 @@ const deleteSubscription = async (req, res) => {
     }
 
     const userEmail = subscription.email;
-
-    // If it's a Gumroad subscription, attempt to cancel it on Gumroad
-    const gumroadSubIdToCancel =
-      subscription.gumroadSubscriptionId ||
-      (subscription.gumroadData && subscription.gumroadData.subscriptionId);
-    if (
-      gumroadSubIdToCancel &&
-      (subscription.source === "gumroad" ||
-        subscription.source === "gumroad_api" ||
-        subscription.source === "gumroad_api_linked")
-    ) {
-      console.log(
-        `Deleting Gumroad subscription ${gumroadSubIdToCancel} as part of local deletion.`
-      );
-      const cancelResult = await cancelGumroadSubscription(
-        gumroadSubIdToCancel
-      );
-      if (!cancelResult.success) {
-        console.warn(
-          `Failed to cancel Gumroad subscription ${gumroadSubIdToCancel} during deletion: ${cancelResult.message}. Proceeding with local deletion.`
-        );
-        // Decide if you want to stop deletion if Gumroad fails. For now, proceeding.
-      } else {
-        console.log(
-          `Successfully cancelled Gumroad subscription ${gumroadSubIdToCancel} during deletion.`
-        );
-      }
-    }
 
     // If it's a Stripe subscription, attempt to cancel it on Stripe
     const stripeSubIdToCancel =
@@ -1324,212 +1125,6 @@ const addManualSubscription = async (req, res) => {
   }
 };
 
-/**
- * Add a Gumroad subscription for a user
- * @param {Object} req - Request object
- * @param {Object} res - Response object
- */
-const addGumroadSubscription = async (req, res) => {
-  try {
-    const { email, gumroadSubscriptionId, gumroadProductId, notes } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
-
-    // First, check if this user already exists in Gumroad
-    const { getSubscriptions, createSubscriber } = require("../utils/gumroad");
-    const gumroadResult = await getSubscriptions();
-
-    let existingGumroadSubscription = null;
-    let gumroadSubscriberResult = null;
-
-    if (gumroadResult.success && gumroadResult.subscriptions) {
-      // Look for a matching subscription by email
-      existingGumroadSubscription = gumroadResult.subscriptions.find(
-        (sub) => sub.email.toLowerCase() === email.toLowerCase() && sub.active
-      );
-
-      if (existingGumroadSubscription) {
-        console.log(
-          `Found existing Gumroad subscription for ${email}: ${existingGumroadSubscription.id}`
-        );
-      } else {
-        console.log(`No existing Gumroad subscription found for ${email}`);
-
-        // No existing subscription found, create one in Gumroad
-        console.log(`Creating new Gumroad subscription for ${email}...`);
-        gumroadSubscriberResult = await createSubscriber(
-          email,
-          gumroadProductId
-        );
-
-        if (gumroadSubscriberResult.success) {
-          console.log(`Successfully created Gumroad subscription for ${email}`);
-        } else {
-          console.error(
-            `Failed to create Gumroad subscription: ${gumroadSubscriberResult.message}`
-          );
-        }
-      }
-    }
-
-    // Generate a subscription ID
-    let subscriptionId;
-    if (existingGumroadSubscription) {
-      // Use the existing Gumroad subscription ID
-      subscriptionId = existingGumroadSubscription.id;
-    } else if (gumroadSubscriberResult && gumroadSubscriberResult.success) {
-      // Use the newly created Gumroad subscription ID
-      const subscriberId = gumroadSubscriberResult.subscriber.id;
-      subscriptionId = `gumroad_direct_${subscriberId}`;
-    } else {
-      // Generate a new ID for manual entry
-      const emailHash = Buffer.from(email).toString("base64").substring(0, 8);
-      subscriptionId = `gumroad_${emailHash}_${Date.now()}`;
-    }
-
-    // Create subscription object
-    const subscription = {
-      id: subscriptionId,
-      active: true,
-      type: "premium",
-      email,
-      source: existingGumroadSubscription
-        ? "gumroad_api_linked"
-        : gumroadSubscriberResult && gumroadSubscriberResult.success
-        ? "gumroad_api_created"
-        : "gumroad_manual_entry",
-      gumroadSubscriptionId: existingGumroadSubscription
-        ? existingGumroadSubscription.gumroadSubscriptionId
-        : gumroadSubscriberResult && gumroadSubscriberResult.success
-        ? gumroadSubscriberResult.subscriber.id
-        : gumroadSubscriptionId,
-      gumroadPurchaseId: existingGumroadSubscription
-        ? existingGumroadSubscription.gumroadPurchaseId
-        : null,
-      gumroadProductId: existingGumroadSubscription
-        ? existingGumroadSubscription.gumroadData?.productId
-        : gumroadSubscriberResult && gumroadSubscriberResult.success
-        ? gumroadSubscriberResult.subscriber.product_id
-        : gumroadProductId,
-      notes,
-      createdAt: existingGumroadSubscription
-        ? existingGumroadSubscription.createdAt
-        : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    // If we found an existing Gumroad subscription, copy its data
-    if (
-      existingGumroadSubscription &&
-      existingGumroadSubscription.gumroadData
-    ) {
-      subscription.gumroadData = existingGumroadSubscription.gumroadData;
-    } else if (gumroadSubscriberResult && gumroadSubscriberResult.success) {
-      // Add data from the newly created subscription
-      subscription.gumroadData = {
-        subscriptionId: gumroadSubscriberResult.subscriber.id,
-        productId: gumroadSubscriberResult.subscriber.product_id,
-        productName:
-          gumroadSubscriberResult.subscriber.product_name ||
-          "Premium Subscription",
-        price: gumroadSubscriberResult.subscriber.price_cents / 100,
-        createdAt:
-          gumroadSubscriberResult.subscriber.created_at ||
-          new Date().toISOString(),
-      };
-    }
-
-    // Save subscription
-    await subscriptionStorage.setSubscription(subscriptionId, subscription);
-    console.log(
-      `Gumroad subscription ${subscriptionId} created/linked for ${email}`
-    );
-
-    // Double-check that the subscription is properly indexed by email
-    const emailKey = `email:${email}`;
-    let emailSubscriptions =
-      subscriptionStorageModule.subscriptionCache.get(emailKey) || {};
-    emailSubscriptions[subscriptionId] = true;
-    subscriptionStorageModule.subscriptionCache.set(
-      emailKey,
-      emailSubscriptions
-    );
-    console.log(
-      `Email index updated for ${email}:`,
-      Object.keys(emailSubscriptions)
-    );
-
-    // Make sure to persist the cache to files after updating the email index
-    const { persistCacheToFiles } = require("../utils/storage");
-    await persistCacheToFiles();
-
-    // Get or create user
-    let user = await userStorage.getUser(email);
-
-    if (user) {
-      // Update existing user
-      user.subscriptionId = subscriptionId;
-      user.subscriptionType = "premium";
-      user.active = true;
-      user.updatedAt = new Date().toISOString();
-      console.log(
-        `Updated existing user ${email} with subscription ${subscriptionId}`
-      );
-    } else {
-      // Create new user
-      user = {
-        email,
-        name: email.split("@")[0],
-        subscriptionId,
-        subscriptionType: "premium",
-        active: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      console.log(
-        `Created new user ${email} with subscription ${subscriptionId}`
-      );
-    }
-
-    // Save user
-    await userStorage.setUser(email, user);
-
-    // Prepare response message
-    let message;
-    if (existingGumroadSubscription) {
-      message = "Existing Gumroad subscription linked successfully";
-    } else if (gumroadSubscriberResult && gumroadSubscriberResult.success) {
-      message = "New subscription created in Gumroad successfully";
-    } else {
-      message =
-        "Manual Gumroad subscription added locally (failed to create in Gumroad)";
-    }
-
-    res.json({
-      message,
-      subscription: {
-        ...subscription,
-        id: subscriptionId,
-      },
-      existingGumroadFound: !!existingGumroadSubscription,
-      gumroadCreated: !!(
-        gumroadSubscriberResult && gumroadSubscriberResult.success
-      ),
-      gumroadError:
-        gumroadSubscriberResult && !gumroadSubscriberResult.success
-          ? gumroadSubscriberResult.message
-          : null,
-    });
-  } catch (error) {
-    console.error("Error adding Gumroad subscription:", error);
-    res.status(500).json({
-      message: "Failed to add Gumroad subscription",
-      error: error.message,
-    });
-  }
-};
 
 /**
  * Scan for missing subscriptions
@@ -1564,8 +1159,8 @@ const scanForMissingSubscriptions = async (req, res) => {
           email: user.email,
           type: user.subscriptionType || "premium",
           active: user.active || true,
-          source: user.subscriptionId.includes("gumroad")
-            ? "gumroad"
+          source: user.subscriptionId && user.subscriptionId.includes("stripe")
+            ? "stripe"
             : "manual",
           createdAt: user.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -1622,7 +1217,7 @@ const scanForMissingSubscriptions = async (req, res) => {
               email: email,
               type: user.subscriptionType || "premium",
               active: user.active || true,
-              source: subId.includes("gumroad") ? "gumroad" : "manual",
+              source: subId && subId.includes("stripe") ? "stripe" : "manual",
               createdAt: user.createdAt || new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             };
@@ -1651,166 +1246,6 @@ const scanForMissingSubscriptions = async (req, res) => {
         sub.source &&
         (sub.source.includes("gumroad") || sub.id.includes("gumroad"))
     );
-
-    // Scan all users for Gumroad subscriptions that might not be properly tagged
-    console.log("Scanning users for potential Gumroad subscriptions...");
-    for (const user of users) {
-      if (user.subscriptionId && allSubscriptions[user.subscriptionId]) {
-        const sub = allSubscriptions[user.subscriptionId];
-
-        // Check if this might be a Gumroad subscription that's not properly tagged
-        if (
-          (!sub.source || !sub.source.includes("gumroad")) &&
-          user.subscriptionId.includes("gumroad")
-        ) {
-          console.log(
-            `Found Gumroad subscription with incorrect source tag: ${user.subscriptionId}`
-          );
-
-          // Update the subscription source
-          sub.source = "gumroad_fixed";
-          sub.updatedAt = new Date().toISOString();
-
-          // Save the updated subscription
-          await subscriptionStorage.setSubscription(user.subscriptionId, sub);
-          console.log(
-            `Fixed source tag for Gumroad subscription: ${user.subscriptionId}`
-          );
-        }
-      }
-    }
-
-    // Now fetch directly from Gumroad API
-    console.log("Fetching subscriptions directly from Gumroad API...");
-    let importedFromGumroad = 0;
-
-    try {
-      const gumroadResult = await getGumroadSubscriptions();
-
-      if (
-        gumroadResult.success &&
-        gumroadResult.subscriptions &&
-        gumroadResult.subscriptions.length > 0
-      ) {
-        console.log(
-          `Successfully fetched ${gumroadResult.subscriptions.length} subscriptions from Gumroad API`
-        );
-
-        // Create a map of existing subscriptions by email for easy lookup
-        const existingSubscriptionsByEmail = {};
-        Object.values(allSubscriptions).forEach((sub) => {
-          if (sub.email) {
-            if (!existingSubscriptionsByEmail[sub.email]) {
-              existingSubscriptionsByEmail[sub.email] = [];
-            }
-            existingSubscriptionsByEmail[sub.email].push(sub);
-          }
-        });
-
-        // Process Gumroad subscriptions
-        for (const gumroadSub of gumroadResult.subscriptions) {
-          // Check if we already have this subscription by Gumroad subscription ID
-          const existingByGumroadId = Object.values(allSubscriptions).find(
-            (sub) =>
-              sub.gumroadSubscriptionId === gumroadSub.gumroadSubscriptionId
-          );
-
-          if (existingByGumroadId) {
-            // Update existing subscription with latest data from Gumroad
-            console.log(
-              `Updating existing subscription for ${gumroadSub.email} with Gumroad data`
-            );
-            existingByGumroadId.active = gumroadSub.active;
-            existingByGumroadId.updatedAt = new Date().toISOString();
-            existingByGumroadId.gumroadData = gumroadSub.gumroadData;
-
-            // Save updated subscription
-            await subscriptionStorage.setSubscription(
-              existingByGumroadId.id,
-              existingByGumroadId
-            );
-          } else {
-            // Check if user already has a subscription by email
-            const existingSubsForEmail =
-              existingSubscriptionsByEmail[gumroadSub.email] || [];
-
-            // If user has an active subscription, update it with Gumroad data
-            const activeSubForEmail = existingSubsForEmail.find(
-              (sub) => sub.active
-            );
-
-            if (activeSubForEmail) {
-              console.log(
-                `Updating existing active subscription for ${gumroadSub.email} with Gumroad data`
-              );
-              activeSubForEmail.gumroadSubscriptionId =
-                gumroadSub.gumroadSubscriptionId;
-              activeSubForEmail.gumroadPurchaseId =
-                gumroadSub.gumroadPurchaseId;
-              activeSubForEmail.source = "gumroad_api_linked";
-              activeSubForEmail.updatedAt = new Date().toISOString();
-              activeSubForEmail.gumroadData = gumroadSub.gumroadData;
-
-              // Save updated subscription
-              await subscriptionStorage.setSubscription(
-                activeSubForEmail.id,
-                activeSubForEmail
-              );
-            } else {
-              // This is a new subscription from Gumroad, add it
-              console.log(
-                `Adding new subscription from Gumroad for ${gumroadSub.email}`
-              );
-
-              // Save the new subscription
-              await subscriptionStorage.setSubscription(
-                gumroadSub.id,
-                gumroadSub
-              );
-
-              importedFromGumroad++;
-
-              // Update user if they exist
-              const user = await userStorage.getUser(gumroadSub.email);
-              if (user) {
-                user.subscriptionId = gumroadSub.id;
-                user.subscriptionType = "premium";
-                user.active = true;
-                user.updatedAt = new Date().toISOString();
-                await userStorage.setUser(gumroadSub.email, user);
-                console.log(
-                  `Updated user ${gumroadSub.email} with Gumroad subscription`
-                );
-              } else {
-                // Create a new user for this subscription
-                const newUser = {
-                  email: gumroadSub.email,
-                  subscriptionId: gumroadSub.id,
-                  subscriptionType: "premium",
-                  active: true,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-                await userStorage.setUser(gumroadSub.email, newUser);
-                console.log(
-                  `Created new user for Gumroad subscription: ${gumroadSub.email}`
-                );
-              }
-            }
-          }
-        }
-      } else {
-        console.log(
-          "No subscriptions returned from Gumroad API or request failed"
-        );
-        if (!gumroadResult.success) {
-          console.error("Gumroad API error:", gumroadResult.message);
-        }
-      }
-    } catch (gumroadError) {
-      console.error("Error fetching subscriptions from Gumroad:", gumroadError);
-      // Continue with local subscriptions only
-    }
 
     // Get updated count of Gumroad subscriptions
     const updatedGumroadSubs = Object.values(
@@ -2000,7 +1435,6 @@ module.exports = {
   getTopVoicesStats,
   refreshTopVoices,
   addManualSubscription,
-  addGumroadSubscription,
   addStripeSubscription,
   scanForMissingSubscriptions,
   deleteSubscription,

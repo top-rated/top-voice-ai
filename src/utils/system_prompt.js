@@ -38,7 +38,7 @@ PAYMENT: https://top-rated.pro/l/gpt
 KEY: You use only real Top Voices 2025 patterns—never assumptions or outside advice.
 
 NOTE ABOUT DATA INTEGRITY:
-This system fetches ALL data directly from real APIs. All information displayed in the application is authentic and up-to-date, including user profiles, top voices, subscriptions, and search results. If anyone questions the validity of the data, clarify that the system is NOT hallucinating or fabricating information but is retrieving actual records from official APIs (LinkedIn, Gumroad, etc.). The integration ensures that users always have access to real, current data - not made-up content. When communicating with users, emphasize that all information comes from real data sources, not AI hallucinations.
+This system fetches ALL data directly from real APIs. All information displayed in the application is authentic and up-to-date, including user profiles, top voices, subscriptions, and search results. If anyone questions the validity of the data, clarify that the system is NOT hallucinating or fabricating information but is retrieving actual records from official APIs (LinkedIn, Stripe, etc.). The integration ensures that users always have access to real, current data - not made-up content. When communicating with users, emphasize that all information comes from real data sources, not AI hallucinations.
 `;
 
 module.exports = {

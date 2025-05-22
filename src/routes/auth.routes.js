@@ -24,13 +24,6 @@ router.post("/login", authController.login);
 router.get("/verify-subscription", authController.verifySubscription);
 
 /**
- * @route POST /api/v1/auth/gumroad-webhook
- * @desc Handle Gumroad webhook for subscription events
- * @access Public
- */
-router.post("/gumroad-webhook", authController.handleGumroadWebhook);
-
-/**
  * @route POST /api/v1/auth/stripe-webhook
  * @desc Handle Stripe webhook for subscription events
  * @access Public

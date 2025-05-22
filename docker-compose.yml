@@ -1,0 +1,23 @@
+version: '3.8' # Specifies the Docker Compose file format version
+
+services:
+  app: # Defines a service named 'app'
+    build:
+      context: . # The build context is the current directory
+      dockerfile: Dockerfile # Specifies the Dockerfile to use
+    ports:
+      - "3000:3000" # Maps port 3000 on the host to port 3000 in the container
+    volumes:
+      # Mounts the current directory into the container for live code updates during development
+      # This means changes in your local code will be reflected inside the container
+      - .:/usr/src/app
+      # Prevents the node_modules directory in the container (installed during build)
+      # from being overwritten by a potentially existing node_modules on the host
+      - /usr/src/app/node_modules
+    env_file:
+      - .env # Loads environment variables from a .env file in the project root
+    environment:
+      # You can also set or override environment variables here
+      - NODE_ENV=development # Example: sets Node environment to development
+    container_name: top-voice-ai-app # Assigns a specific name to the container
+    restart: unless-stopped # Configures the container to restart unless manually stopped

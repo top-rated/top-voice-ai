@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { userStorage, subscriptionStorage } = require("../utils/storage");
-const { verifySubscriptionByEmail } = require("../utils/gumroad");
 const {
   verifySubscription: verifyStripeSubscription,
 } = require("../utils/stripe");
@@ -167,34 +166,6 @@ const verifySubscription = async (req, res) => {
     }
     // --- END MODIFICATION ---
 
-    // If not verified in our database OR via local manual check, check directly with Gumroad
-    if (!hasValidSubscription && subscription.email) {
-      // Verify with Gumroad API
-      const verificationResult = await verifySubscriptionByEmail(
-        subscription.email
-      );
-
-      if (verificationResult.success) {
-        // Update user data with subscription information
-        if (user) {
-          user.subscription = {
-            verified: true,
-            verifiedAt: new Date().toISOString(),
-            gumroadData: verificationResult.subscription,
-          };
-          user.subscriptionType = "premium";
-          await userStorage.setUser(subscription.email, user);
-        }
-
-        // Update subscription
-        subscription.type = "premium";
-        subscription.active = true;
-        subscription.updatedAt = new Date().toISOString();
-        await subscriptionStorage.setSubscription(subscriptionId, subscription);
-
-        hasValidSubscription = true;
-      }
-    }
 
     // If still not verified, check for Stripe subscriptions
     if (!hasValidSubscription && subscription.email) {
@@ -273,185 +244,6 @@ const verifySubscription = async (req, res) => {
   }
 };
 
-/**
- * Handle Gumroad webhook for subscription events
- */
-const handleGumroadWebhook = async (req, res) => {
-  try {
-    console.log("Received Gumroad webhook:", JSON.stringify(req.body, null, 2));
-    const { event, purchase } = req.body;
-
-    if (!event || !purchase) {
-      console.error("Invalid webhook payload:", req.body);
-      return res.status(400).json({ message: "Invalid webhook payload" });
-    }
-
-    const { email, product_id, subscription_id, subscription_cancelled_at } =
-      purchase;
-
-    if (!email) {
-      console.error("Email missing from purchase data:", purchase);
-      return res.status(400).json({ message: "Email is required" });
-    }
-
-    // Verify this is for our product
-    if (product_id !== process.env.GUMROAD_PRODUCT_ID) {
-      console.log(`Ignoring webhook for different product: ${product_id}`);
-      return res.status(200).json({ message: "Not our product" });
-    }
-
-    // Find user by email
-    const user = await userStorage.getUser(email);
-    console.log(`User found for ${email}:`, user ? "Yes" : "No");
-
-    // Generate a premium subscription ID that includes the email for easier tracking
-    // Use a deterministic ID based on email to avoid creating multiple subscriptions
-    const emailHash = Buffer.from(email).toString("base64").substring(0, 8);
-    const subscriptionId = `premium_${emailHash}_${Date.now()}`;
-
-    // Update subscription status based on event
-    if (event === "subscription_created" || event === "subscription_updated") {
-      console.log(`Processing ${event} for ${email}`);
-
-      // Create subscription data
-      const subscriptionData = {
-        id: subscriptionId,
-        active: true,
-        type: "premium",
-        email,
-        gumroadSubscriptionId: subscription_id,
-        updatedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        source: "gumroad_webhook",
-        purchaseData: {
-          event,
-          productId: product_id,
-          timestamp: new Date().toISOString(),
-        },
-      };
-
-      // Store subscription info
-      await subscriptionStorage.setSubscription(
-        subscriptionId,
-        subscriptionData
-      );
-      console.log(
-        `Subscription ${subscriptionId} created/updated for ${email}`
-      );
-
-      // Update user if exists, or create new
-      if (user) {
-        user.subscriptionId = subscriptionId;
-        user.subscriptionType = "premium";
-        user.active = true; // Ensure user is active
-        user.updatedAt = new Date().toISOString();
-        // Add subscription verification data
-        user.subscription = {
-          verified: true,
-          verifiedAt: new Date().toISOString(),
-          gumroadData: {
-            event,
-            productId: product_id,
-            subscriptionId: subscription_id,
-            timestamp: new Date().toISOString(),
-          },
-        };
-        await userStorage.setUser(email, user);
-        console.log(
-          `Updated existing user ${email} with subscription ${subscriptionId}`
-        );
-      } else {
-        // Create new user
-        const newUser = {
-          email,
-          name: email.split("@")[0],
-          subscriptionId,
-          subscriptionType: "premium",
-          active: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          subscription: {
-            verified: true,
-            verifiedAt: new Date().toISOString(),
-            gumroadData: {
-              event,
-              productId: product_id,
-              subscriptionId: subscription_id,
-              timestamp: new Date().toISOString(),
-            },
-          },
-        };
-        await userStorage.setUser(email, newUser);
-        console.log(
-          `Created new user ${email} with subscription ${subscriptionId}`
-        );
-      }
-
-      // Double-check that the subscription is properly indexed by email
-      const emailKey = `email:${email}`;
-      let emailSubscriptions =
-        subscriptionStorage.subscriptionCache.get(emailKey) || {};
-      emailSubscriptions[subscriptionId] = true;
-      subscriptionStorage.subscriptionCache.set(emailKey, emailSubscriptions);
-
-      console.log(
-        `Email index updated for ${email}:`,
-        Object.keys(emailSubscriptions)
-      );
-    } else if (event === "subscription_cancelled") {
-      console.log(`Processing subscription_cancelled for ${email}`);
-
-      // Check if subscription is actually cancelled
-      if (subscription_cancelled_at) {
-        // Mark all subscriptions for this email as inactive
-        const existingSubscriptions =
-          await subscriptionStorage.getSubscriptionsForEmail(email);
-
-        console.log(
-          `Found ${
-            Object.keys(existingSubscriptions).length
-          } subscriptions for ${email}`
-        );
-
-        for (const subId in existingSubscriptions) {
-          existingSubscriptions[subId].active = false;
-          existingSubscriptions[subId].cancelledAt = new Date(
-            subscription_cancelled_at * 1000
-          ).toISOString();
-          await subscriptionStorage.setSubscription(
-            subId,
-            existingSubscriptions[subId]
-          );
-          console.log(`Marked subscription ${subId} as inactive`);
-        }
-
-        // Update user subscription type
-        if (user) {
-          user.subscriptionType = "free";
-          user.updatedAt = new Date().toISOString();
-          // Clear subscription verification data
-          if (user.subscription) {
-            user.subscription.verified = false;
-            user.subscription.cancelledAt = new Date().toISOString();
-          }
-          await userStorage.setUser(email, user);
-          console.log(`Updated user ${email} to free tier`);
-        }
-      }
-    }
-
-    res.status(200).json({
-      message: "Webhook processed successfully",
-      subscriptionId,
-      email,
-    });
-  } catch (error) {
-    console.error("Error processing Gumroad webhook:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to process webhook", error: error.message });
-  }
-};
 
 /**
  * Get subscription status by ID
@@ -594,66 +386,9 @@ const checkSubscriptionByEmail = async (req, res) => {
       return res.json({ success: true, ...responseDetails });
     }
 
-    // 2. If not found locally, check Gumroad
-    console.log(`No active local subscription for ${email}, checking Gumroad.`);
-    const gumroadResult = await verifySubscriptionByEmail(email);
-
-    if (
-      gumroadResult.success &&
-      gumroadResult.subscription &&
-      gumroadResult.subscription.active
-    ) {
-      console.log(`Found active Gumroad subscription for ${email}`);
-      const gumroadSubData = gumroadResult.subscription;
-      const gumroadSubscriptionId =
-        gumroadSubData.subscription_id ||
-        `gumroad_${email.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`;
-
-      activeSubscriptionData = {
-        id: gumroadSubscriptionId,
-        active: true,
-        type: "premium",
-        email: email,
-        source: "gumroad",
-        gumroadData: gumroadSubData,
-        createdAt: gumroadSubData.created_at || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      if (!user) {
-        user = {
-          email,
-          name: gumroadSubData.subscriber_name || email.split("@")[0],
-          subscriptionId: gumroadSubscriptionId,
-          createdAt: new Date().toISOString(),
-        };
-      }
-      user.subscriptionId = gumroadSubscriptionId;
-      user.subscriptionType = "premium";
-      user.subscription = {
-        verified: true,
-        verifiedAt: new Date().toISOString(),
-        gumroadData: gumroadSubData,
-      };
-      await userStorage.setUser(email, user);
-      await subscriptionStorage.setSubscription(
-        gumroadSubscriptionId,
-        activeSubscriptionData
-      );
-
-      responseDetails = {
-        active: true,
-        type: "premium",
-        source: "gumroad",
-        email: email,
-        features: getFeaturesByType("premium"),
-      };
-      return res.json({ success: true, ...responseDetails });
-    }
-
-    // 3. If not found in Gumroad, check for Stripe subscriptions
+    // 2. If not found locally, check for Stripe subscriptions
     console.log(
-      `No active Gumroad subscription for ${email}, checking Stripe.`
+      `No active local subscription for ${email}, checking Stripe.`
     );
 
     // Check for Stripe subscriptions in our system
@@ -722,7 +457,7 @@ const checkSubscriptionByEmail = async (req, res) => {
 
     // 4. If not found in any source
     console.log(
-      `No active subscription found for ${email} locally, via Gumroad, or via Stripe.`
+      `No active subscription found for ${email} locally or via Stripe.`
     );
     return res.status(404).json({
       success: false,
@@ -1055,7 +790,6 @@ module.exports = {
   register,
   login,
   verifySubscription,
-  handleGumroadWebhook,
   handleStripeWebhook,
   getSubscriptionStatus,
   getFeaturesByType,

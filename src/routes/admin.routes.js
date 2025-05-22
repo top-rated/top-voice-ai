@@ -154,17 +154,6 @@ router.post(
 );
 
 /**
- * @route POST /api/v1/admin/subscriptions/gumroad
- * @desc Add a Gumroad subscription for a user
- * @access Admin only
- */
-router.post(
-  "/subscriptions/gumroad",
-  verifyAdmin,
-  adminController.addGumroadSubscription
-);
-
-/**
  * @route POST /api/v1/admin/subscriptions/stripe
  * @desc Add a Stripe subscription for a user
  * @access Admin only

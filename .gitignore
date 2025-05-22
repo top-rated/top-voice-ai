@@ -10,11 +10,12 @@ feedback.md
 test-keys.md
 /langgraph_docs/
 /.windsurf/
+/unipile_docs/
 
 keys.md
-.env
 /gpts/
 test.env
 gpts.md
+.env
 
 project_details.md

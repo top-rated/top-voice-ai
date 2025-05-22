@@ -84,7 +84,7 @@ const directSearch = async (req, res) => {
       return res.status(403).json({
         message: "This feature requires a subscription",
         subscriptionUrl:
-          "https://linkedingpt.gumroad.com/l/subscribe?wanted=true",
+          "/account/subscribe", // Placeholder for Stripe subscription page
       });
     }
 

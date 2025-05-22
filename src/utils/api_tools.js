@@ -318,28 +318,7 @@ function createAuthAndLicenseTools() {
       }
     ),
 
-    tool(
-      async (input) => {
-        try {
-          const response = await axios.post(`${BASE_URL}/license/verify`, {
-            email: input.email,
-          });
-          return JSON.stringify(response.data);
-        } catch (error) {
-          return `Error verifying subscription: ${error.message}`;
-        }
-      },
-      {
-        name: "verify_subscription",
-        description:
-          "Verify a Gumroad subscription using email, enables premium features.",
-        schema: z.object({
-          email: z
-            .string()
-            .describe("User's email address to verify subscription"),
-        }),
-      }
-    ),
+
 
     tool(
       async (input) => {
@@ -354,9 +333,79 @@ function createAuthAndLicenseTools() {
       },
       {
         name: "check_subscription",
-        description: "Check if a user has a valid subscription.",
+        description: "Check if a user has a valid subscription (checks local DB, potentially updated by Stripe webhooks).",
         schema: z.object({
           email: z.string().describe("User's email to check subscription for"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          const response = await axios.post(`${BASE_URL}/stripe/customers`, {
+            email: input.email,
+            name: input.name,
+          });
+          return JSON.stringify(response.data);
+        } catch (error) {
+          return `Error creating Stripe customer: ${error.message}`;
+        }
+      },
+      {
+        name: "create_stripe_customer",
+        description: "Creates a new customer in Stripe using their email and optionally a name.",
+        schema: z.object({
+          email: z.string().email().describe("Customer's email address"),
+          name: z.string().optional().describe("Customer's full name"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          const response = await axios.post(`${BASE_URL}/stripe/invoices/create-and-pay`, {
+            email: input.email,
+            name: input.name,
+            payment_method_id: input.payment_method_id,
+          });
+          return JSON.stringify(response.data);
+        } catch (error) {
+          return `Error creating and paying Stripe invoice: ${error.message}`;
+        }
+      },
+      {
+        name: "create_and_pay_stripe_invoice_for_product",
+        description: "Creates a Stripe customer (if not existing), creates an invoice for the standard product, and attempts to pay it immediately with the provided payment method. No emails will be sent by Stripe.",
+        schema: z.object({
+          email: z.string().email().describe("Customer's email address"),
+          name: z.string().optional().describe("Customer's full name (for new customer creation)"),
+          payment_method_id: z.string().describe("Stripe PaymentMethod ID (e.g., pm_xxxx)"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          const response = await axios.post(`${BASE_URL}/stripe/subscriptions/create`, {
+            email: input.email,
+            name: input.name,
+            payment_method_id: input.payment_method_id,
+          });
+          return JSON.stringify(response.data);
+        } catch (error) {
+          return `Error creating Stripe subscription: ${error.message}`;
+        }
+      },
+      {
+        name: "create_stripe_subscription_for_product",
+        description: "Creates a Stripe customer (if not existing), and sets up a subscription for the standard product using the provided payment method. No emails will be sent by Stripe for initial setup.",
+        schema: z.object({
+          email: z.string().email().describe("Customer's email address"),
+          name: z.string().optional().describe("Customer's full name (for new customer creation)"),
+          payment_method_id: z.string().describe("Stripe PaymentMethod ID (e.g., pm_xxxx)"),
         }),
       }
     ),
