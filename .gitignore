@@ -16,6 +16,7 @@ keys.md
 /gpts/
 test.env
 gpts.md
+system_prompt.md
 .env
 
 project_details.md
