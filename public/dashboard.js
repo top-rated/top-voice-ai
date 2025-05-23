@@ -96,6 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiCallsStatElement = document.getElementById('api-calls-stat');
     const recentActivityLogElement = document.getElementById('recent-activity-log');
 
+    console.log('Fetching dashboard data from /api/v1/admin/stats');
+    console.log('Admin token exists:', !!adminToken);
+
     try {
       const response = await fetch('/api/v1/admin/stats', {
         headers: {
@@ -141,8 +144,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
-      if (recentActivityLogElement) recentActivityLogElement.textContent = 'Failed to load dashboard data.';
-      // Optionally update stat elements to show an error state
+      
+      // Log detailed error information
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+      }
+      
+      if (recentActivityLogElement) {
+        recentActivityLogElement.textContent = 'Failed to load dashboard data. Check console for details.';
+      }
+      
+      // Update stat elements to show an error state with more info
+      const errorMessage = error.message || 'Error';
       if (totalUsersStatElement) totalUsersStatElement.textContent = 'Error';
       if (activeSubscriptionsStatElement) activeSubscriptionsStatElement.textContent = 'Error';
       if (apiCallsStatElement) apiCallsStatElement.textContent = 'Error';
@@ -204,30 +227,78 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderStripeSubscriptionRow(sub) {
+    // Extract customer information - using the subscription object's direct properties
+    const customerId = sub.customer_id || sub.customer || 'N/A';
     const customerName = sub.customer_name || 'N/A';
     const customerEmail = sub.customer_email || 'N/A';
-    const planName = sub.plan_name || 'N/A';
-    const amount = sub.plan_amount ? `${(sub.plan_amount / 100).toFixed(2)} ${sub.plan_currency.toUpperCase()}` : 'N/A';
-    const status = sub.status ? sub.status.charAt(0).toUpperCase() + sub.status.slice(1) : 'N/A';
-    const periodStart = sub.current_period_start ? new Date(sub.current_period_start * 1000).toLocaleDateString() : 'N/A';
-    const periodEnd = sub.current_period_end ? new Date(sub.current_period_end * 1000).toLocaleDateString() : 'N/A';
-    const created = sub.created ? new Date(sub.created * 1000).toLocaleDateString() : 'N/A';
+    
+    // Extract plan information - using the subscription object's direct properties
+    const planName = sub.plan_name || sub.plan?.id || 'N/A';
+    const planAmount = sub.plan_amount || sub.plan?.amount || 0;
+    const planCurrency = sub.plan_currency || sub.plan?.currency || '';
+    const amount = planAmount ? `${(planAmount / 100).toFixed(2)} ${planCurrency.toUpperCase()}` : 'N/A';
+    
+    // Format status
+    const status = sub.status ? 
+      sub.status.charAt(0).toUpperCase() + sub.status.slice(1).toLowerCase() : 
+      'N/A';
+    
+    // Format dates - handle both string and timestamp formats
+    const formatDate = (dateValue) => {
+      if (!dateValue) return 'N/A';
+      try {
+        // Handle both string dates and timestamps
+        const date = typeof dateValue === 'string' ? new Date(dateValue) : new Date(dateValue * 1000);
+        if (isNaN(date.getTime())) return 'Invalid Date';
+        
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      } catch (e) {
+        console.error('Error formatting date:', e, 'Value:', dateValue);
+        return 'Invalid Date';
+      }
+    };
+    
+    // Handle different date formats in the subscription object
+    const periodStart = formatDate(sub.current_period_start || sub.current_period_start_date);
+    const periodEnd = formatDate(sub.current_period_end || sub.current_period_end_date);
+    const createdDate = formatDate(sub.created || sub.created_date);
 
+    // Get plan interval information
+    const planInterval = sub.plan_interval || sub.plan?.interval || '';
+    const planIntervalCount = sub.plan_interval_count || sub.plan?.interval_count || 1;
+    
     return `
-      <tr>
-        <td class="px-6 py-4 whitespace-nowrap">
-          <div class="text-sm font-medium text-gray-100">${customerName}</div>
-          <div class="text-xs text-gray-400">${customerEmail} (${sub.customer_id || 'No ID'})</div>
+      <tr class="bg-dark-800 border-b border-dark-700 hover:bg-dark-700">
+        <td class="px-6 py-4">
+          <div class="font-medium text-white">${customerName}</div>
+          <div class="text-sm text-gray-400">${customerEmail || customerId}</div>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${planName}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${amount}</td>
-        <td class="px-6 py-4 whitespace-nowrap">
-          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${sub.status === 'active' ? 'bg-green-500 text-green-100' : 'bg-yellow-500 text-yellow-100'} ">
+        <td class="px-6 py-4">
+          <div class="font-medium text-white">${planName}</div>
+          <div class="text-sm text-gray-400">${sub.plan_id || 'N/A'}</div>
+        </td>
+        <td class="px-6 py-4">
+          <div class="font-medium text-white">${amount}</div>
+          <div class="text-sm text-gray-400">
+            ${planInterval ? `${planInterval}${planIntervalCount > 1 ? ` (Every ${planIntervalCount} ${planInterval}s)` : ''}` : ''}
+          </div>
+        </td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 text-xs font-medium rounded-full ${status.toLowerCase() === 'active' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}">
             ${status}
           </span>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${periodStart} - ${periodEnd}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${created}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-white">${periodStart} - ${periodEnd}</div>
+          <div class="text-xs text-gray-400">
+            ${sub.current_period_end ? `Renews on ${formatDate(sub.current_period_end)}` : ''}
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-gray-300">${createdDate}</td>
       </tr>
     `;
   }
@@ -404,6 +475,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Initialize the dashboard view and fetch data
+  async function initializeDashboard() {
+    console.log('Initializing dashboard...');
+    await handleNavigation();
+    
+    // Fetch dashboard data after navigation is handled
+    console.log('Fetching dashboard data...');
+    try {
+      await fetchDashboardData();
+      console.log('Dashboard data fetched successfully');
+    } catch (error) {
+      console.error('Error initializing dashboard:', error);
+    }
+  }
+
+  // Set up event listeners
+  window.addEventListener('load', initializeDashboard);
+  window.addEventListener('hashchange', handleNavigation);
+
   // Event Delegation for User Table Actions (Edit/Delete)
   const usersTableBody = document.getElementById('users-table-body');
   if (usersTableBody) {
@@ -527,38 +617,67 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentSections = document.querySelectorAll('main .content-section');
 
   function updateView(targetId) {
+    console.log('Updating view to:', targetId);
+    
     // Hide all content sections
     contentSections.forEach(section => {
       section.classList.add('hidden');
     });
 
     // Show the target section
+    const targetSection = document.getElementById(targetId);
+    if (targetSection) {
+      targetSection.classList.remove('hidden');
+      
+      // Load section-specific data
+      if (targetId === 'users-section') {
+        console.log('Loading users data...');
+        fetchAndDisplayUsers();
+      } else if (targetId === 'subscriptions-section') {
+        console.log('Loading subscriptions data...');
+        fetchStripeDashboardData();
+      } else if (targetId === 'dashboard-section') {
+        console.log('Refreshing dashboard data...');
+        fetchDashboardData();
+      }
+    } else {
+      console.error('Target section not found:', targetId);
+    }
+
     // Update active states for navigation links
     navLinks.forEach(link => {
-      link.classList.remove('bg-brand-blue', 'text-white');
-      link.classList.add('hover:bg-dark-700', 'text-gray-200'); // Ensure default non-active styles
-      if (link.dataset.target === targetId) {
-        link.classList.add('bg-brand-blue', 'text-white');
-        link.classList.remove('hover:bg-dark-700', 'text-gray-200');
-      }
+      const isActive = link.getAttribute('data-target') === targetId;
+      link.classList.toggle('bg-brand-blue', isActive);
+      link.classList.toggle('text-white', isActive);
+      link.classList.toggle('hover:bg-dark-700', !isActive);
+      link.classList.toggle('text-gray-200', !isActive);
     });
   }
 
   function handleNavigation() {
     let targetId = window.location.hash.substring(1); // Get 'users' from '#users'
-    if (!targetId) {
-      targetId = 'dashboard'; // Default to dashboard
+    console.log('Handling navigation for hash:', targetId);
+    
+    if (!targetId || targetId === 'dashboard') {
+      // Default to dashboard if no hash or hash is just #dashboard
+      updateView('dashboard-section');
+      if (!window.location.hash) {
+        window.history.replaceState(null, null, '#dashboard');
+      }
+      return;
     }
-    // Ensure the targetId for the section includes '-section'
+    
+    // For other hashes, ensure the targetId for the section includes '-section'
     const sectionId = targetId.endsWith('-section') ? targetId : targetId + '-section';
     
     const availableSections = Array.from(contentSections).map(s => s.id);
-    if (availableSections.includes(sectionId)){
-        updateView(sectionId);
+    if (availableSections.includes(sectionId)) {
+      updateView(sectionId);
     } else {
-        // Fallback to dashboard if the hash is invalid or section doesn't exist
-        updateView('dashboard-section');
-        window.location.hash = '#dashboard'; // Correct the hash
+      // Fallback to dashboard if the hash is invalid or section doesn't exist
+      console.warn('Invalid section ID, falling back to dashboard:', sectionId);
+      updateView('dashboard-section');
+      window.history.replaceState(null, null, '#dashboard');
     }
   }
 
