@@ -143,7 +143,7 @@ app.get('/payment-cancelled', (req, res) => {
 // chat route
 app.post("/api/v1/chat", async (req, res) => {
   const { threadId, query } = req.body;
-const { sendUnipileMessageViaChatbot } = require('./services/unipile_chat_service'); // Added Unipile service
+
   console.log(`Chat request received - ThreadID: ${threadId}, Query: ${query}`);
 
   // Set headers for SSE
@@ -184,32 +184,7 @@ const { sendUnipileMessageViaChatbot } = require('./services/unipile_chat_servic
       }
       console.log("-----\n");
 
-      // Check for Unipile tool call
-      if (msg?.tool_calls?.length > 0) {
-        for (const toolCall of msg.tool_calls) {
-          if (toolCall.name === 'send_unipile_message') { // Or your specific tool name
-            console.log("Processing Unipile tool call:", toolCall.arguments);
-            try {
-              const unipileResult = await sendUnipileMessageViaChatbot(toolCall.arguments);
-              const unipileEvent = {
-                type: unipileResult.success ? "tool_result_unipile_sent" : "tool_result_unipile_failed",
-                data: unipileResult.success ? `Unipile message sent: ${JSON.stringify(unipileResult.data)}` : `Unipile error: ${unipileResult.error}`,
-                tool_call_id: toolCall.id // Include tool_call_id if your agent expects it for tool results
-              };
-              res.write(`data: ${JSON.stringify(unipileEvent)}\n\n`);
-              console.log(`Sent Unipile result event: ${JSON.stringify(unipileEvent)}`);
-            } catch (unipileError) {
-              console.error("Error calling Unipile service:", unipileError);
-              const unipileErrorEvent = { 
-                type: "tool_result_unipile_failed", 
-                data: `Internal error processing Unipile request: ${unipileError.message}`,
-                tool_call_id: toolCall.id
-              };
-              res.write(`data: ${JSON.stringify(unipileErrorEvent)}\n\n`);
-            }
-          }
-        }
-      }
+      
       
     }
   } catch (error) {
@@ -223,6 +198,16 @@ const { sendUnipileMessageViaChatbot } = require('./services/unipile_chat_servic
     res.end(); // End the SSE stream
   }
 });
+
+//linkedin page route
+
+app.post("api/v1/linked", async (req,res)=>{
+  const { threadId, query } = req.body;
+
+  const response = await processQuery(threadId, query);
+
+  res.json(response);
+})
 
 // Error handling middleware
 app.use((err, req, res, next) => {
