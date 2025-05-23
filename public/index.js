@@ -248,10 +248,10 @@ document.addEventListener("DOMContentLoaded", function () {
         historyItem.className = `flex-grow text-left px-3 py-2 rounded-md flex items-center text-sm font-medium min-w-0 ${
           threadId === currentThreadId
             ? "bg-white/10 text-blue-300"
-            : "text-gray-300 hover:bg-white/5 hover:text-blue-300"
+            : "text-white hover:bg-white/5 hover:text-blue-300"
         } transition-colors`;
         historyItem.innerHTML = `
-          <span class="icon-comment w-4 h-4 mr-2 flex-shrink-0 text-gray-400 flex items-center justify-center"></span>
+          <span class="icon-comment w-4 h-4 mr-2 flex-shrink-0 text-white flex items-center justify-center"></span>
           <span class="truncate w-full">${escapeHtml(title)}</span>
         `;
 
@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create delete button
         const deleteButton = document.createElement("button");
         deleteButton.className =
-          "p-1 ml-1 flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors";
+          "p-1 ml-1 flex-shrink-0 text-white hover:text-red-500 transition-colors";
         deleteButton.innerHTML = `<span class="icon-times"></span>`;
         deleteButton.title = "Delete this chat";
 
@@ -282,8 +282,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create mini sidebar history item (only show first 5 for space)
         if (index < 5) {
           const miniHistoryItem = document.createElement("button");
-          miniHistoryItem.className = `mini-button ${
-            threadId === currentThreadId ? "active" : ""
+          miniHistoryItem.className = `mini-button text-white ${
+            threadId === currentThreadId ? "bg-[#303030]" : "hover:bg-[#303030]"
           }`;
           miniHistoryItem.title = title;
           miniHistoryItem.innerHTML = `<span class="icon-comment"></span>`;
@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Create message content container
     const contentDiv = document.createElement("div");
-    contentDiv.className = "rounded-lg p-3 flex-grow markdown";
+    contentDiv.className = "bg-[#303030] rounded-lg p-3 flex-grow markdown";
     
     // Create text content area for actual message content
     const textContent = document.createElement("div");

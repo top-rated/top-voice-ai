@@ -51,4 +51,72 @@ input:focus {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-} 
+}
+
+/* Appended for 3D Welcome Text Animation */
+
+.welcome-text-anim-container {
+    position: relative; /* Establishes a positioning context for absolute children */
+    width: 100%;
+    /* height: 60px; /* Set inline in HTML, or define here. Adjust as needed. */
+    perspective: 600px; /* Creates the 3D space. Adjust for more/less dramatic effect. */
+    overflow: hidden; /* Clips text animating outside its bounds */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-text-item {
+    position: absolute; /* Allows items to overlap and be animated in the same space */
+    top: 50%;
+    left: 0; 
+    width: 100%; 
+    transform: translateY(-50%); /* Vertically center based on its own height */
+    color: white;
+    font-size: 0.875rem; /* Tailwind's text-sm equivalent (14px) */
+    line-height: 1.25rem; /* Tailwind's text-sm line-height (20px) */
+    text-align: center;
+    opacity: 0; /* Start invisible */
+    transform-origin: center center; /* Animation transforms originate from the center */
+    
+    animation-name: textCycle;
+    animation-duration: 9s; /* Total duration for one item's full cycle (3s per item * 3 items) */
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
+/* Stagger the animation for each text item */
+.welcome-text-item:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.welcome-text-item:nth-child(2) {
+    animation-delay: 3s; /* Start 3s after the first one */
+}
+
+.welcome-text-item:nth-child(3) {
+    animation-delay: 6s; /* Start 6s after the first one */
+}
+
+@keyframes textCycle {
+    0% { /* Start of cycle: item is above, rotated back, invisible */
+        transform: translateY(-50%) rotateX(90deg) translateZ(50px);
+        opacity: 0;
+    }
+    5% { /* Fully entered and visible at the center */
+        transform: translateY(0) rotateX(0deg) translateZ(0);
+        opacity: 1;
+    }
+    33% { /* Still visible at the center, just before starting to exit */
+        transform: translateY(0) rotateX(0deg) translateZ(0);
+        opacity: 1;
+    }
+    38% { /* Fully exited: item is below, rotated forward, invisible */
+        transform: translateY(50%) rotateX(-90deg) translateZ(50px);
+        opacity: 0;
+    }
+    100% { /* Remainder of the cycle, item stays invisible and out (below) */
+        transform: translateY(50%) rotateX(-90deg) translateZ(50px);
+        opacity: 0;
+    }
+}

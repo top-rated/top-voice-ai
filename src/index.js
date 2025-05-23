@@ -91,7 +91,6 @@ app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
 
 
-
 // Root route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"));

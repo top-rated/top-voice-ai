@@ -4,9 +4,10 @@
     "name": "Rahees Ahmed",
     "stripeCustomerId": "cus_SMOcRKXGTAacau",
     "active": true,
-    "subscriptionType": "premium",
+    "subscriptionType": "Stripe: Premium",
     "createdAt": "2025-05-22T20:34:31.000Z",
-    "updatedAt": "2025-05-22T20:34:31.000Z"
+    "updatedAt": "2025-05-23T18:37:22.134Z",
+    "adminNotes": ""
   },
   "user2@example.com": {
     "email": "user2@example.com",

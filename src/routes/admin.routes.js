@@ -175,4 +175,11 @@ router.post(
   adminController.scanForMissingSubscriptions
 );
 
+/**
+ * @route GET /api/v1/admin/stripe-dashboard
+ * @desc Get Stripe balance and subscription data for admin dashboard
+ * @access Admin only
+ */
+router.get("/stripe-dashboard", verifyAdmin, adminController.getStripeDashboardData);
+
 module.exports = router;

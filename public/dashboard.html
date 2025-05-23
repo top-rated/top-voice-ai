@@ -89,9 +89,11 @@
           <h3 class="text-xl font-semibold text-white mb-2">Active Subscriptions</h3>
           <p id="active-subscriptions-stat" class="text-4xl font-bold text-brand-indigo">--</p>
         </div>
+        
         <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
-          <h3 class="text-xl font-semibold text-white mb-2">API Calls (24h)</h3>
-          <p id="api-calls-stat" class="text-4xl font-bold text-gray-300">--</p>
+          <h3 class="text-xl font-semibold text-white mb-2">Stripe Total Revenue</h3>
+          <p id="stripe-total-revenue-stat" class="text-4xl font-bold text-green-500">--</p>
+          <p id="stripe-revenue-status" class="text-xs text-gray-400 mt-1"></p> 
         </div>
       </div>
       <div class="mt-10 bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
@@ -146,9 +148,52 @@
       <header class="mb-8">
         <h2 class="text-3xl font-semibold text-white">Subscription Management</h2>
       </header>
-      <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
-        <p class="text-gray-300">Subscriptions content will go here. This section will list subscriptions and allow management.</p>
-        <!-- Placeholder for subscription table or list -->
+      <!-- Add Manual Subscription Form -->
+      <div class="mb-8 bg-dark-700 p-6 rounded-lg shadow-md border border-gray-600">
+        <h3 class="text-xl font-semibold text-white mb-4">Add Manual Subscription</h3>
+        <form id="manual-subscription-form">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="manual-sub-email" class="block text-sm font-medium text-gray-300 mb-1">User Email</label>
+              <input type="email" id="manual-sub-email" name="email" required
+                     class="w-full bg-dark-800 border border-gray-600 text-white rounded-md p-2 focus:ring-brand-blue focus:border-brand-blue">
+            </div>
+            <div>
+              <label for="manual-sub-type" class="block text-sm font-medium text-gray-300 mb-1">Subscription Type</label>
+              <input type="text" id="manual-sub-type" name="type" value="premium"
+                     class="w-full bg-dark-800 border border-gray-600 text-white rounded-md p-2 focus:ring-brand-blue focus:border-brand-blue">
+            </div>
+          </div>
+          <div class="mb-4">
+            <label for="manual-sub-notes" class="block text-sm font-medium text-gray-300 mb-1">Notes (Optional)</label>
+            <textarea id="manual-sub-notes" name="notes" rows="3"
+                      class="w-full bg-dark-800 border border-gray-600 text-white rounded-md p-2 focus:ring-brand-blue focus:border-brand-blue"></textarea>
+          </div>
+          <button type="submit"
+                  class="bg-brand-blue hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out">
+            Add Subscription
+          </button>
+          <div id="manual-sub-message" class="mt-3 text-sm"></div>
+        </form>
+      </div>
+
+      <div class="bg-dark-800 rounded-lg shadow-lg border border-gray-700 overflow-x-auto">
+        <h3 class="text-xl font-semibold text-white p-4">Stripe Subscriptions</h3>
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-dark-700">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Customer</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Plan</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Current Period</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Created</th>
+            </tr>
+          </thead>
+          <tbody id="stripe-subscriptions-table-body" class="bg-dark-800 divide-y divide-gray-700">
+            <tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Loading Stripe subscriptions...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 

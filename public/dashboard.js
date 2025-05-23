@@ -154,6 +154,84 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentUserSearchTerm = '';
   let userSearchTimeout = null;
 
+  // --- Stripe Dashboard Data Functions ---
+  async function fetchStripeDashboardData() {
+    const stripeRevenueStatElement = document.getElementById('stripe-total-revenue-stat');
+    const stripeRevenueStatusElement = document.getElementById('stripe-revenue-status');
+    const stripeSubscriptionsTableBody = document.getElementById('stripe-subscriptions-table-body');
+
+    try {
+      const result = await api.get('/api/v1/admin/stripe-dashboard');
+      console.log('Stripe Dashboard Data Result:', result);
+
+      if (result.success) {
+        const { balance, subscriptions } = result;
+
+        // Update Stripe Total Revenue
+        if (stripeRevenueStatElement) {
+          if (balance.success && balance.data && balance.data.available) {
+            // Assuming balance.data.available is an array of balances, sum them up or take the primary currency
+            // This needs adjustment based on the actual structure of mcp2_retrieve_balance output if it ever works
+            const totalRevenue = balance.data.available.reduce((acc, bal) => acc + bal.amount, 0);
+            stripeRevenueStatElement.textContent = `${(totalRevenue / 100).toFixed(2)} ${balance.data.available[0]?.currency.toUpperCase() || ''}`;
+            if (stripeRevenueStatusElement) stripeRevenueStatusElement.textContent = 'Last updated: Now';
+          } else {
+            stripeRevenueStatElement.textContent = 'N/A';
+            if (stripeRevenueStatusElement) stripeRevenueStatusElement.textContent = balance.message || 'Could not retrieve revenue.';
+          }
+        }
+
+        // Update Stripe Subscriptions Table
+        if (stripeSubscriptionsTableBody) {
+          if (Array.isArray(subscriptions) && subscriptions.length > 0) {
+            stripeSubscriptionsTableBody.innerHTML = subscriptions.map(renderStripeSubscriptionRow).join('');
+          } else {
+            stripeSubscriptionsTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">No Stripe subscriptions found or data is unavailable.</td></tr>';
+          }
+        }
+      } else {
+        if (stripeRevenueStatElement) stripeRevenueStatElement.textContent = 'Error';
+        if (stripeRevenueStatusElement) stripeRevenueStatusElement.textContent = result.message || 'Failed to load Stripe revenue.';
+        if (stripeSubscriptionsTableBody) stripeSubscriptionsTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Failed to load Stripe subscriptions.</td></tr>';
+        console.error('Failed to fetch Stripe dashboard data:', result.message);
+      }
+    } catch (error) {
+      console.error('Error in fetchStripeDashboardData:', error);
+      if (stripeRevenueStatElement) stripeRevenueStatElement.textContent = 'Error';
+      if (stripeRevenueStatusElement) stripeRevenueStatusElement.textContent = 'Server error while fetching revenue.';
+      if (stripeSubscriptionsTableBody) stripeSubscriptionsTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">Server error loading subscriptions.</td></tr>';
+    }
+  }
+
+  function renderStripeSubscriptionRow(sub) {
+    const customerName = sub.customer_name || 'N/A';
+    const customerEmail = sub.customer_email || 'N/A';
+    const planName = sub.plan_name || 'N/A';
+    const amount = sub.plan_amount ? `${(sub.plan_amount / 100).toFixed(2)} ${sub.plan_currency.toUpperCase()}` : 'N/A';
+    const status = sub.status ? sub.status.charAt(0).toUpperCase() + sub.status.slice(1) : 'N/A';
+    const periodStart = sub.current_period_start ? new Date(sub.current_period_start * 1000).toLocaleDateString() : 'N/A';
+    const periodEnd = sub.current_period_end ? new Date(sub.current_period_end * 1000).toLocaleDateString() : 'N/A';
+    const created = sub.created ? new Date(sub.created * 1000).toLocaleDateString() : 'N/A';
+
+    return `
+      <tr>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-medium text-gray-100">${customerName}</div>
+          <div class="text-xs text-gray-400">${customerEmail} (${sub.customer_id || 'No ID'})</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${planName}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${amount}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${sub.status === 'active' ? 'bg-green-500 text-green-100' : 'bg-yellow-500 text-yellow-100'} ">
+            ${status}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${periodStart} - ${periodEnd}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${created}</td>
+      </tr>
+    `;
+  }
+
   // --- User Management Functions ---
   function renderUserRow(user) {
     const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
@@ -272,13 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const { users, totalPages, currentPage } = response.data;
         usersTableBody.innerHTML = ''; // Clear loading message
 
-        if (users && users.length > 0) {
+        if (Array.isArray(users) && users.length > 0) {
           users.forEach(user => {
             usersTableBody.innerHTML += renderUserRow(user);
           });
           // Event listeners for edit/delete are handled by delegation on usersTableBody
         } else {
-          usersTableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-400">No users found.</td></tr>';
+          usersTableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-400">No users found or user data is unavailable.</td></tr>';
         }
         renderUsersPagination(totalPages, currentPage);
       } else {
@@ -455,15 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Show the target section
-    const activeSection = document.getElementById(targetId);
-    if (activeSection) {
-      activeSection.classList.remove('hidden');
-      // If the users section is being shown, fetch and display the users
-      if (targetId === 'users-section') {
-        fetchAndDisplayUsers(); // Call with default page 1 and no search
-      }
-    }
-
     // Update active states for navigation links
     navLinks.forEach(link => {
       link.classList.remove('bg-brand-blue', 'text-white');
@@ -495,10 +564,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   navLinks.forEach(link => {
     link.addEventListener('click', (event) => {
-      event.preventDefault(); // Prevent default anchor behavior
-      const targetSectionId = link.dataset.target;
-      // Update hash, which will trigger the hashchange listener
-      window.location.hash = targetSectionId.replace('-section', ''); 
+      event.preventDefault();
+      const newHash = link.getAttribute('href'); // e.g., "#dashboard"
+      if (window.location.hash !== newHash) {
+        window.location.hash = newHash; // Triggers hashchange -> handleNavigation
+      } else {
+        // If hash is the same (e.g., clicking the active nav link again to "refresh")
+        handleNavigation(); // Manually call to re-fetch data for the current view
+      }
     });
   });
 
@@ -506,6 +579,58 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', handleNavigation);
 
   // Initial view setup based on current hash or default
-  handleNavigation();
+  handleNavigation(); // Initial view setup and data load for the current view
 
+  // --- Manual Subscription Form Handling ---
+  const manualSubForm = document.getElementById('manual-subscription-form');
+  const manualSubMessage = document.getElementById('manual-sub-message');
+
+  if (manualSubForm) {
+    manualSubForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (manualSubMessage) manualSubMessage.textContent = ''; // Clear previous messages
+
+      const email = document.getElementById('manual-sub-email').value.trim();
+      const type = document.getElementById('manual-sub-type').value.trim() || 'premium'; // Default to premium if empty
+      const notes = document.getElementById('manual-sub-notes').value.trim();
+
+      if (!email) {
+        if (manualSubMessage) {
+          manualSubMessage.textContent = 'User Email is required.';
+          manualSubMessage.className = 'mt-3 text-sm text-red-400';
+        }
+        return;
+      }
+
+      try {
+        const payload = { email, type, notes };
+        // 'api' object is defined at the top of the DOMContentLoaded scope
+        const result = await api.post('/api/v1/admin/subscriptions/manual', payload);
+
+        if (result.success) {
+          if (manualSubMessage) {
+            manualSubMessage.textContent = result.message || 'Manual subscription added successfully!';
+            manualSubMessage.className = 'mt-3 text-sm text-green-400';
+          }
+          manualSubForm.reset(); // Clear the form
+          // Refresh the Stripe subscriptions list. While manual subscriptions aren't Stripe ones,
+          // this list is the current primary view for subscriptions in this section.
+          // A more integrated solution might show all subscription types or have separate lists.
+          fetchStripeDashboardData(); 
+        } else {
+          if (manualSubMessage) {
+            manualSubMessage.textContent = result.message || 'Failed to add manual subscription.';
+            manualSubMessage.className = 'mt-3 text-sm text-red-400';
+          }
+        }
+      } catch (error) {
+        console.error('Error submitting manual subscription:', error);
+        if (manualSubMessage) {
+          manualSubMessage.textContent = 'An error occurred. Please try again.';
+          manualSubMessage.className = 'mt-3 text-sm text-red-400';
+        }
+      }
+    });
+  }
+  // --- End Manual Subscription Form Handling ---
 });
