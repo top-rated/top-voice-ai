@@ -24,17 +24,6 @@ router.post("/login", authController.login);
 router.get("/verify-subscription", authController.verifySubscription);
 
 /**
- * @route POST /api/v1/auth/stripe-webhook
- * @desc Handle Stripe webhook for subscription events
- * @access Public
- */
-router.post(
-  "/stripe-webhook",
-  express.raw({ type: "application/json" }),
-  authController.handleStripeWebhook
-);
-
-/**
  * @route GET /api/v1/auth/subscription/:subscriptionId
  * @desc Get subscription status by ID (GPT-friendly)
  * @access Public

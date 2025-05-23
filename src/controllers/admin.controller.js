@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { userStorage, subscriptionStorage } = require("../utils/storage");
+const stripeUtils = require("../utils/stripe"); // Added for Stripe utilities
 const path = require("path");
 const fs = require("fs").promises;
 const topVoicesController = require("./topVoices.controller");
@@ -32,16 +33,16 @@ const login = async (req, res) => {
         .json({ message: "Email and password are required" });
     }
 
-    // Use hardcoded admin credentials instead of database lookup
-    if (email === "admin" && password === "admin123") {
+    // Use admin credentials from environment variables
+    if (email === process.env.ADMIN_USER_NAME && password === process.env.ADMIN_USER_PASSWORD) {
       // Generate JWT token
       const token = jwt.sign(
         {
-          email: "admin@example.com",
-          name: "Admin User",
+          email: process.env.ADMIN_USER_NAME, // Use admin email from env
+          name: "Admin User", // You might want to make this configurable too
           role: "admin",
         },
-        process.env.JWT_SECRET || "your-secret-key",
+        process.env.JWT_SECRET, // Use JWT_SECRET from env directly
         { expiresIn: "24h" }
       );
 
@@ -49,7 +50,7 @@ const login = async (req, res) => {
         message: "Login successful",
         token,
         user: {
-          email: "admin@example.com",
+          email: process.env.ADMIN_USER_NAME,
           name: "Admin User",
           role: "admin",
         },
@@ -74,18 +75,65 @@ const getUsers = async (req, res) => {
     const pageSize = 10;
     const pageNumber = parseInt(page);
 
-    // Get all users
-    const allUsers = await userStorage.getAllUsers();
+    // Get all users from local storage
+    const allLocalUsers = await userStorage.getAllUsers();
+    let usersArray = Object.values(allLocalUsers);
+
+    // Fetch all Stripe subscriptions to enrich user data
+    // const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('all', 1000); // Moved down for logging
+    console.log('[AdminController] Fetching Stripe subscriptions for user list enrichment...');
+    const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('all', 1000); // Fetch a large number
+    console.log('[AdminController] stripeSubscriptionsResult:', JSON.stringify(stripeSubscriptionsResult, null, 2)); // Log the full result
+
+    const stripeSubscriptionsMap = new Map();
+    if (stripeSubscriptionsResult.success && stripeSubscriptionsResult.data) {
+      stripeSubscriptionsResult.data.forEach(sub => {
+        if (sub.customer_id) { // Use customer_id for mapping
+          // Store the most relevant (e.g., active or latest) subscription if multiple exist for a customer_id
+          const existingSub = stripeSubscriptionsMap.get(sub.customer_id);
+          if (!existingSub || 
+              (sub.status === 'active' && existingSub.status !== 'active') || 
+              (new Date(sub.created) > new Date(existingSub.created))) {
+            stripeSubscriptionsMap.set(sub.customer_id, sub);
+          }
+        }
+      });
+    }
+
+    console.log('[AdminController] stripeSubscriptionsMap (keyed by customer_id) size:', stripeSubscriptionsMap.size);
+    // Enrich local users with Stripe subscription data
+    // Log all user emails from userStorage and check for the specific user
+    console.log('[AdminController] Emails in userStorage:', JSON.stringify(usersArray.map(u => u.email), null, 2));
+    const targetUser = usersArray.find(user => user.email === 'raheesahmed256@gmail.com');
+    if (targetUser) {
+      console.log('[AdminController] Local user object for raheesahmed256@gmail.com BEFORE enrichment:', JSON.stringify(targetUser, null, 2));
+    } else {
+      console.log('[AdminController] User raheesahmed256@gmail.com NOT FOUND in local userStorage during getUsers.');
+    }
+
+    const enrichedUsers = usersArray.map(user => {
+      // Try to find Stripe subscription using user.stripeCustomerId if available
+      const stripeSub = user.stripeCustomerId ? stripeSubscriptionsMap.get(user.stripeCustomerId) : null;
+      return {
+        ...user,
+        stripeSubscriptionId: stripeSub?.id,
+        stripeSubscriptionStatus: stripeSub?.status,
+        stripePlan: stripeSub?.plan_nickname || (stripeSub?.plan_id ? `${stripeSub.plan_amount / 100} ${stripeSub.plan_currency?.toUpperCase()} / ${stripeSub.plan_interval}` : null),
+        isStripeCustomer: !!stripeSub || !!user.stripeCustomerId, // User is a stripe customer if they have a stripeCustomerId or an active sub mapped
+        subscriptionSource: stripeSub ? 'stripe' : (user.subscriptionId ? (user.subscriptionId.toLowerCase().includes('gumroad') ? 'gumroad' : 'manual') : 'none'),
+      };
+    });
 
     // Filter users by search term if provided
-    let filteredUsers = Object.values(allUsers);
-
+    let filteredUsers = enrichedUsers;
     if (search) {
       const searchLower = search.toLowerCase();
-      filteredUsers = filteredUsers.filter(
+      filteredUsers = enrichedUsers.filter(
         (user) =>
           user.email.toLowerCase().includes(searchLower) ||
-          (user.name && user.name.toLowerCase().includes(searchLower))
+          (user.name && user.name.toLowerCase().includes(searchLower)) ||
+          (user.stripeSubscriptionStatus && user.stripeSubscriptionStatus.toLowerCase().includes(searchLower)) ||
+          (user.stripePlan && user.stripePlan.toLowerCase().includes(searchLower))
       );
     }
 
@@ -124,14 +172,64 @@ const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
 
-    // Get user from storage
-    const user = await userStorage.getUser(email);
+    // Get user from local storage
+    const localUser = await userStorage.getUser(email);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!localUser) {
+      return res.status(404).json({ message: "User not found locally" });
     }
 
-    res.json(user);
+    // Start with local user data
+    let combinedUser = { ...localUser };
+
+    // If Stripe customer ID exists, fetch and merge Stripe data
+    if (localUser.stripeCustomerId) {
+      try {
+        const stripeCustomerData = await stripeUtils.getCustomer(localUser.stripeCustomerId);
+        if (stripeCustomerData.success && stripeCustomerData.customer) {
+          // Merge Stripe customer details (Stripe's data might be more current for name/email)
+          combinedUser.name = stripeCustomerData.customer.name || localUser.name;
+          // Note: Syncing email can be complex if it's a primary key. For now, let's assume local email is the key.
+          // combinedUser.email = stripeCustomerData.customer.email || localUser.email; 
+          combinedUser.stripeCustomerDetails = stripeCustomerData.customer; // Store all Stripe customer details
+        }
+
+        const stripeSubscriptionsData = await stripeUtils.getCustomerSubscriptions(localUser.stripeCustomerId);
+        if (stripeSubscriptionsData.success && stripeSubscriptionsData.subscriptions) {
+          combinedUser.stripeSubscriptions = stripeSubscriptionsData.subscriptions;
+          // Determine an overall subscription status or type based on Stripe subscriptions
+          if (stripeSubscriptionsData.subscriptions.length > 0) {
+            const activeStripeSub = stripeSubscriptionsData.subscriptions.find(s => s.status === 'active' || s.status === 'trialing');
+            if (activeStripeSub) {
+              combinedUser.activeStripeSubscription = activeStripeSub; // Store the primary active Stripe sub
+              combinedUser.subscriptionStatus = activeStripeSub.status;
+              combinedUser.active = combinedUser.active !== undefined ? combinedUser.active : true; // If user has active Stripe sub, assume active unless explicitly set otherwise locally
+
+              // Safely determine subscriptionType
+              let subTypeDetail = 'Premium'; // Default
+              if (activeStripeSub.items && activeStripeSub.items.data && activeStripeSub.items.data.length > 0) {
+                const firstItem = activeStripeSub.items.data[0];
+                if (firstItem && firstItem.price) {
+                  subTypeDetail = firstItem.price.nickname || firstItem.price.product?.name || 'Premium';
+                }
+              }
+              combinedUser.subscriptionType = `Stripe: ${subTypeDetail}`;
+            } else {
+                // No active Stripe sub, check for past due etc.
+                const latestSub = stripeSubscriptionsData.subscriptions.sort((a,b) => b.created - a.created)[0];
+                if(latestSub) combinedUser.subscriptionStatus = latestSub.status;
+            }
+          }
+        }
+      } catch (stripeError) {
+        console.error(`Error fetching Stripe data for user ${email} (Stripe ID ${localUser.stripeCustomerId}):`, stripeError);
+        // Optionally, add a note to combinedUser that Stripe data couldn't be fetched
+        combinedUser.stripeDataError = true;
+        combinedUser.stripeDataErrorMessage = stripeError.message;
+      }
+    }
+
+    res.json(combinedUser);
   } catch (error) {
     console.error("Error fetching user:", error);
     res
@@ -372,109 +470,91 @@ const deleteUser = async (req, res) => {
  */
 const getSubscriptions = async (req, res) => {
   try {
-    console.log("Fetching all subscriptions...");
+    console.log("Fetching subscriptions, prioritizing Stripe...");
 
-    // Get all subscriptions from local storage
-    const allSubscriptions = await subscriptionStorage.getAllSubscriptions();
+    // Fetch all subscriptions from Stripe
+    const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('all', 100); // Fetch all, up to 100
 
-    // Get all users to check for any missing subscriptions
-    const allUsers = await userStorage.getAllUsers();
-    const users = Object.values(allUsers);
+    let finalSubscriptions = [];
+    const sourceCount = { stripe: 0, local: 0, gumroad: 0, manual: 0, unknown: 0 };
 
-    // Check for users with subscriptionId that might not be in the subscription storage
-    for (const user of users) {
-      if (user.subscriptionId && !allSubscriptions[user.subscriptionId]) {
-        console.log(
-          `Found user ${user.email} with missing subscription ${user.subscriptionId}`
-        );
+    if (stripeSubscriptionsResult.success && stripeSubscriptionsResult.data) {
+      console.log(`Fetched ${stripeSubscriptionsResult.data.length} subscriptions from Stripe.`);
+      sourceCount.stripe = stripeSubscriptionsResult.data.length;
 
-        // Create a new subscription entry for this user
-        const subscription = {
-          id: user.subscriptionId,
-          email: user.email,
-          type: user.subscriptionType || "premium",
-          active: user.active || true,
-          source: user.subscriptionId && user.subscriptionId.includes("stripe")
-            ? "stripe"
-            : "manual",
-          createdAt: user.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Add to the subscriptions object
-        allSubscriptions[user.subscriptionId] = subscription;
-
-        // Save to storage
-        await subscriptionStorage.setSubscription(
-          user.subscriptionId,
-          subscription
-        );
-        console.log(`Created missing subscription for ${user.email}`);
-      }
+      // Map Stripe subscriptions to the desired format
+      finalSubscriptions = stripeSubscriptionsResult.data.map(sub => ({
+        id: sub.id,
+        email: sub.customer_email,
+        userName: sub.customer_name, // Added userName from Stripe customer
+        type: sub.plan_nickname || (sub.plan_amount ? `${sub.plan_amount / 100} ${sub.plan_currency.toUpperCase()} / ${sub.plan_interval}` : 'premium'), // More descriptive type
+        active: sub.status === 'active' || sub.status === 'trialing',
+        status: sub.status, // Raw Stripe status
+        source: 'stripe',
+        createdAt: sub.created,
+        currentPeriodStart: sub.current_period_start,
+        currentPeriodEnd: sub.current_period_end,
+        canceledAt: sub.canceled_at,
+        endedAt: sub.ended_at,
+        trialStart: sub.trial_start,
+        trialEnd: sub.trial_end,
+        planId: sub.plan_id,
+        planAmount: sub.plan_amount, // Explicitly pass plan amount in cents
+        planCurrency: sub.plan_currency, // Explicitly pass plan currency
+        customerId: sub.customer_id,
+        // You can add more fields from the 'sub' object if needed
+      }));
+    } else {
+      console.error("Failed to fetch subscriptions from Stripe:", stripeSubscriptionsResult.message);
+      // Optionally, fall back to local storage or return an error
+      // For now, we'll continue to see if there are any non-Stripe local subs
     }
 
-    // Convert local subscriptions to array
-    let subscriptions = Object.values(allSubscriptions);
+    // Optionally, augment with or list separately any purely local/manual/Gumroad subscriptions
+    // if they are still relevant and not managed via Stripe.
+    const localLegacySubscriptions = await subscriptionStorage.getAllSubscriptions();
+    const localUsers = await userStorage.getAllUsers();
 
-    console.log(
-      `Found ${subscriptions.length} total subscriptions in local storage`
-    );
-
-    console.log(`Final count: ${subscriptions.length} total subscriptions`);
-
-    // Count by source
-    const sourceCount = {};
-    subscriptions.forEach((sub) => {
-      const source = sub.source || "unknown";
-      sourceCount[source] = (sourceCount[source] || 0) + 1;
+    Object.values(localLegacySubscriptions).forEach(localSub => {
+      if (!finalSubscriptions.find(fs => fs.id === localSub.id)) { // Avoid duplicates if Stripe already returned it
+        const user = Object.values(localUsers).find(u => u.email === localSub.email);
+        const subSource = localSub.source || (localSub.id && localSub.id.toLowerCase().includes('gumroad') ? 'gumroad' : 'manual');
+        
+        sourceCount[subSource] = (sourceCount[subSource] || 0) + 1;
+        if (subSource === 'stripe' && sourceCount.stripe > 0 && stripeSubscriptionsResult.success) {
+          // This was likely an old local Stripe record, already counted.
+        } else {
+            finalSubscriptions.push({
+                id: localSub.id,
+                email: localSub.email,
+                userName: user?.name,
+                type: localSub.type || 'unknown',
+                active: localSub.active === undefined ? true : localSub.active, // Default to true if undefined
+                status: localSub.active ? 'active' : 'inactive', // Simplified status for local
+                source: subSource,
+                createdAt: localSub.createdAt || user?.createdAt,
+                updatedAt: localSub.updatedAt, // Keep local updatedAt if available
+            });
+        }
+      }
     });
+
+    console.log(`Final count: ${finalSubscriptions.length} total subscriptions processed.`);
     console.log("Subscriptions by source:", sourceCount);
 
-    // Log each subscription with key details
-    console.log("Subscription details:");
-    subscriptions.forEach((sub, index) => {
-      console.log(
-        `[${index + 1}] ID: ${sub.id}, Email: ${sub.email}, Source: ${
-          sub.source || "unknown"
-        }, Active: ${sub.active}, Type: ${sub.type}, Created: ${sub.createdAt}`
-      );
-    });
-
-    // Check for Gumroad subscriptions specifically
-    const gumroadSubs = subscriptions.filter(
-      (sub) =>
-        sub.source &&
-        (sub.source.includes("gumroad") || sub.id.includes("gumroad"))
-    );
-    console.log(`Found ${gumroadSubs.length} Gumroad subscriptions:`);
-    gumroadSubs.forEach((sub, index) => {
-      console.log(
-        `[${index + 1}] ID: ${sub.id}, Email: ${sub.email}, Source: ${
-          sub.source || "unknown"
-        }, Active: ${sub.active}, Type: ${sub.type}`
-      );
-    });
-
-    // Check for Stripe subscriptions specifically
-    const stripeSubs = subscriptions.filter(
-      (sub) =>
-        sub.source &&
-        (sub.source.includes("stripe") || sub.id.includes("stripe"))
-    );
-    console.log(`Found ${stripeSubs.length} Stripe subscriptions:`);
-    stripeSubs.forEach((sub, index) => {
-      console.log(
-        `[${index + 1}] ID: ${sub.id}, Email: ${sub.email}, Source: ${
-          sub.source || "unknown"
-        }, Active: ${sub.active}, Type: ${sub.type}`
-      );
-    });
+    // Log details for verification
+    // finalSubscriptions.forEach((sub, index) => {
+    //   console.log(
+    //     `[${index + 1}] ID: ${sub.id}, Email: ${sub.email}, Name: ${sub.userName}, Source: ${sub.source}, Status: ${sub.status}, Active: ${sub.active}, Type: ${sub.type}`
+    //   );
+    // });
 
     res.json({
-      subscriptions,
-      total: subscriptions.length,
+      subscriptions: finalSubscriptions,
+      total: finalSubscriptions.length,
       sourceBreakdown: sourceCount,
     });
+
   } catch (error) {
     console.error("Error fetching subscriptions:", error);
     res
@@ -721,11 +801,7 @@ const getStats = async (req, res) => {
     const allUsers = await userStorage.getAllUsers();
     const users = Object.values(allUsers);
 
-    // Get all subscriptions
-    const allSubscriptions = await subscriptionStorage.getAllSubscriptions();
-    const subscriptions = Object.values(allSubscriptions);
-
-    // Calculate stats
+    // Calculate stats from users
     const totalUsers = users.length;
     const activeUsers = users.filter((user) => user.active).length;
     const freeUsers = users.filter(
@@ -735,11 +811,27 @@ const getStats = async (req, res) => {
       (user) => user.subscriptionType === "premium"
     ).length;
 
-    const activeSubscriptions = subscriptions.filter(
-      (sub) => sub.active
-    ).length;
-    // Calculate monthly revenue and round to 2 decimal places
-    const monthlyRevenue = parseFloat((activeSubscriptions * 29.99).toFixed(2)); // Assuming $29.99 per premium subscription
+    // Fetch all subscriptions from Stripe for accurate MRR and active subscriptions count
+    const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('active', 1000); // Fetch all active, up to a high limit
+    
+    let activeStripeSubscriptionsCount = 0;
+    let monthlyRevenueCents = 0;
+
+    if (stripeSubscriptionsResult.success && stripeSubscriptionsResult.data) {
+      activeStripeSubscriptionsCount = stripeSubscriptionsResult.data.length; // Assuming 'active' filter in getAllStripeSubscriptions works
+      stripeSubscriptionsResult.data.forEach(sub => {
+        // Ensure the subscription is active and has a monthly plan amount
+        if ((sub.status === 'active' || sub.status === 'trialing') && sub.plan_interval === 'month' && typeof sub.plan_amount === 'number') {
+          monthlyRevenueCents += sub.plan_amount;
+        }
+      });
+    } else {
+      console.warn('Could not fetch Stripe subscriptions for stats calculation, MRR might be inaccurate.');
+      // Fallback or error handling if Stripe fetch fails - for now, MRR will be 0
+    }
+
+    const activeSubscriptions = activeStripeSubscriptionsCount; // Use count from Stripe
+    const monthlyRevenue = parseFloat((monthlyRevenueCents / 100).toFixed(2));
 
     // Calculate new users in the last 7 days
     const now = new Date();
@@ -754,22 +846,28 @@ const getStats = async (req, res) => {
       totalUsers > 0 ? Math.round((premiumUsers / totalUsers) * 100) : 0;
 
     // Mock API requests in the last 24 hours
-    const apiRequests24h = Math.floor(Math.random() * 10000) + 5000;
+    const apiRequests24h = 0; // Placeholder: Actual API call tracking to be implemented.
 
     // Generate mock recent activity
     const recentActivity = generateMockActivity(users);
 
     res.json({
-      totalUsers,
-      activeUsers,
-      freeUsers,
-      premiumUsers,
-      activeSubscriptions,
-      monthlyRevenue,
-      newUsers7d,
-      conversionRate,
-      apiRequests24h,
-      recentActivity,
+      stats: {
+        totalUsers: totalUsers,
+        activeSubscriptions: activeSubscriptions,
+        apiCallsToday: apiRequests24h, // Renamed from apiRequests24h
+      },
+      activity: recentActivity,
+      // You can include other stats here if needed by other parts of the admin panel
+      // or for more detailed views, but they are not directly used by the current dashboard cards.
+      additionalStats: {
+        activeUsers,
+        freeUsers,
+        premiumUsers,
+        monthlyRevenue,
+        newUsers7d,
+        conversionRate
+      }
     });
   } catch (error) {
     console.error("Error fetching stats:", error);
@@ -808,11 +906,13 @@ const generateMockActivity = (users) => {
 
     activity.push({
       timestamp: timestamp.toISOString(),
+      message: `${randomUser.email} ${randomAction}.`,
+      // Keep original fields if they might be useful for more detailed views later
       user: randomUser.email,
       action: randomAction,
       details: `IP: 192.168.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
-      )}`,
+      )}`
     });
   }
 

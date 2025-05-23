@@ -11,7 +11,6 @@ const authRoutes = require("./routes/auth.routes");
 const topVoicesRoutes = require("./routes/topVoices.routes");
 const profileRoutes = require("./routes/profile.routes");
 const searchRoutes = require("./routes/search.routes");
-const licenseRoutes = require("./routes/license.routes");
 const adminRoutes = require("./routes/admin.routes");
 const stripeRoutes = require("./routes/stripe.routes"); // Added Stripe routes
 
@@ -82,13 +81,12 @@ app.use("/api", apiLimiter);
 
 // API routes
 // const API_PREFIX = process.env.API_V1_PREFIX;
-const API_PREFIX = "/api/v1"; // Hardcode for now since .env isn't being read properly
+const API_PREFIX = "/api/v1"; 
 console.log(`Registering admin routes at: ${API_PREFIX}/admin`);
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/top-voices`, topVoicesRoutes);
 app.use(`${API_PREFIX}/profiles`, profileRoutes);
 app.use(`${API_PREFIX}/search`, searchRoutes);
-app.use(`${API_PREFIX}/license`, licenseRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
 
@@ -101,7 +99,7 @@ app.get("/", (req, res) => {
 
 // Admin dashboard route
 app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public", "admin-dashboard.html"));
+  res.sendFile(path.join(__dirname, "../public", "dashboard.html"));
 });
 
 // Privacy policy route
@@ -114,9 +112,38 @@ app.get("/api-docs", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "api.html"));
 });
 
+// Stripe payment success and cancel routes
+app.get('/payment-success', (req, res) => {
+  res.send(`
+    <html>
+      <head><title>Payment Successful</title></head>
+      <body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+        <h1>Thank You!</h1>
+        <p>Your payment was successful and your subscription is now active.</p>
+        <p><a href="/">Go to Homepage</a></p> 
+      </body>
+    </html>
+  `);
+});
+
+app.get('/payment-cancelled', (req, res) => {
+  res.send(`
+    <html>
+      <head><title>Payment Cancelled</title></head>
+      <body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+        <h1>Payment Cancelled</h1>
+        <p>Your payment process was cancelled. You have not been charged.</p>
+        <p>If you'd like to try again, please restart the process from the chatbot.</p>
+        <p><a href="/">Go to Homepage</a></p>
+      </body>
+    </html>
+  `);
+});
+
 // chat route
 app.post("/api/v1/chat", async (req, res) => {
   const { threadId, query } = req.body;
+const { sendUnipileMessageViaChatbot } = require('./services/unipile_chat_service'); // Added Unipile service
   console.log(`Chat request received - ThreadID: ${threadId}, Query: ${query}`);
 
   // Set headers for SSE
@@ -156,6 +183,33 @@ app.post("/api/v1/chat", async (req, res) => {
         console.log(`Sent unknown event: ${JSON.stringify(msg)}`);
       }
       console.log("-----\n");
+
+      // Check for Unipile tool call
+      if (msg?.tool_calls?.length > 0) {
+        for (const toolCall of msg.tool_calls) {
+          if (toolCall.name === 'send_unipile_message') { // Or your specific tool name
+            console.log("Processing Unipile tool call:", toolCall.arguments);
+            try {
+              const unipileResult = await sendUnipileMessageViaChatbot(toolCall.arguments);
+              const unipileEvent = {
+                type: unipileResult.success ? "tool_result_unipile_sent" : "tool_result_unipile_failed",
+                data: unipileResult.success ? `Unipile message sent: ${JSON.stringify(unipileResult.data)}` : `Unipile error: ${unipileResult.error}`,
+                tool_call_id: toolCall.id // Include tool_call_id if your agent expects it for tool results
+              };
+              res.write(`data: ${JSON.stringify(unipileEvent)}\n\n`);
+              console.log(`Sent Unipile result event: ${JSON.stringify(unipileEvent)}`);
+            } catch (unipileError) {
+              console.error("Error calling Unipile service:", unipileError);
+              const unipileErrorEvent = { 
+                type: "tool_result_unipile_failed", 
+                data: `Internal error processing Unipile request: ${unipileError.message}`,
+                tool_call_id: toolCall.id
+              };
+              res.write(`data: ${JSON.stringify(unipileErrorEvent)}\n\n`);
+            }
+          }
+        }
+      }
       
     }
   } catch (error) {

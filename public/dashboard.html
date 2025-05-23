@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Top Voices AI</title>
+  <link rel="icon" href="/top-voices.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: {
+              700: "#1f2937",
+              800: "#1a2035",
+              900: "#12172b",
+            },
+            brand: {
+              blue: "#1e40af",
+              indigo: "#312e81",
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="/styles.css"> 
+</head>
+<body class="bg-dark-900 min-h-screen font-sans antialiased text-gray-200 flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-dark-800 text-gray-200 p-6 space-y-6 border-r border-gray-700 flex flex-col">
+    <div class="flex items-center space-x-3 mb-6">
+      <img src="/top-voices.png" alt="Top Voices AI Logo" class="h-10 w-auto">
+      <h1 class="text-xl font-semibold text-white">Admin Panel</h1>
+    </div>
+    <nav class="flex-1">
+      <ul class="space-y-2">
+        <li>
+          <a href="#dashboard" data-target="dashboard-section" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md bg-brand-blue text-white font-medium">
+            <i class="fas fa-tachometer-alt w-5 h-5"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#users" data-target="users-section" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-dark-700 transition-colors">
+            <i class="fas fa-users w-5 h-5"></i>
+            <span>Users</span>
+          </a>
+        </li>
+        <li>
+          <a href="#subscriptions" data-target="subscriptions-section" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-dark-700 transition-colors">
+            <i class="fas fa-credit-card w-5 h-5"></i>
+            <span>Subscriptions</span>
+          </a>
+        </li>
+        <li>
+          <a href="#settings" data-target="settings-section" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-dark-700 transition-colors">
+            <i class="fas fa-cog w-5 h-5"></i>
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <div class="mt-auto">
+        <button id="admin-logout-button" class="w-full flex items-center space-x-3 px-3 py-2 rounded-md text-gray-400 hover:bg-red-700 hover:text-white transition-colors">
+            <i class="fas fa-sign-out-alt w-5 h-5"></i>
+            <span>Logout</span>
+        </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="content-section">
+      <header class="mb-8">
+        <h2 class="text-3xl font-semibold text-white">Dashboard Overview</h2>
+        <p class="text-gray-400 welcome-message">Welcome, Admin!</p> <!-- Added class for easier selection -->
+      </header>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
+          <h3 class="text-xl font-semibold text-white mb-2">Total Users</h3>
+          <p id="total-users-stat" class="text-4xl font-bold text-brand-blue">--</p>
+        </div>
+        <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
+          <h3 class="text-xl font-semibold text-white mb-2">Active Subscriptions</h3>
+          <p id="active-subscriptions-stat" class="text-4xl font-bold text-brand-indigo">--</p>
+        </div>
+        <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
+          <h3 class="text-xl font-semibold text-white mb-2">API Calls (24h)</h3>
+          <p id="api-calls-stat" class="text-4xl font-bold text-gray-300">--</p>
+        </div>
+      </div>
+      <div class="mt-10 bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
+          <h3 class="text-xl font-semibold text-white mb-4">Recent Activity</h3>
+          <p id="recent-activity-log" class="text-gray-400">Activity log will be displayed here...</p>
+      </div>
+    </div>
+
+    <!-- Users Section (Initially Hidden) -->
+    <div id="users-section" class="content-section hidden">
+      <header class="mb-8">
+        <h2 class="text-3xl font-semibold text-white">User Management</h2>
+      </header>
+
+      <!-- Search and Filters -->
+      <div class="mb-6 flex justify-between items-center">
+        <div class="relative w-full max-w-xs">
+          <input type="text" id="user-search-input" placeholder="Search users (email, name...)" class="w-full bg-dark-700 border border-gray-600 text-gray-200 placeholder-gray-500 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue p-2.5 pl-10">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+        </div>
+        <!-- Add filter dropdowns here if needed later -->
+      </div>
+
+      <div class="bg-dark-800 rounded-lg shadow-lg border border-gray-700 overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-dark-700">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">User</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Subscription</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Joined</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body" class="bg-dark-800 divide-y divide-gray-700">
+            <!-- User rows will be dynamically inserted here by JavaScript -->
+            <tr><td colspan="5" class="px-6 py-4 text-center text-gray-400">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div id="users-pagination-controls" class="mt-6 flex justify-center items-center space-x-2">
+        <!-- Pagination buttons will be dynamically inserted here -->
+      </div>
+    </div>
+
+    <!-- Subscriptions Section (Initially Hidden) -->
+    <div id="subscriptions-section" class="content-section hidden">
+      <header class="mb-8">
+        <h2 class="text-3xl font-semibold text-white">Subscription Management</h2>
+      </header>
+      <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
+        <p class="text-gray-300">Subscriptions content will go here. This section will list subscriptions and allow management.</p>
+        <!-- Placeholder for subscription table or list -->
+      </div>
+    </div>
+
+    <!-- Settings Section (Initially Hidden) -->
+    <div id="settings-section" class="content-section hidden">
+      <header class="mb-8">
+        <h2 class="text-3xl font-semibold text-white">System Settings</h2>
+      </header>
+      <div class="bg-dark-800 p-6 rounded-lg shadow-lg border border-gray-700">
+        <p class="text-gray-300">Settings content will go here. This section will allow configuration of system parameters.</p>
+        <!-- Placeholder for settings form -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Edit User Modal -->
+  <div id="edit-user-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-75">
+    <div class="bg-dark-800 p-6 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-semibold text-white">Edit User</h3>
+        <button id="close-edit-user-modal-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+      </div>
+      <form id="edit-user-form">
+        <input type="hidden" id="edit-user-original-email">
+        
+        <div class="mb-4">
+          <label for="edit-user-email" class="block mb-2 text-sm font-medium text-gray-300">Email (Read-only)</label>
+          <input type="email" id="edit-user-email" name="email" class="bg-dark-700 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5 cursor-not-allowed" readonly>
+        </div>
+
+        <div class="mb-4">
+          <label for="edit-user-name" class="block mb-2 text-sm font-medium text-gray-300">Name</label>
+          <input type="text" id="edit-user-name" name="name" class="bg-dark-700 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5" placeholder="User's full name">
+        </div>
+
+        <div class="mb-4">
+          <label for="edit-user-active" class="block mb-2 text-sm font-medium text-gray-300">Status</label>
+          <select id="edit-user-active" name="active" class="bg-dark-700 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label for="edit-user-subscriptionType" class="block mb-2 text-sm font-medium text-gray-300">Subscription Type</label>
+          <input type="text" id="edit-user-subscriptionType" name="subscriptionType" class="bg-dark-700 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5" placeholder="e.g., free, premium, basic_monthly">
+          <p class="mt-1 text-xs text-gray-500">Note: Modifying Stripe subscriptions directly requires Stripe API integration.</p>
+        </div>
+        
+        <div class="mb-6">
+          <label for="edit-user-notes" class="block mb-2 text-sm font-medium text-gray-300">Admin Notes (Optional)</label>
+          <textarea id="edit-user-notes" name="notes" rows="3" class="bg-dark-700 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-brand-blue focus:border-brand-blue block w-full p-2.5" placeholder="Internal notes about the user..."></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-4">
+          <button type="button" id="cancel-edit-user-btn" class="px-4 py-2 text-sm font-medium text-gray-300 bg-dark-700 rounded-lg hover:bg-dark-600 focus:ring-4 focus:outline-none focus:ring-gray-600 border border-gray-600">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-brand-blue rounded-lg hover:bg-brand-blue-dark focus:ring-4 focus:outline-none focus:ring-brand-blue-light">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/dashboard.js"></script>
+</body>
+</html>
