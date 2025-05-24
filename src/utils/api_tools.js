@@ -402,6 +402,7 @@ function getAllApiTools() {
     ...createProfileTools(),
     ...createAuthAndLicenseTools(),
     ...createStripeTools(), // Added Stripe tools here
+    ...createContentAnalysisTools(),
   ];
 }
 
@@ -645,6 +646,128 @@ function createStripeTools() {
   ];
 }
 
+
+
+/**
+ * Create tools for Content Analysis API endpoints (conceptual)
+ * @returns {Array} Array of tool objects
+ */
+function createContentAnalysisTools() {
+  return [
+    tool(
+      async (input) => {
+        try {
+          const { post_text, reference_author_style_id } = input;
+          const apiKey = process.env.OPENAI_API_KEY;
+
+          if (!apiKey) {
+            return JSON.stringify({
+              error: "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.",
+            });
+          }
+
+          const system_prompt = `You are an expert linguistic analyst specializing in differentiating human-written content from AI-generated content, particularly for LinkedIn posts. Your task is to analyze the provided LinkedIn post text and return a structured JSON analysis.
+          If a 'Reference Author Style ID' is provided, use your general knowledge about common traits of LinkedIn Top Voices or influential writing styles to inform your mimicry suggestions, as if tailoring to that reference style.`;
+
+          const user_prompt = `LinkedIn Post Text to Analyze:
+"""
+${post_text}
+"""
+
+${reference_author_style_id ? `Reference Author Style ID: "${reference_author_style_id}". Please factor this into your mimicry and humanization advice.` : ''}
+
+Please provide your analysis in a single, valid JSON object. The JSON object MUST include the following keys and structure:
+{
+  "original_post_summary": "A brief 1-2 sentence summary of the post.",
+  "detected_human_touch_elements": {
+    "personal_anecdotes_or_stories": "(boolean or brief description of observed elements)",
+    "emotional_language_used": "(boolean or examples of emotional words/phrases)",
+    "conversational_tone": "(boolean, e.g., use of questions, direct address)",
+    "unique_voice_or_perspective": "(boolean or brief description of unique aspects)",
+    "community_engagement_cues": "(e.g., explicit questions to audience, calls for interaction, use of hashtags to join conversations)"
+  },
+  "ai_generated_likelihood_score": "(A float between 0.0 (definitely human) and 1.0 (definitely AI). Provide a brief justification string for your score.)",
+  "humanizer_suggestions": {
+    "amplify_storytelling": "(Actionable suggestion string, e.g., 'Consider weaving in a brief personal experience related to the topic.')",
+    "increase_personal_connection": "(Actionable suggestion string, e.g., 'Use more 'I' or 'we' statements to build rapport.')",
+    "enhance_emotional_resonance": "(Actionable suggestion string, e.g., 'Incorporate words that convey more conviction or enthusiasm.')",
+    "inject_relevant_emojis": "(Boolean or suggestion, e.g., 'A few well-placed emojis could enhance the tone.')"
+  },
+  "mimicry_parameters": {
+    "target_tone_and_style": "(Descriptive string, e.g., 'Aim for an inspiring yet approachable tone, with a mix of declarative and reflective statements.')",
+    "key_themes_or_angles_to_emphasize": "(Array of strings, e.g., ['innovation', 'personal_growth', 'lessons_learned'])",
+    "suggested_vocabulary_or_phrasing": "(Array of strings, e.g., ['key takeaway', 'from my perspective', 'what are your thoughts?'])",
+    "structural_notes": "(e.g., 'Balance paragraphs with bullet points for readability. Consider a strong opening hook and a closing call to engagement.')"
+  }
+}`;          
+
+          const response = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              model: "gpt-4o", // Or your preferred model like gpt-4-turbo
+              messages: [
+                { role: "system", content: system_prompt },
+                { role: "user", content: user_prompt },
+              ],
+              response_format: { type: "json_object" }, // Request JSON output
+              temperature: 0.5, // Adjust for creativity vs. determinism
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+            }
+          );
+
+          if (response.data && response.data.choices && response.data.choices.length > 0) {
+            const llm_output = response.data.choices[0].message.content;
+            // Attempt to parse, as OpenAI should return valid JSON string in 'content' when json_object mode is used
+            try {
+              return JSON.parse(llm_output);
+            } catch (parseError) {
+              console.error("Error parsing LLM JSON response:", parseError, "Raw LLM output:", llm_output);
+              return JSON.stringify({
+                error: "Failed to parse LLM JSON response.",
+                details: parseError.message,
+                raw_output: llm_output
+              });
+            }
+          } else {
+            console.error("Invalid response structure from OpenAI API:", response.data);
+            return JSON.stringify({
+              error: "Invalid or empty response from OpenAI API.",
+              details: response.data
+            });
+          }
+        } catch (error) {
+          console.error("Error in analyze_linkedin_post_human_touch (OpenAI call):", error.response ? error.response.data : error.message);
+          return JSON.stringify({
+            error: `Error calling OpenAI for post analysis: ${error.message}`,
+            details: error.response ? error.response.data : error.stack,
+          });
+        }
+      },
+      {
+        name: "analyze_linkedin_post_human_touch",
+        description:
+          "Analyzes a given LinkedIn post text to identify characteristics of human-like writing and distinguish it from AI-generated content. It can also research signs of human touch in writings and suggest parameters for humanization or mimicry.",
+        schema: z.object({
+          post_text: z
+            .string()
+            .describe("The text content of the LinkedIn post to analyze."),
+          reference_author_style_id: z
+            .string()
+            .optional()
+            .describe(
+              "Optional: The ID or name of a LinkedIn Top Voice author whose writing style should be researched and used as a reference for mimicking human touch."
+            ),
+        }),
+      }
+    ),
+  ];
+}
+
 module.exports = {
   getAllApiTools,
   createTopVoicesTools,
@@ -652,4 +775,5 @@ module.exports = {
   createStripeTools,
   createProfileTools,
   createAuthAndLicenseTools,
+  createContentAnalysisTools,
 };
