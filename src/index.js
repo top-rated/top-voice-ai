@@ -13,6 +13,7 @@ const profileRoutes = require("./routes/profile.routes");
 const searchRoutes = require("./routes/search.routes");
 const adminRoutes = require("./routes/admin.routes");
 const stripeRoutes = require("./routes/stripe.routes"); // Added Stripe routes
+const linkedinRoutes = require('./routes/linkedin.routes');
 
 const { processQuery } = require("./chatbot/linkedin_chatbot");
 
@@ -88,7 +89,8 @@ app.use(`${API_PREFIX}/top-voices`, topVoicesRoutes);
 app.use(`${API_PREFIX}/profiles`, profileRoutes);
 app.use(`${API_PREFIX}/search`, searchRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
-app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
+app.use(`${API_PREFIX}/stripe`, stripeRoutes);
+app.use(`${API_PREFIX}/linkedin`, linkedinRoutes); 
 
 
 // Root route

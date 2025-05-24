@@ -1,1 +1,15 @@
-{}
+{
+  "manual_YWxsYW5k_1748042550930": {
+    "id": "manual_YWxsYW5k_1748042550930",
+    "active": true,
+    "type": "premium",
+    "email": "allandriodtricks@gmail.com",
+    "source": "manual",
+    "notes": "testing",
+    "createdAt": "2025-05-23T23:22:30.930Z",
+    "updatedAt": "2025-05-23T23:22:30.930Z"
+  },
+  "email:allandriodtricks@gmail.com": {
+    "manual_YWxsYW5k_1748042550930": true
+  }
+}
