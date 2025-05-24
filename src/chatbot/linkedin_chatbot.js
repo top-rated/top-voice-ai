@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const { MemorySaver } = require("@langchain/langgraph");
 const { SYSTEM_PROMPT } = require("../utils/system_prompt");
 const { getAllApiTools } = require("../utils/api_tools");
-
+const { HumanMessage } = require("@langchain/core/messages");
 dotenv.config();
 
 // Initialize the model
@@ -56,6 +56,35 @@ async function processQuery(threadId, query) {
   return stream;
 }
 
+async function processLinkedInQuery(threadId, query) {
+  // Initialize or retrieve memory for this thread
+  if (!memoryStore.has(threadId)) {
+    memoryStore.set(threadId, new MemorySaver());
+  }
+  const memory = memoryStore.get(threadId);
+
+  const newPrompt= `${prompt} Markdown is not allowed on linedin so user LinkedIn styling for response rendering`
+  // Create agent with thread-specific memory
+  const agent = createReactAgent({
+    llm: model,
+    tools: apiTools,
+    checkpointSaver: memory,
+    stateModifier: newPrompt,
+  });
+
+ 
+  // Process the query with thread_id in the configurable and stream the response
+  const agentFinalState = await agent.invoke(
+    { messages: [new HumanMessage(query)] },
+    { configurable: { thread_id: threadId } },
+  );
+  
+  const response = agentFinalState.messages[agentFinalState.messages.length - 1].content;
+  
+  return response;
+  
+}
 module.exports = {
   processQuery,
+  processLinkedInQuery,
 };
