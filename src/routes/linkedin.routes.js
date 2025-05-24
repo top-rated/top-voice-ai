@@ -9,7 +9,7 @@ const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
 const ACCOUNT_ID = process.env.ACCOUNT_ID;
 
 // Webhook endpoint to receive LinkedIn message events
-router.post('/webhook', async (req, res) => {
+router.post('/webhook/linkedin/messages', async (req, res) => {
     try {
         const event = req.body;
         

@@ -439,6 +439,101 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- Top Voice Data Functions ---
+  async function fetchTopVoiceData() {
+    const totalAuthorsStat = document.getElementById('total-authors-stat');
+    const totalPostsStat = document.getElementById('total-posts-stat');
+    const totalCategoriesStat = document.getElementById('total-categories-stat');
+    const authorsTableBody = document.getElementById('top-voice-authors-table-body');
+
+    if (!totalAuthorsStat || !totalPostsStat || !totalCategoriesStat || !authorsTableBody) {
+      console.error('One or more Top Voice Data DOM elements are missing.');
+      return;
+    }
+
+    authorsTableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">Loading Top Voice data...</td></tr>';
+
+    try {
+      const result = await api.get('/api/v1/admin/top-voices/stats');
+      console.log('Top Voice Stats Result:', result);
+
+      if (result.success && result.data) {
+        const stats = result.data;
+        totalAuthorsStat.textContent = stats.totalAuthors ?? '--';
+        totalPostsStat.textContent = stats.totalPosts ?? '--';
+        totalCategoriesStat.textContent = stats.totalCategories ?? '--';
+
+        if (stats.authors && stats.authors.length > 0) {
+          authorsTableBody.innerHTML = ''; // Clear loading message
+          stats.authors.forEach(author => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-200">${author.name}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author.category || 'N/A'}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author.postCount}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button class="text-indigo-400 hover:text-indigo-300 view-author-posts-button" data-author-id="${author.id || author.name}">View Posts</button>
+              </td>
+            `;
+            authorsTableBody.appendChild(row);
+          });
+        } else {
+          authorsTableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">No author data available.</td></tr>';
+        }
+      } else {
+        throw new Error(result.message || 'Failed to fetch Top Voice data');
+      }
+    } catch (error) {
+      console.error('Error fetching Top Voice data:', error);
+      totalAuthorsStat.textContent = 'Error';
+      totalPostsStat.textContent = 'Error';
+      totalCategoriesStat.textContent = 'Error';
+      authorsTableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-400">Error loading data: ${error.message}</td></tr>`;
+    }
+  }
+
+  async function refreshTopVoiceData() {
+    const refreshButton = document.getElementById('refresh-top-voice-data-button');
+    if(refreshButton) {
+        refreshButton.disabled = true;
+        refreshButton.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Refreshing...';
+    }
+    
+    try {
+      const result = await api.post('/api/v1/admin/top-voices/refresh');
+      if (result.success) {
+        showToast('Top Voice data refresh initiated. It may take a few moments for new data to appear.', 'success');
+        await fetchTopVoiceData(); // Re-fetch data after refresh
+      } else {
+        throw new Error(result.message || 'Failed to refresh Top Voice data');
+      }
+    } catch (error) {
+      console.error('Error refreshing Top Voice data:', error);
+      showToast(`Error refreshing data: ${error.message}`, 'error');
+    }
+    if(refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+    }
+  }
+
+  // Event listener for the refresh button
+  const refreshTopVoiceDataButton = document.getElementById('refresh-top-voice-data-button');
+  if (refreshTopVoiceDataButton) {
+    refreshTopVoiceDataButton.addEventListener('click', refreshTopVoiceData);
+  }
+
+  // TODO: Add event listener for 'View Posts' buttons (requires modal or new view)
+  // document.getElementById('top-voice-authors-table-body').addEventListener('click', (event) => {
+  //   if (event.target.classList.contains('view-author-posts-button')) {
+  //     const authorId = event.target.dataset.authorId;
+  //     console.log('View posts for author:', authorId);
+  //     // Implement logic to show posts for this author
+  //   }
+  // });
+
+  // --- End Top Voice Data Functions ---
+
   // Event Listener for User Search
   const userSearchInput = document.getElementById('user-search-input');
   if (userSearchInput) {
@@ -474,6 +569,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
+  // --- Toast Notification Function ---
+  function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `fixed top-5 right-5 p-4 rounded-md shadow-lg text-white text-sm z-50 ${type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+      toast.remove();
+    }, 5000);
+  }
+
+  function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'fixed top-5 right-5 z-50 space-y-2';
+    document.body.appendChild(container);
+    return container;
+  }
+  // --- End Toast Notification Function ---
 
   // Initialize the dashboard view and fetch data
   async function initializeDashboard() {
@@ -633,6 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetId === 'users-section') {
         console.log('Loading users data...');
         fetchAndDisplayUsers();
+      } else if (targetId === 'top-voice-data-section') {
+        fetchTopVoiceData();
       } else if (targetId === 'subscriptions-section') {
         console.log('Loading subscriptions data...');
         fetchStripeDashboardData();
