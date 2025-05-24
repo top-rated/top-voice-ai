@@ -30,6 +30,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "node-cache": "^5.1.2",
+    "node-cron": "^4.0.7",
     "node-fetch": "^3.3.2",
     "stripe": "^14.25.0",
     "unipile-node-sdk": "^1.9.3"

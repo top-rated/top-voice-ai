@@ -1,12 +1,12 @@
-# LinkedIn Top Voices
+# Top Voice AI Chatbot
 
-![LinkedIn Top Voices Screenshot](/public/screenshot.png)
+![Top Voice AI Chatbot Screenshot](/public/screenshot.png)
 
-API server for the LinkedIn Top Voices GPT - an intelligent tool that helps users research trending topics and generate authentic LinkedIn posts based on top influencers' content style.
+Top Voice AI Chatbot - an intelligent tool that helps users research trending topics and generate authentic LinkedIn posts based on top influencers' content style.
 
 ## Overview
 
-This API provides backend services for the LinkedIn Top Voices GPT, including:
+This API provides backend services for the Top Voice AI Chatbot, including:
 
 - Access to curated LinkedIn Top Voices content
 - Custom profile analysis
@@ -18,7 +18,7 @@ This API provides backend services for the LinkedIn Top Voices GPT, including:
 - **Top LinkedIn Voices Data**: Access content and insights from LinkedIn's top influencers across various industries
 - **Profile Analysis**: Analyze custom LinkedIn profiles to understand their posting patterns and engagement
 - **Search**: Search recent LinkedIn posts by keywords
-- **Subscription Management**: Simple subscription ID-based authentication for GPT compatibility
+- **Subscription Management**: Simple subscription ID-based authentication for Top Voice AI Chatbot compatibility
 
 ## Tech Stack
 
@@ -52,20 +52,42 @@ npm install
 3. Create a `.env` file in the root directory with the following variables:
 
 ```
-# Server
-PORT=3000
-NODE_ENV=development
+OPENAI_API_KEY=
+
+JWT_SECRET=
 API_V1_PREFIX=/api/v1
 
-# Webhook URLs
-VOICES_WEBHOOK_INIT=
-VOICES_WEBHOOK_DAILY=
-PROFILE_WEBHOOK=
-SEARCH_WEBHOOK=
 
-# Subscription
-GUMROAD_SECRET=your_gumroad_secret
-SUBSCRIPTION_URL=https://linkedingpt.gumroad.com/l/subscribe?wanted=true
+# Rate Limiting
+RATE_LIMIT_PER_HOUR=100
+PAID_RATE_LIMIT_PER_HOUR=1000
+
+# Security
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+#Stripe
+
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_WEBHOOK_URL=
+STRIPE_PRODUCT_ID=
+STRIPE_PRICE_ID=
+
+
+ADMIN_USER_NAME=
+ADMIN_USER_PASSWORD=
+
+STRIPE_SUCCESS_URL=/payment-success
+STRIPE_CANCEL_URL=/payment-cancelled
+
+ACCOUNT_ID=
+UNIPILE_BASE_URL=
+UNIPILE_ACCESS_TOKEN=
+WEB_HOOK_URL=
+
+
 ```
 
 4. Start the server
@@ -82,11 +104,10 @@ npm start
 
 ### Authentication
 
-- `POST /api/v1/auth/register` - Register a new user (simplified for GPT)
+- `POST /api/v1/auth/register` - Register a new user (simplified for Top Voice AI Chatbot)
 - `POST /api/v1/auth/login` - Login a user and get subscription ID
 - `GET /api/v1/auth/verify-subscription` - Verify subscription status by ID
 - `GET /api/v1/auth/subscription/:subscriptionId` - Get subscription status by ID
-- `POST /api/v1/auth/gumroad-webhook` - Handle Gumroad webhook events
 
 ### Top Voices
 
@@ -108,7 +129,7 @@ npm start
 
 ### Search (Premium Feature)
 
-- `GET /api/v1/search` - Direct search with query parameters (GPT-friendly, requires subscriptionId)
+- `GET /api/v1/search` - Direct search with query parameters (Top Voice AI Chatbot-friendly, requires subscriptionId)
 - `POST /api/v1/search/keywords` - Search LinkedIn posts by keywords (requires subscriptionId)
 - `GET /api/v1/search/results/:searchId` - Get search results
 - `GET /api/v1/search/recent` - Get recent searches (requires subscriptionId)
@@ -116,12 +137,12 @@ npm start
 
 ## Authentication
 
-The API uses a simple subscription ID-based authentication for GPT compatibility. To access premium endpoints, include the subscription ID either:
+The API uses a simple subscription ID-based authentication for Top Voice AI Chatbot compatibility. To access premium endpoints, include the subscription ID either:
 
 1. As a query parameter: `?subscriptionId=your_subscription_id`
 2. In the request body as a JSON property: `{ "subscriptionId": "your_subscription_id" }`
 
-This simplified approach makes it easier for GPT to interact with the API without having to manage tokens.
+
 
 ## User Tiers
 
@@ -162,8 +183,8 @@ The project includes Docker configuration for easy deployment:
 
 ```bash
 # Build the Docker image
-docker build -t linkedin-gpt-api .
+docker build -t linkedin-Top Voice AI Chatbot-api .
 
 # Run the container
-docker run -p 3000:3000 --env-file .env linkedin-gpt-api
+docker run -p 3000:3000 --env-file .env linkedin-Top Voice AI Chatbot-api
 ```
