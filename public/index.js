@@ -434,10 +434,11 @@ document.addEventListener("DOMContentLoaded", function () {
       "flex items-start w-full max-w-2xl mb-4 animate-slide-up mx-auto";
     messageElement.innerHTML = `
       <div class="flex-shrink-0 mr-3 mt-1">
-        <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center">
           <span class="icon-user text-white text-sm flex items-center justify-center w-full h-full"></span>
         </div>
       </div>
+      
       <div class="rounded-lg p-3 flex-grow markdown">
         <p class="text-sm text-white">${escapeHtml(message)}</p>
       </div>
@@ -459,14 +460,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const avatarDiv = document.createElement("div");
     avatarDiv.className = "flex-shrink-0 mr-3 mt-1";
     avatarDiv.innerHTML = `
-      <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-        <img src="/top-voices.png" alt="AI" class="w-6 h-6 object-cover rounded-full" />
+      <div class="w-8 h-8 rounded-full flex items-center justify-center">
+        <img src="/top-voices.png" alt="AI" class="w-6 h-6 object-cover" />
       </div>
     `;
     
     // Create message content container
     const contentDiv = document.createElement("div");
-    contentDiv.className = "bg-[#303030] rounded-lg p-3 flex-grow markdown";
+    contentDiv.className = "rounded-lg p-3 flex-grow markdown";
     
     // Create text content area for actual message content
     const textContent = document.createElement("div");
