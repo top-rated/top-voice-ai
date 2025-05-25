@@ -2,85 +2,60 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 
-const OUTPUT_DATA_DIR = path.join(__dirname, 'webhook_responses_data');
+// Directory to save API endpoint responses
+const OUTPUT_DATA_DIR = path.join(__dirname, 'api_responses_data'); // Changed directory name
 
-const webhooks = [
+// Configure your application's base URL (ensure your app server is running)
+const APP_BASE_URL = process.env.APP_URL || 'http://localhost:3000'; // Default to port 3000
+
+const endpointsToTest = [
   {
-    name: "LinkedIn Top Voices - Initial",
-    url: "https://n8n.top-rated.pro/webhook/79d5f960-bb03-402f-810b-52996ba4ebfa"
+    name: "App API - Refresh All Top Voices Data",
+    method: "GET",
+    url: `${APP_BASE_URL}/api/v1/top-voices/refresh-all`,
+    description: "Triggers initial data pull and processing, creates/updates src/data/top_voices.json"
   },
   {
-    name: "LinkedIn Top Voices - Daily",
-    url: "https://n8n.top-rated.pro/webhook/ac8b9ad5-045a-44b5-aa76-028b707bd108"
-  },
-/*
-  {
-    name: "LinkedIn Custom Profile Posts",
-    url: "https://n8n.top-rated.pro/webhook/c77decca-081e-4019-9797-f058d024e558",
-    // Example: params: { profile_url: "linkedin_profile_url_here" } // Replace with actual param name if different
-    // For GET requests, parameters are usually query strings. If POST, body needs to be structured.
-    // Assuming GET for now, and n8n webhook is configured to accept profile_url as a query param.
-    // Example: https://n8n.top-rated.pro/webhook/c77decca-081e-4019-9797-f058d024e558?profile_url=YOUR_URL_ENCODED_LINKEDIN_PROFILE
-    // We will need to construct the URL with query parameters.
-    paramKey: "profile_url", // Key expected by the n8n webhook for the profile URL
-    paramValue: "https://www.linkedin.com/in/raheesahmed/" // Example value
-  },
-  {
-    name: "LinkedIn Keyword Search Posts",
-    url: "https://n8n.top-rated.pro/webhook/67b40ba9-34fd-46e9-96f1-2466c504c2ec",
-    // Example: params: { search_query: "keyword search string" } // Replace with actual param name
-    // Assuming GET and n8n webhook accepts 'keywords' as a query param based on your description.
-    // Example: https://n8n.top-rated.pro/webhook/67b40ba9-34fd-46e9-96f1-2466c504c2ec?keywords=YOUR_URL_ENCODED_KEYWORDS
-    paramKey: "keywords", // Key expected by the n8n webhook for the search query
-    paramValue: "AI in marketing" // Example value
+    name: "App API - Get Trending Posts",
+    method: "GET",
+    url: `${APP_BASE_URL}/api/v1/top-voices/trending`,
+    description: "Triggers daily data pull and trending processing, creates/updates src/data/trending_posts.json"
   }
-*/
 ];
 
-const testWebhook = async (webhook) => {
-  console.log(`\n--- Testing: ${webhook.name} ---`);
-  let urlToCall = webhook.url;
-
-  if (webhook.paramKey && webhook.paramValue) {
-    // Construct URL with query parameters
-    const params = new URLSearchParams();
-    params.append(webhook.paramKey, webhook.paramValue);
-    urlToCall = `${webhook.url}?${params.toString()}`;
-  }
+const testEndpoint = async (endpoint) => {
+  console.log(`\n--- Testing Endpoint: ${endpoint.name} ---`);
+  console.log(`Description: ${endpoint.description}`);
+  console.log(`Requesting ${endpoint.method} ${endpoint.url}`);
 
   try {
-    console.log(`Requesting URL: ${urlToCall}`);
-    // Note: n8n webhooks might require specific methods (e.g., POST for parameters in body)
-    // or headers (e.g., Authorization). Adjust axios.get() or use axios.post() if needed.
-    const response = await axios.get(urlToCall, {
-      // Example headers if needed:
-      // headers: {
-      //   'Authorization': 'Basic YOUR_BASE64_ENCODED_CREDENTIALS',
-      //   'Content-Type': 'application/json'
-      // }
-    });
+    const config = { method: endpoint.method, url: endpoint.url };
+    const response = await axios(config);
+
     console.log(`Status: ${response.status}`);
-    console.log('Response Data:');
+    console.log('Response Data from API:');
     console.log(JSON.stringify(response.data, null, 2));
 
-    // Save response to a file
+    // Save API response to a file
     try {
       await fs.mkdir(OUTPUT_DATA_DIR, { recursive: true }); // Ensure directory exists
-      const filename = webhook.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '') + '_response.json';
+      const filename = endpoint.name.toLowerCase().replace(/[^a-z0-9_]/gi, '_') + '_response.json';
       const filePath = path.join(OUTPUT_DATA_DIR, filename);
       await fs.writeFile(filePath, JSON.stringify(response.data, null, 2));
-      console.log(`Response saved to ${filePath}`);
+      console.log(`API Response saved to ${filePath}`);
     } catch (fileError) {
-      console.error(`Error saving response to file for ${webhook.name}:`, fileError.message);
+      console.error(`Error saving API response to file for ${endpoint.name}:`, fileError.message);
     }
+
+    console.log(`\n>>> After calling ${endpoint.name}, check your src/data/ directory for updated files (top_voices.json or trending_posts.json).`);
+
   } catch (error) {
-    console.error(`Error fetching from ${webhook.name} (${urlToCall}):`);
+    console.error(`Error calling endpoint ${endpoint.name} (${endpoint.url}):`);
     if (error.response) {
       console.error(`Status: ${error.response.status}`);
       console.error('Data:', JSON.stringify(error.response.data, null, 2));
-      // console.error('Headers:', JSON.stringify(error.response.headers, null, 2));
     } else if (error.request) {
-      console.error('Error Request: No response received.');
+      console.error('Error Request: No response received. Is your application server running at ' + APP_BASE_URL + '?');
     } else {
       console.error('Error Message:', error.message);
     }
@@ -88,14 +63,19 @@ const testWebhook = async (webhook) => {
 };
 
 const runTests = async () => {
-  console.log('Starting webhook tests...');
-  for (const webhook of webhooks) {
-    await testWebhook(webhook);
+  console.log('Starting application API endpoint tests...');
+  console.log(`Ensure your application server is running and accessible at ${APP_BASE_URL}`);
+  console.log('This script will trigger endpoints that should update files in d:\\top-voice-ai\\src\\data\\');
+  
+  for (const endpoint of endpointsToTest) {
+    await testEndpoint(endpoint);
   }
-  console.log('\n--- All tests complete ---');
-  console.log('\nWebhook responses (if successful) are saved in the "webhook_responses_data" directory.');
+  console.log('\n--- All endpoint tests complete ---');
+  console.log(`API responses (if successful) are saved in the "${path.basename(OUTPUT_DATA_DIR)}" directory.`);
+  console.log('The primary outcome to check is the creation/update of files in your application\'s src/data directory.');
   console.log('\nTo run this script: node test_webhook.js');
   console.log('Ensure you have axios installed (npm install axios or yarn add axios).');
+  console.log('You might need to set APP_URL environment variable if your app is not on http://localhost:3000.');
 };
 
 runTests();

@@ -46,10 +46,11 @@ async function processQuery(threadId, query) {
     messages: [{ role: "user", content: query }],
   };
   const config = { configurable: { thread_id: threadId } };
+
   // Process the query with thread_id in the configurable and stream the response
   const stream = agent.stream(inputs, {
     ...config,
-    streamMode: "values", // Ensures we get structured updates
+    streamMode: "values", 
   });
 
   // Return the stream to be handled by the API route

@@ -194,6 +194,7 @@ app.post("/api/v1/chat", async (req, res) => {
   // Send initial connection confirmation event
   const initialEvent = { type: "connected", data: "Connection established" };
   res.write(`data: ${JSON.stringify(initialEvent)}\n\n`);
+  // Express doesn't have flush() method - using write() is sufficient for SSE
   console.log("SSE connection established, sent initial event");
 
   try {
@@ -201,35 +202,68 @@ app.post("/api/v1/chat", async (req, res) => {
     const stream = await processQuery(threadId, query);
     console.log("Process query returned a stream, beginning iteration...");
 
-    for await (
-      const { messages } of stream
-    ) {
-      let msg = messages[messages?.length - 1];
-      if (msg?.content) {
-        console.log(msg.content);
-        const contentEvent = { type: "content_chunk", data: msg.content };
-        res.write(`data: ${JSON.stringify(contentEvent)}\n\n`);
-        console.log(`Sent content chunk: ${msg.content}`);
-      } else if (msg?.tool_calls?.length > 0) {
-        console.log(msg.tool_calls);
-        const toolEvent = { type: "tool_invocation", data: msg.tool_calls };
-        res.write(`data: ${JSON.stringify(toolEvent)}\n\n`);
-        console.log(`Sent tool invocation: ${JSON.stringify(msg.tool_calls)}`);
-      } else {
-        console.log(msg);
-        const unknownEvent = { type: "unknown", data: msg };
-        res.write(`data: ${JSON.stringify(unknownEvent)}\n\n`);
-        console.log(`Sent unknown event: ${JSON.stringify(msg)}`);
+    // Enhanced logging to debug LangGraph streaming
+    for await (const chunk of stream) {
+      console.log("DEBUG - Full chunk:", JSON.stringify(chunk, null, 2));
+      
+      // For streaming completion from LLM, the expected token format is in chunk.messages[last].content
+      if (chunk && chunk.messages && chunk.messages.length > 0) {
+        const msg = chunk.messages[chunk.messages.length - 1];
+        console.log("DEBUG - Last message:", JSON.stringify(msg, null, 2));
+        
+        // Check if this is an actual completion token
+        if (msg?.content !== undefined && typeof msg.content === 'string') {
+          console.log("DEBUG - Found content token:", msg.content);
+          // Send actual content to client for streaming display
+          const contentEvent = { type: "content_chunk", data: msg.content };
+          res.write(`data: ${JSON.stringify(contentEvent)}\n\n`);
+          console.log(`Sent content chunk: "${msg.content}"`);
+        } 
+        // Handle tool calls
+        else if (msg?.tool_calls && msg.tool_calls.length > 0) {
+          const toolEvent = { type: "tool_invocation", data: msg.tool_calls };
+          res.write(`data: ${JSON.stringify(toolEvent)}\n\n`);
+          console.log(`Sent tool invocation: ${JSON.stringify(msg.tool_calls)}`);
+        }
+        // Handle tool results
+        else if (msg?.name) {
+          const toolResultEvent = { type: "tool_result", data: msg };
+          res.write(`data: ${JSON.stringify(toolResultEvent)}\n\n`);
+          console.log(`Sent tool result: ${msg.content?.substring(0, 30) || 'No content'}`);
+        }
+        // Special case for empty content but valid message - could be start of token stream
+        else if (msg?.content === '') {
+          console.log("DEBUG - Found empty content token");
+          const emptyContentEvent = { type: "content_chunk", data: "" };
+          res.write(`data: ${JSON.stringify(emptyContentEvent)}\n\n`);
+        }
+        // Handle any other message types - let's check for completion messages with specific format
+        else {
+          // Try to extract useful content from the message
+          let extractedContent = '';
+          
+          // Check if message is a constructor with an id - might be initialization message
+          if (msg?.type === 'constructor' && msg?.id) {
+            console.log("DEBUG - Constructor message, skipping");
+            continue; // Skip constructor messages
+          }
+          
+          const unknownEvent = { type: "unknown", data: msg };
+          res.write(`data: ${JSON.stringify(unknownEvent)}\n\n`);
+          console.log(`Sent unknown message type: ${JSON.stringify(msg).substring(0, 100)}`);
+        }
+      } else if (chunk) {
+        console.log("Received non-message chunk:", JSON.stringify(chunk).substring(0, 100));
       }
-      console.log("-----\n");
-
-      
-      
     }
+    
+    // Send a completion event to properly signal the end of the stream
+    const completionEvent = { type: "complete", data: "Stream complete" };
+    res.write(`data: ${JSON.stringify(completionEvent)}\n\n`);
   } catch (error) {
     console.error("Error during chat processing:", error);
     // Send an error event to the client before closing
-    const errorEvent = { type: "error", data: "An error occurred on the server." };
+    const errorEvent = { type: "error", data: error.message || "An error occurred on the server." };
     res.write(`data: ${JSON.stringify(errorEvent)}\n\n`);
     console.log("Error event sent to client");
   } finally {

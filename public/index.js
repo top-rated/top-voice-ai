@@ -476,7 +476,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Create typing indicator (will be hidden when content is displayed)
     const typingIndicator = document.createElement("div");
     typingIndicator.className = "typing-indicator";
-    typingIndicator.innerHTML = `<span>_Processing your request..._</span>`;
     contentDiv.appendChild(typingIndicator);
     
     // Assemble the message
@@ -679,16 +678,29 @@ async function streamText(element, text, append = false) {
     }
   }
 
-  // Process Markdown for the new chunk of text
+  // Process Markdown for the text
   const processedText = processMarkdown(text);
 
   // If not appending, clear the element first
   if (!append) {
     element.innerHTML = "";
-  }
+    // Apply the processed text directly when not appending
+    element.innerHTML = processedText;
+  } else {
+    // When appending, we want to update the content
+    // Store the current scroll position
+    const chatContainer = document.getElementById("chat-container");
+    const isScrolledToBottom = chatContainer ? 
+      (chatContainer.scrollHeight - chatContainer.clientHeight <= chatContainer.scrollTop + 50) : false;
+    
+    // Update with new content
+    element.innerHTML = processedText;
 
-  // Append the processed text directly
-  element.innerHTML += processedText;
+    // Restore scroll position if user was at bottom
+    if (chatContainer && isScrolledToBottom) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }
 
   // Apply highlighting to any new code blocks within the element
   applyHighlightingInElement(element);
@@ -842,7 +854,35 @@ async function sendMessage(message) {
   const initialBotTextElement = botMessageBubble.querySelector('.text-content');
   
   if (initialBotTextElement) {
-    streamText(initialBotTextElement, "_Processing your request..._", false);
+    // Clean loading indicator - single pulsing dot with no text
+    initialBotTextElement.innerHTML = '<div class="loading-indicator"><div class="loading-dot"></div></div>';
+    
+    // Add this style to the head if it doesn't exist
+    if (!document.getElementById('loading-style')) {
+      const style = document.createElement('style');
+      style.id = 'loading-style';
+      style.textContent = `
+        .loading-indicator {
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-start;
+          padding: 10px 0;
+        }
+        .loading-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: #3b82f6;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+          0% { transform: scale(0.8); opacity: 0.3; }
+          50% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(0.8); opacity: 0.3; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
   } else {
     console.error("Could not find .text-content in newly created bot message");
   }
@@ -900,52 +940,89 @@ async function sendMessage(message) {
               console.log("Connection established with server");
             } else if (eventData.type === "content_chunk") {
               const content = eventData.data;
+              console.log("Received content chunk:", content);
+              
+              // Skip if this is just echoing the user's query
               if (!isEchoedQueryProcessed && content === message) {
                 isEchoedQueryProcessed = true;
                 console.log("Skipped echoed user query:", content);
                 accumulatedResponseForHistory += content; // Echoed query is part of history
-              } else {
-                const isLikelyJson = (str) => {
-                    if (typeof str !== 'string') return false;
-                    str = str.trim();
-                    return (str.startsWith('{') && str.endsWith('}')) || (str.startsWith('[') && str.endsWith(']'));
-                };
-                if (isLikelyJson(content)) {
-                  console.log("Skipped rendering likely JSON data:", content);
-                  accumulatedResponseForHistory += content; 
-                } else {
-                  // Always clear the processing message when we get actual content
-                  if (!hasClearedProcessingMessage) {
-                    // Find and hide all typing indicators
-                    const typingIndicators = document.querySelectorAll(".typing-indicator");
-                    typingIndicators.forEach(indicator => {
-                      indicator.style.display = 'none';
-                    });
-                    
-                    if (initialBotTextElement) {
-                      // Clear the initial bot message element
-                      initialBotTextElement.innerHTML = "";
-                    }
-                    hasClearedProcessingMessage = true;
-                  }
-                  
-                  // Store the accumulated content for this response
-                  if (!window.accumulatedContent) {
-                    window.accumulatedContent = "";
-                  }
-                  
-                  // Add the new chunk to our accumulated content
-                  window.accumulatedContent += content;
-                  
-                  // Render the full accumulated content
-                  if (activeTextElement) {
-                    // Always use append=false to render the full accumulated content
-                    streamText(activeTextElement, window.accumulatedContent, false);
-                  }
-                  
-                  accumulatedResponseForHistory += content;
-                }
+                continue; // Skip to next iteration
               }
+              
+              // Handle actual content
+              const isLikelyJson = (str) => {
+                  if (typeof str !== 'string') return false;
+                  str = str.trim();
+                  return (str.startsWith('{') && str.endsWith('}')) || (str.startsWith('[') && str.endsWith(']'));
+              };
+              
+              // Skip json content (usually internal state)
+              if (isLikelyJson(content)) {
+                console.log("Skipped rendering likely JSON data:", content);
+                accumulatedResponseForHistory += content; 
+                continue; // Skip to next iteration
+              }
+              
+              // Clear thinking indicator on first actual content
+              if (!hasClearedProcessingMessage) {
+                console.log("Clearing thinking indicator");
+                const typingIndicators = document.querySelectorAll(".typing-indicator");
+                typingIndicators.forEach(indicator => {
+                  if (indicator) indicator.remove();
+                });
+                
+                if (initialBotTextElement) {
+                  // Clear the initial bot message element
+                  initialBotTextElement.innerHTML = "";
+                }
+                hasClearedProcessingMessage = true;
+                window.accumulatedContent = ""; // Reset accumulated content
+              }
+              
+              // Instead of updating with the entire accumulated content,
+              // we'll implement a typewriter effect
+              if (!window.typingInProgress && content.length > 0) {
+                window.typingInProgress = true;
+                
+                // Create an array of the content characters
+                const characters = content.split('');
+                let currentIndex = 0;
+                
+                // Set up the typewriter function
+                const typeNextCharacter = () => {
+                  // Add a single character at a time
+                  if (currentIndex < characters.length) {
+                    window.accumulatedContent += characters[currentIndex];
+                    
+                    // Display the accumulated content with markdown
+                    if (activeTextElement) {
+                      activeTextElement.innerHTML = processMarkdown(window.accumulatedContent);
+                      applyHighlightingInElement(activeTextElement);
+                      
+                      // Scroll to bottom
+                      const chatContainer = document.getElementById("chat-container");
+                      if (chatContainer) {
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                      }
+                    }
+                    
+                    currentIndex++;
+                    // Schedule the next character with a random delay for realistic effect
+                    setTimeout(typeNextCharacter, Math.floor(Math.random() * 5) + 5);
+                  } else {
+                    window.typingInProgress = false;
+                  }
+                };
+                
+                // Start the typewriter effect
+                typeNextCharacter();
+              } else {
+                // If typing is already in progress, just add to the accumulated content
+                window.accumulatedContent += content;
+              }
+            
+              accumulatedResponseForHistory += content;
             } else if (eventData.type === "tool_invocation") {
               // Handle tool invocation silently without displaying in UI
               if (!hasClearedProcessingMessage && initialBotTextElement) {

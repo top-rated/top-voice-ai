@@ -1,0 +1,37 @@
+{
+  "message": "Data refreshed successfully",
+  "totalTopics": 1,
+  "totalAuthors": 3588,
+  "totalPosts": 0,
+  "topicStats": [
+    {
+      "topic": "general",
+      "authorCount": 3588,
+      "totalPosts": 0,
+      "sampleAuthors": [
+        {
+          "name": "Anonymous",
+          "postCount": 0
+        },
+        {
+          "name": "Anonymous",
+          "postCount": 0
+        },
+        {
+          "name": "Anonymous",
+          "postCount": 0
+        },
+        {
+          "name": "Anonymous",
+          "postCount": 0
+        },
+        {
+          "name": "Anonymous",
+          "postCount": 0
+        }
+      ],
+      "avgPostsPerAuthor": "0.0",
+      "maxPostsByAuthor": 0
+    }
+  ]
+}
