@@ -1,12 +1,12 @@
-# Top Voice AI Chatbot
+# Top Voice AI 
 
-![Top Voice AI Chatbot Screenshot](/public/screenshot.png)
+![Top Voice AI  Screenshot](/public/screenshot.png)
 
-Top Voice AI Chatbot - an intelligent tool that helps users research trending topics and generate authentic LinkedIn posts based on top influencers' content style.
+Top Voice AI  - an intelligent tool that helps users research trending topics and generate authentic LinkedIn posts based on top influencers' content style.
 
 ## Overview
 
-This API provides backend services for the Top Voice AI Chatbot, including:
+This API provides backend services for the Top Voice AI , including:
 
 - Access to curated LinkedIn Top Voices content
 - Custom profile analysis
@@ -18,7 +18,7 @@ This API provides backend services for the Top Voice AI Chatbot, including:
 - **Top LinkedIn Voices Data**: Access content and insights from LinkedIn's top influencers across various industries
 - **Profile Analysis**: Analyze custom LinkedIn profiles to understand their posting patterns and engagement
 - **Search**: Search recent LinkedIn posts by keywords
-- **Subscription Management**: Simple subscription ID-based authentication for Top Voice AI Chatbot compatibility
+- **Subscription Management**: Simple subscription ID-based authentication for Top Voice AI  compatibility
 
 ## Tech Stack
 
@@ -104,7 +104,7 @@ npm start
 
 ### Authentication
 
-- `POST /api/v1/auth/register` - Register a new user (simplified for Top Voice AI Chatbot)
+- `POST /api/v1/auth/register` - Register a new user (simplified for Top Voice AI )
 - `POST /api/v1/auth/login` - Login a user and get subscription ID
 - `GET /api/v1/auth/verify-subscription` - Verify subscription status by ID
 - `GET /api/v1/auth/subscription/:subscriptionId` - Get subscription status by ID
@@ -129,7 +129,7 @@ npm start
 
 ### Search (Premium Feature)
 
-- `GET /api/v1/search` - Direct search with query parameters (Top Voice AI Chatbot-friendly, requires subscriptionId)
+- `GET /api/v1/search` - Direct search with query parameters (Top Voice AI -friendly, requires subscriptionId)
 - `POST /api/v1/search/keywords` - Search LinkedIn posts by keywords (requires subscriptionId)
 - `GET /api/v1/search/results/:searchId` - Get search results
 - `GET /api/v1/search/recent` - Get recent searches (requires subscriptionId)
@@ -137,7 +137,7 @@ npm start
 
 ## Authentication
 
-The API uses a simple subscription ID-based authentication for Top Voice AI Chatbot compatibility. To access premium endpoints, include the subscription ID either:
+The API uses a simple subscription ID-based authentication for Top Voice AI  compatibility. To access premium endpoints, include the subscription ID either:
 
 1. As a query parameter: `?subscriptionId=your_subscription_id`
 2. In the request body as a JSON property: `{ "subscriptionId": "your_subscription_id" }`
@@ -183,8 +183,8 @@ The project includes Docker configuration for easy deployment:
 
 ```bash
 # Build the Docker image
-docker build -t linkedin-Top Voice AI Chatbot-api .
+docker build -t linkedin-Top Voice AI -api .
 
 # Run the container
-docker run -p 3000:3000 --env-file .env linkedin-Top Voice AI Chatbot-api
+docker run -p 3000:3000 --env-file .env linkedin-Top Voice AI -api
 ```
