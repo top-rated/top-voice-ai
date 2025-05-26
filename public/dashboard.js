@@ -461,24 +461,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const stats = result.data;
         totalAuthorsStat.textContent = stats.totalAuthors ?? '--';
         totalPostsStat.textContent = stats.totalPosts ?? '--';
-        totalCategoriesStat.textContent = stats.totalCategories ?? '--';
-
-        if (stats.authors && stats.authors.length > 0) {
+        totalCategoriesStat.textContent = stats.totalTopics ?? '--';
+        
+        // Check for topicStats array (as per the console output)
+        if (stats.topicStats && stats.topicStats.length > 0) {
           authorsTableBody.innerHTML = ''; // Clear loading message
-          stats.authors.forEach(author => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-200">${author.name}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author.category || 'N/A'}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author.postCount}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button class="text-indigo-400 hover:text-indigo-300 view-author-posts-button" data-author-id="${author.id || author.name}">View Posts</button>
-              </td>
-            `;
-            authorsTableBody.appendChild(row);
+          
+          // Process all topics and their authors
+          stats.topicStats.forEach(topic => {
+            // For each topic, create a row for each sample author (if available)
+            if (topic.sampleAuthors && topic.sampleAuthors.length > 0) {
+              // Create rows for sample authors
+              topic.sampleAuthors.forEach(author => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-200">${author.name}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${topic.topic || 'N/A'}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author.postCount}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button class="text-indigo-400 hover:text-indigo-300 view-author-posts-button" data-author-id="${author.name}">View Posts</button>
+                  </td>
+                `;
+                authorsTableBody.appendChild(row);
+              });
+            } else {
+              // If no sample authors, create a summary row for the topic
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-200">Multiple Authors</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${topic.topic || 'N/A'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${topic.postCount} (${topic.authorCount} authors)</td>
+              `;
+              authorsTableBody.appendChild(row);
+            }
           });
         } else {
-          authorsTableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">No author data available.</td></tr>';
+          authorsTableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-400">No topic data available.</td></tr>';
         }
       } else {
         throw new Error(result.message || 'Failed to fetch Top Voice data');

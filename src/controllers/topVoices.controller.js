@@ -8,6 +8,13 @@ const { formatDateRelative } = require('../utils/dateFormatter');
 // In production, consider using Redis or another distributed cache
 const topVoicesCache = new NodeCache({ stdTTL: 86400 }); // 24 hour TTL
 
+// Track last refresh times
+let lastTopVoicesRefresh = 0;
+let lastTrendingPostsRefresh = 0;
+
+// Refresh interval in milliseconds (24 hours)
+const REFRESH_INTERVAL = 24 * 60 * 60 * 1000;
+
 // File paths for persistent storage
 const DATA_DIR = path.join(__dirname, "..", "data");
 const TOP_VOICES_FILE = path.join(DATA_DIR, "top_voices.json");
@@ -28,8 +35,11 @@ const initializeTopVoicesData = async () => {
     // Check if we already have data in the cache
     if (!topVoicesCache.has("topVoices")) {
       console.log("Initializing top voices data...");
+      
+      // Default behavior: Always read from file first, never automatically call webhook
+      let dataLoaded = false;
 
-      // Try to load from file first
+      // If webhook failed or didn't return data, try to load from file
       try {
         const fileData = await fs.readFile(TOP_VOICES_FILE, "utf8");
         const data = JSON.parse(fileData);
@@ -805,110 +815,109 @@ const getTrendingPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 30; // Increased from 10 to 30
 
-    // Check if we have trending posts in the cache
+    // First, check if we have trending posts in the cache
     if (!topVoicesCache.has("trendingPosts")) {
-      // If not in cache, we need to fetch and process the data
-      if (!topVoicesCache.has("topVoices")) {
-        await initializeTopVoicesData();
-      }
-
-      const topVoices = topVoicesCache.get("topVoices");
-
-      if (!topVoices || !topVoices.topics) {
-        return res
-          .status(404)
-          .json({ message: "Top voices data not available" });
-      }
-
-      // Extract all posts from all authors across all topics
-      let allPosts = [];
-
-      topVoices.topics.forEach((topic) => {
-        if (!topic || !topic.authors || !Array.isArray(topic.authors)) {
-          return;
-        }
-
-        topic.authors.forEach((author) => {
-          if (!author) {
-            return;
-          }
-
-          if (!author.posts || !Array.isArray(author.posts)) {
-            return;
-          }
-
-          // Create detailed post objects with topic and author information
-          const detailedPosts = author.posts
-            .filter((post) => post) // Filter out null/undefined posts
-            .map((post) => ({
-              id: post.id || `unknown_${Date.now()}`,
-              authorName: author.name || "Anonymous",
-              authorHeadline: author.headline || "",
-              authorFollowerCount: author.followerCount || 0,
-              topic: topic.tag || "unknown",
-              date: post.date ? formatDateRelative(post.date) : post.date,
-              text: post.text || "",
-              link: post.link || "", // Include the post link
-              commentCount: post.comment_counter || 0,
-              reactionCount: post.reaction_counter || 0,
-              repostCount: post.repost_counter || 0,
-              totalEngagement:
-                (post.comment_counter || 0) +
-                (post.reaction_counter || 0) +
-                (post.repost_counter || 0),
-            }));
-
-          allPosts = [...allPosts, ...detailedPosts];
-        });
-      });
-
-      // Sort by total engagement (reactions + comments + reposts)
-      allPosts.sort((a, b) => b.totalEngagement - a.totalEngagement);
-
-      // Cache all trending posts
-      topVoicesCache.set("trendingPosts", allPosts, 21600);
-
-      // Save trending posts to file
+      // If not in cache, try to load from file
       try {
-        await fs.mkdir(DATA_DIR, { recursive: true });
-        await fs.writeFile(
-          TRENDING_POSTS_FILE,
-          JSON.stringify(allPosts, null, 2)
-        );
-        console.log("Trending posts saved to file successfully");
+        console.log("Attempting to load trending posts from file...");
+        const fileData = await fs.readFile(TRENDING_POSTS_FILE, "utf8");
+        const trendingPosts = JSON.parse(fileData);
+        
+        if (Array.isArray(trendingPosts) && trendingPosts.length > 0) {
+          console.log(`Loaded ${trendingPosts.length} trending posts from file`);
+          topVoicesCache.set("trendingPosts", trendingPosts, 86400);
+        } else {
+          console.log("Trending posts file exists but contains no valid data");
+        }
       } catch (fileError) {
-        console.error("Failed to save trending posts to file:", fileError);
+        console.log("No trending posts file found or unable to read it:", fileError.message);
+        
+        // If not in cache or file, we need to generate it from top voices data
+        if (!topVoicesCache.has("topVoices")) {
+          await initializeTopVoicesData();
+        }
+        
+        const topVoices = topVoicesCache.get("topVoices");
+        
+        if (!topVoices || !topVoices.topics) {
+          return res
+            .status(404)
+            .json({ message: "Top voices data not available" });
+        }
+        
+        // Extract all posts from all authors across all topics
+        let allPosts = [];
+        
+        // Process top voices data into trending posts
+        topVoices.topics.forEach((topic) => {
+          if (!topic || !topic.authors || !Array.isArray(topic.authors)) {
+            return;
+          }
+          
+          topic.authors.forEach((author) => {
+            if (!author || !author.posts || !Array.isArray(author.posts)) {
+              return;
+            }
+            
+            // Create detailed post objects with topic and author information
+            const detailedPosts = author.posts
+              .filter((post) => post) // Filter out null/undefined posts
+              .map((post) => ({
+                id: post.id || `unknown_${Date.now()}`,
+                authorName: author.name || "Anonymous",
+                authorHeadline: author.headline || "",
+                authorFollowerCount: author.followerCount || 0,
+                topic: topic.tag || "unknown",
+                date: post.date ? formatDateRelative(post.date) : post.date,
+                text: post.text || "",
+                link: post.link || "", // Include the post link
+                commentCount: post.comment_counter || 0,
+                reactionCount: post.reaction_counter || 0,
+                repostCount: post.repost_counter || 0,
+                totalEngagement:
+                  (post.comment_counter || 0) +
+                  (post.reaction_counter || 0) +
+                  (post.repost_counter || 0),
+              }));
+            
+            allPosts = [...allPosts, ...detailedPosts];
+          });
+        });
+        
+        // Sort by total engagement (reactions + comments + reposts)
+        allPosts.sort((a, b) => b.totalEngagement - a.totalEngagement);
+        
+        // Cache the trending posts
+        topVoicesCache.set("trendingPosts", allPosts, 86400);
+        
+        // Save trending posts to file
+        try {
+          await fs.mkdir(DATA_DIR, { recursive: true });
+          await fs.writeFile(TRENDING_POSTS_FILE, JSON.stringify(allPosts, null, 2));
+          console.log("Generated trending posts saved to file successfully");
+        } catch (saveError) {
+          console.error("Failed to save generated trending posts to file:", saveError.message);
+        }
       }
-
-      // Apply pagination
-      const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-      const paginatedPosts = allPosts.slice(startIndex, endIndex);
-
-      return res.json({
-        totalPosts: allPosts.length,
-        page,
-        limit,
-        totalPages: Math.ceil(allPosts.length / limit),
-        posts: paginatedPosts,
-      });
     } else {
-      // Get cached trending posts
-      const allPosts = topVoicesCache.get("trendingPosts");
-
-      // Apply pagination
-      const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-      const paginatedPosts = allPosts.slice(startIndex, endIndex);
-
-      return res.json({
-        totalPosts: allPosts.length,
-        page,
-        limit,
-        totalPages: Math.ceil(allPosts.length / limit),
-        posts: paginatedPosts,
-      });
+      console.log("Using cached trending posts data");
     }
+    
+    // Get trending posts from cache (now it should be there)
+    const allPosts = topVoicesCache.get("trendingPosts");
+    
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedPosts = allPosts.slice(startIndex, endIndex);
+    
+    return res.json({
+      totalPosts: allPosts.length,
+      page,
+      limit,
+      totalPages: Math.ceil(allPosts.length / limit),
+      posts: paginatedPosts,
+    });
   } catch (error) {
     console.error("Error fetching trending posts:", error);
     res.status(500).json({
@@ -1105,6 +1114,50 @@ const refreshAllData = async (req, res) => {
 
     // Clear all cache
     topVoicesCache.flushAll();
+
+    // Force refresh data from webhook regardless of time (this is a manual refresh)
+    try {
+      console.log("Force fetching fresh data from webhook...");
+      const response = await axios.get(INITIAL_PULL_WEBHOOK);
+      if (response.data && Array.isArray(response.data)) {
+        console.log(`Successfully fetched ${response.data.length} items from webhook`);
+        
+        // Process the authors from the posts
+        const authors = processPostsIntoAuthors(response.data);
+        
+        // Save the raw data to file
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        await fs.writeFile(TOP_VOICES_FILE, JSON.stringify(response.data, null, 2));
+        console.log("Fresh data saved to file successfully");
+        
+        // Update last refresh timestamp
+        lastTopVoicesRefresh = Date.now();
+      }
+    } catch (webhookError) {
+      console.error("Error fetching from webhook, falling back to cached data:", webhookError.message);
+    }
+    
+    // Also refresh trending posts data
+    try {
+      console.log("Force fetching fresh trending posts data from webhook...");
+      const trendingResponse = await axios.get(DAILY_PULL_WEBHOOK);
+      if (trendingResponse.data && Array.isArray(trendingResponse.data)) {
+        console.log(`Successfully fetched ${trendingResponse.data.length} trending posts from webhook`);
+        
+        // Save trending posts to file
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        await fs.writeFile(TRENDING_POSTS_FILE, JSON.stringify(trendingResponse.data, null, 2));
+        console.log("Fresh trending posts saved to file successfully");
+        
+        // Cache the trending posts
+        topVoicesCache.set("trendingPosts", trendingResponse.data, 86400);
+        
+        // Update last refresh timestamp
+        lastTrendingPostsRefresh = Date.now();
+      }
+    } catch (trendingError) {
+      console.error("Error fetching trending posts from webhook:", trendingError.message);
+    }
 
     // Reload top voices data
     await initializeTopVoicesData();
