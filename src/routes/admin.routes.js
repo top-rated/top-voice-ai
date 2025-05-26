@@ -182,4 +182,18 @@ router.post(
  */
 router.get("/stripe-dashboard", verifyAdmin, adminController.getStripeDashboardData);
 
+/**
+ * @route GET /api/v1/admin/system-prompt
+ * @desc Get the current system prompt configuration
+ * @access Admin only
+ */
+router.get("/system-prompt", verifyAdmin, adminController.getSystemPromptConfig);
+
+/**
+ * @route PUT /api/v1/admin/system-prompt
+ * @desc Update the system prompt configuration
+ * @access Admin only
+ */
+router.put("/system-prompt", verifyAdmin, adminController.updateSystemPromptConfig);
+
 module.exports = router;

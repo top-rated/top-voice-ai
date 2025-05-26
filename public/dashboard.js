@@ -750,6 +750,67 @@ document.addEventListener('DOMContentLoaded', () => {
   const navLinks = document.querySelectorAll('aside .nav-link');
   const contentSections = document.querySelectorAll('main .content-section');
 
+  // --- System Prompt Management Functions ---
+  async function fetchSystemPrompt() {
+    const systemPromptTextarea = document.getElementById('system-prompt-textarea');
+    const systemPromptMessage = document.getElementById('system-prompt-message');
+    
+    try {
+      systemPromptTextarea.placeholder = 'Loading system prompt...';
+      systemPromptTextarea.disabled = true;
+      
+      const result = await api.get('/api/v1/admin/system-prompt');
+      
+      if (result.success && result.prompt) {
+        systemPromptTextarea.value = result.prompt;
+        // Store original value for reset functionality
+        systemPromptTextarea.dataset.originalValue = result.prompt;
+        systemPromptMessage.textContent = '';
+      } else {
+        systemPromptMessage.textContent = result.message || 'Failed to load system prompt';
+        systemPromptMessage.className = 'mt-4 text-sm text-red-400';
+      }
+    } catch (error) {
+      console.error('Error fetching system prompt:', error);
+      systemPromptMessage.textContent = 'Error loading system prompt. Please try again.';
+      systemPromptMessage.className = 'mt-4 text-sm text-red-400';
+    } finally {
+      systemPromptTextarea.disabled = false;
+    }
+  }
+  
+  async function updateSystemPrompt(promptText) {
+    const systemPromptMessage = document.getElementById('system-prompt-message');
+    
+    try {
+      systemPromptMessage.textContent = 'Updating system prompt...';
+      systemPromptMessage.className = 'mt-4 text-sm text-blue-400';
+      
+      const result = await api.put('/api/v1/admin/system-prompt', { prompt: promptText });
+      
+      if (result.success) {
+        systemPromptMessage.textContent = 'System prompt updated successfully!';
+        systemPromptMessage.className = 'mt-4 text-sm text-green-400';
+        // Update the original value for reset functionality
+        const systemPromptTextarea = document.getElementById('system-prompt-textarea');
+        if (systemPromptTextarea) {
+          systemPromptTextarea.dataset.originalValue = promptText;
+        }
+        return true;
+      } else {
+        systemPromptMessage.textContent = result.message || 'Failed to update system prompt';
+        systemPromptMessage.className = 'mt-4 text-sm text-red-400';
+        return false;
+      }
+    } catch (error) {
+      console.error('Error updating system prompt:', error);
+      systemPromptMessage.textContent = 'Error updating system prompt. Please try again.';
+      systemPromptMessage.className = 'mt-4 text-sm text-red-400';
+      return false;
+    }
+  }
+  // --- End System Prompt Management Functions ---
+  
   function updateView(targetId) {
     console.log('Updating view to:', targetId);
     
@@ -775,6 +836,9 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (targetId === 'dashboard-section') {
         console.log('Refreshing dashboard data...');
         fetchDashboardData();
+      } else if (targetId === 'settings-section') {
+        console.log('Loading settings data...');
+        fetchSystemPrompt();
       }
     } else {
       console.error('Target section not found:', targetId);
@@ -888,4 +952,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   // --- End Manual Subscription Form Handling ---
+
+  // --- System Prompt Form Handling ---
+  const systemPromptForm = document.getElementById('system-prompt-form');
+  const resetSystemPromptBtn = document.getElementById('reset-system-prompt-btn');
+
+  if (systemPromptForm) {
+    systemPromptForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      
+      const systemPromptTextarea = document.getElementById('system-prompt-textarea');
+      const promptText = systemPromptTextarea.value.trim();
+      
+      if (!promptText) {
+        const systemPromptMessage = document.getElementById('system-prompt-message');
+        systemPromptMessage.textContent = 'System prompt cannot be empty';
+        systemPromptMessage.className = 'mt-4 text-sm text-red-400';
+        return;
+      }
+      
+      // Submit the updated prompt
+      await updateSystemPrompt(promptText);
+    });
+  }
+  
+  if (resetSystemPromptBtn) {
+    resetSystemPromptBtn.addEventListener('click', () => {
+      const systemPromptTextarea = document.getElementById('system-prompt-textarea');
+      const systemPromptMessage = document.getElementById('system-prompt-message');
+      
+      // Reset to original value if it exists
+      if (systemPromptTextarea.dataset.originalValue) {
+        systemPromptTextarea.value = systemPromptTextarea.dataset.originalValue;
+        systemPromptMessage.textContent = 'Prompt reset to original value';
+        systemPromptMessage.className = 'mt-4 text-sm text-blue-400';
+      } else {
+        // If no original value is stored, try to fetch it again
+        fetchSystemPrompt();
+      }
+    });
+  }
+  // --- End System Prompt Form Handling ---
 });

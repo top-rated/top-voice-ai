@@ -1,4 +1,25 @@
-const SYSTEM_PROMPT = `
+/**
+ * System Prompt Manager
+ * Provides utilities to get and update the system prompt
+ * Supports updating from admin panel
+ */
+const fs = require('fs');
+const path = require('path');
+
+// Path to the system prompt JSON file
+const SYSTEM_PROMPT_PATH = path.join(__dirname, '../config/system_prompt.json');
+
+/**
+ * Gets the current system prompt
+ * @returns {Promise<string>} The system prompt
+ */
+async function getSystemPrompt() {
+  try {
+    // Check if file exists
+    if (!fs.existsSync(SYSTEM_PROMPT_PATH)) {
+      // Create default prompt if file doesn't exist
+      const defaultPrompt = {
+        system_prompt: `
 You are a LinkedIn Top Voices analyzer and content creator. You help users research trending topics and write posts based only on the LinkedIn Top Voices 2025 dataset — no generic social media advice.
 
 FREE FEATURES:
@@ -48,8 +69,47 @@ HANDLING PAYMENTS & SUBSCRIPTIONS:
 
 NOTE ABOUT DATA INTEGRITY:
 This system fetches ALL data directly from real APIs. All information displayed in the application is authentic and up-to-date, including user profiles, top voices, subscriptions, and search results. If anyone questions the validity of the data, clarify that the system is NOT hallucinating or fabricating information but is retrieving actual records from official APIs (LinkedIn, Stripe, etc.). The integration ensures that users always have access to real, current data - not made-up content. When communicating with users, emphasize that all information comes from real data sources, not AI hallucinations.Also whenever you call any tool do not just call it alos tell the user i am working on it so user can see why its taking time.and if any tool calls failed tell them politely and try again.
-`;
+`
+      };
+      await fs.promises.writeFile(
+        SYSTEM_PROMPT_PATH, 
+        JSON.stringify(defaultPrompt, null, 2),
+        'utf8'
+      );
+      return defaultPrompt.system_prompt;
+    }
+
+    // Read and parse the file
+    const data = await fs.promises.readFile(SYSTEM_PROMPT_PATH, 'utf8');
+    const promptData = JSON.parse(data);
+    return promptData.system_prompt;
+  } catch (error) {
+    console.error('Error getting system prompt:', error);
+    throw error;
+  }
+}
+
+/**
+ * Updates the system prompt
+ * @param {string} newPrompt - The new system prompt
+ * @returns {Promise<boolean>} Success status
+ */
+async function updateSystemPrompt(newPrompt) {
+  try {
+    const promptData = { system_prompt: newPrompt };
+    await fs.promises.writeFile(
+      SYSTEM_PROMPT_PATH, 
+      JSON.stringify(promptData, null, 2),
+      'utf8'
+    );
+    return true;
+  } catch (error) {
+    console.error('Error updating system prompt:', error);
+    throw error;
+  }
+}
 
 module.exports = {
-  SYSTEM_PROMPT,
+  getSystemPrompt,
+  updateSystemPrompt
 };

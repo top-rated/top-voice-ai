@@ -6,6 +6,7 @@ const fs = require("fs").promises;
 const topVoicesController = require("./topVoices.controller");
 const { topVoicesCache } = require("./topVoices.controller");
 const NodeCache = require("node-cache");
+const { getSystemPrompt, updateSystemPrompt } = require("../utils/systemPromptManager");
 const {
   verifySubscription: verifyStripeSubscription,
   cancelSubscription: cancelStripeSubscription,
@@ -1579,6 +1580,61 @@ const getStripeDashboardData = async (req, res) => {
   }
 };
 
+/**
+ * Get the current system prompt
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+const getSystemPromptConfig = async (req, res) => {
+  try {
+    const promptText = await getSystemPrompt();
+    res.json({
+      success: true,
+      prompt: promptText
+    });
+  } catch (error) {
+    console.error("Error fetching system prompt:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to fetch system prompt", 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Update the system prompt
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+const updateSystemPromptConfig = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({
+        success: false,
+        message: "System prompt text is required"
+      });
+    }
+
+    // Update the system prompt
+    await updateSystemPrompt(prompt);
+
+    res.json({
+      success: true,
+      message: "System prompt updated successfully"
+    });
+  } catch (error) {
+    console.error("Error updating system prompt:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to update system prompt", 
+      error: error.message 
+    });
+  }
+};
+
 module.exports = {
   login,
   getUsers,
@@ -1598,7 +1654,9 @@ module.exports = {
   refreshTopVoices,
   addManualSubscription,
   addStripeSubscription,
-  getStripeDashboardData, // Added new function
+  getStripeDashboardData,
+  getSystemPromptConfig,
+  updateSystemPromptConfig,
   scanForMissingSubscriptions,
   deleteSubscription,
 };
