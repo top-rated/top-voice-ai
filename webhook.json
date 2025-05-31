@@ -1,0 +1,113 @@
+{
+    "object": "WebhookList",
+    "items": [
+      {
+        "object": "Webhook",
+        "type": "AUTO",
+        "account_ids": [],
+        "name": "Top Voice AI",
+        "enabled": true,
+        "format": "json",
+        "request_url": "https://top-voice.ai/api/v1/linked/webhook",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "data": [
+          {
+            "key": "account_id",
+            "name": "account_id"
+          },
+          {
+            "key": "account_type",
+            "name": "account_type"
+          },
+          {
+            "key": "account_info",
+            "name": "account_info"
+          },
+          {
+            "key": "webhook_name",
+            "name": "webhook_name"
+          },
+          {
+            "key": "chat_id",
+            "name": "chat_id"
+          },
+          {
+            "key": "attendees",
+            "name": "attendees"
+          },
+          {
+            "key": "sender",
+            "name": "sender"
+          },
+          {
+            "key": "subject",
+            "name": "subject"
+          },
+          {
+            "key": "message",
+            "name": "message"
+          },
+          {
+            "key": "message_id",
+            "name": "message_id"
+          },
+          {
+            "key": "timestamp",
+            "name": "timestamp"
+          },
+          {
+            "key": "attachments",
+            "name": "attachments"
+          },
+          {
+            "key": "reaction",
+            "name": "reaction"
+          },
+          {
+            "key": "reaction_sender",
+            "name": "reaction_sender"
+          },
+          {
+            "key": "provider_chat_id",
+            "name": "provider_chat_id"
+          },
+          {
+            "key": "provider_message_id",
+            "name": "provider_message_id"
+          },
+          {
+            "key": "is_event",
+            "name": "is_event"
+          },
+          {
+            "key": "quoted",
+            "name": "quoted"
+          },
+          {
+            "key": "chat_content_type",
+            "name": "chat_content_type"
+          },
+          {
+            "key": "message_type",
+            "name": "message_type"
+          }
+        ],
+        "source": "messaging",
+        "events": [
+          "message_received",
+          "message_read",
+          "message_reaction",
+          "message_edited",
+          "message_deleted"
+        ],
+        "id": "sLo9RHEJT5aq9tyWkxNeOg"
+      }
+      
+    ],
+    "cursor": null
+  }

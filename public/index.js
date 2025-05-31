@@ -114,18 +114,16 @@ document.addEventListener("DOMContentLoaded", function () {
       // Set different prompt text based on which card was clicked
       switch (index) {
         case 0: // Trending Topics
-          promptText = "What are the trending topics on LinkedIn right now?";
+          promptText = "FREE: show new posts of LinkedIn Top Voices 2025";
           break;
         case 1: // Content Creation
-          promptText = "Help me write a LinkedIn post about innovation";
+          promptText = "Generate post from article in a certain profile style";
           break;
         case 2: // Engagement Tips
-          promptText =
-            "What engagement patterns are most effective on LinkedIn?";
+          promptText = "Analyze posts content and style of certain profile";
           break;
         case 3: // Profile Analysis
-          promptText =
-            "How can I optimize my LinkedIn profile for better visibility?";
+          promptText = "Search past 24hr posts with certain keywords";
           break;
       }
 

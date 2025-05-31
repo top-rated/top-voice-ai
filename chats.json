@@ -1,0 +1,2184 @@
+{
+    "object": "ChatList",
+    "items": [
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-31T17:21:22.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MzgzMDBhNWQtMWQ4My00NzI1LWJmNTktZjg0M2ExMzRhY2Q4XzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACYOArsB39AB7guyfNsid1aXhAMQu7rm5Kg",
+        "id": "BCS4FVU7Va-4Zq7JHJS4Nw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-31T15:33:04.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MDgzYzk4ZjktNzNlYi00ZGU4LWE1N2EtNGJlNTUxY2Y4Y2IzXzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAw1CrcBnLGA4DBqzAYFY2KpQ57cTNNTvNU",
+        "id": "h8zpjRIOXj6OzV2Pxtvsyg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 1,
+        "timestamp": "2025-05-31T00:40:27.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MzJiYzNhZDEtMTQ4My00ZGNmLWJkMzQtMDE2YWUwNTc5MTQzXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "sponsored",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reply",
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAAAIPsUBMabB_1zVRo8xrg83Q4k07HPpf_k",
+        "id": "pNtiKEivX9K_ZkSdMGPq2A"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-30T18:19:35.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YTM3ODU3ODItYTdlZC00NjU2LTljMDYtZjNkOTdhYTYwNzZiXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAFMOePIBH5MT90O-Bel1BQ823jkhZXxm6OQ",
+        "id": "zpCkk75jWGuhwhvyDRY1DA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-30T16:17:35.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ZDY2YTg4OTYtODMwYS00YmUxLWEzYWYtOTFlNTdjNmJlY2Q4XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABQTIQkBCwwn-sGaRQ0sgWYiOxG7wFhSL2A",
+        "id": "z68po2iEXeaIlq2USAP4uQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-30T13:24:47.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YTdhYzM3NGItNzYwYy00Zjg3LWE1YjEtZjUzYTRiN2E5YTI5XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABKozxMBUPRs43UgdGhPPICruZdoJnh0Jrs",
+        "id": "kNlwlsNiXaGjYQWY7BmWmQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-30T13:18:16.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ZTRhYmQ2ZjItMTE4My00Y2I3LWE4YTgtMjk3MWMxMzVhZDJhXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAEcrBgQBY4TYibnOty4JZLWhL8CE4QWxvE4",
+        "id": "j213DrnMWAKHanlYxedb2A"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T18:21:06.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": -1,
+        "provider_id": "2-ZmQ0MzYyZmYtN2Q0Yy00YjJlLWIzNzktZmQ2ZDhhMzdhNmFjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAALK-icBihtu6rJQc5eQjTZNdS5XiWX40z8",
+        "id": "vWIqdTEbUjCRg7nincYhcA"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:35:15.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YzJlMDBjOWYtNGYxNi00MGVhLWI3YmEtYzBlYWQ2OGFiMTI2XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACqPbeQBZVlDGHWm_-xB4_JY2Lx2Ot5LzUM",
+        "id": "nsahT-4WXoKsASK-LrL_Xg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:27:09.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MzQ5NDk5NmMtNTE2Yy00YjliLWFlZTUtMjc5MDA5NmQ0Nzg5XzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACyuZdsB6qbxRKEDgXTeggQMxzZIHQNxMws",
+        "id": "w2-dCivyWCG_VX_WcuxvTw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:17:35.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NTc1ZjdlY2QtZTZhOS00OTA5LTgzMjctMWZhZjg1NmIwNzZlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAPJUX4BE41SSfhtdrcjyDzx8Uq96DtmgmQ",
+        "id": "HAll_0v7XvieD6ATfYtGoA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:17:33.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-ZWIyOGEyZWUtY2JhOC00NjkxLThmNzctNTE0YTVjZmM2ZGI5XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAWiEA8BDBO5XWN0fdpaVO3ucgz3K_F_lJ8",
+        "id": "QbZ3f6e2UEudrFG1Rx0b0g",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:17:28.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MjRlNzFhZjEtOTY1NC00YThkLWE0NjgtNmRlOTIxZGU3ODJjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABMliXoBnELtJwI2P7oT-GzpkRVJJPB2z9s",
+        "id": "wsKpLGdZUyWuMUTxMBPgmA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:16:56.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-OTU3YWYzYzctNzllZC00NzM0LWEzMzYtMGMyMWFjNjFiMzRiXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAARQUTUBsDx9goSUig4Fk5t1DBYXKX1xfPk",
+        "id": "3v8CKAPyUjmpWJDbHMN3jA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T16:16:51.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MjI0M2FhN2MtYzljOS00NjM0LThjMzktNTk4YjU3OTg0NTQ1XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADmGwtoBrEleiTADKhlg218CmsJGIVjNHNo",
+        "id": "OJ2spIFzWPSdrDvSjYJidw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T14:39:59.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MTg5NGM5NzAtNDJmYy00ZWE0LTk2MTItMDczMTY5MzdlNDY5XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAT-2k4BGoGWQMoFN5R8sfCQB79wpeDPiog",
+        "id": "jy9t--TnWwumDioqdrcmmA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T14:28:34.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NzE0MTliNDQtNWE1Ny00ZmQ0LWJiMjgtYzQwMDczMjM1ZDAwXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADEK7V4BRFyPfKRzAO9z234nmkmHoiFZ9NA",
+        "id": "BmuXcJNYWOmhCB9_fsi-ew",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T14:20:23.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-OTY5MmMzZmUtMWQ2Yi00ZGNhLTg0M2QtNjY4Y2UwZWEwZDNkXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAbUWccBM25u_0BgBVAT4l2Du7WX2ZuXLUg",
+        "id": "PgR0MjSAUtah14gV7da-Og",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T12:12:48.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ZGQxYjQ5ZmEtYzUxMC00ZmYxLWFjZTQtYTcxZjhmMThhZjMwXzAxMg==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAACyuZdsB6qbxRKEDgXTeggQMxzZIHQNxMws",
+        "id": "6AOkuyWAWbOxpnLxdkFLbw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "subject": "Other",
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-29T11:50:53.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NjI3YzA3NTItYjhiNC00MzIyLThkODktZjcxNTFlNGUzYTBmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "79109442",
+        "id": "aiyHfNeyXAOER7dppKFYAg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-28T20:46:06.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NDYyYmQ2NmMtM2FlNy00NWIwLWEwMzMtMTg4YWM1MjM5NjE0XzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABB-9bYB_5Kso1R_YiuX1VcXlMykpv2-ZYw",
+        "id": "QYJ_oUUiUbi3C4irmWnpHA"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-28T13:41:06.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NmVlODhlMDQtNzZmMi00NzYwLWEwNGMtYTJkMDRjOWY0MjkzXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAnkkwgBOef-91c9v2P98HqkFXHvnjP_BT8",
+        "id": "UUmJKeyrVFCm-PcBkjE6sw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-28T11:20:39.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MDM4Y2Y5NTAtNDk0ZC00ZDVhLTk5NWQtNTAwYjQ1OGMwZjlkXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAE43esgB_qDoy3mfmnkwF6-nztAGubaqqmE",
+        "id": "qTuDfKJeXtmBkYiX_lYGSQ",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-28T09:27:05.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MGJlODlmZmItYjI0NC00YmM3LWE5YWYtMWRkMzk0YjE5NGJjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADNDbZQBXNnI6NXujflXyDjoypkHQb7P2OQ",
+        "id": "1yuUDZqcXImubiykRc9TFw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-27T21:42:06.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YzM1ZmZlMGUtY2QyMy00NmVlLTljMzEtZDFkNDNjZDRkNmE5XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACn4wKAB6kEAw5RvuefuOkwMfrgbuv3z1QQ",
+        "id": "IbHRF0ctU9Kx2b5O96Rxug"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-27T16:17:06.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NGY5MTIxZWYtODQwNi00MzcyLTgzZGQtOGI4Zjg5Yzk0YTRmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADykLjoBk39hMPsR0BuU1IcV9iI6zWH_oco",
+        "id": "dasuDzvbW4CFNJQSqFTKcA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-27T14:16:43.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NDRkYmM0NjktNTRiYS00YTk0LWJhZmQtYTFjMDQ3N2Q5ZDk3XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAARV3I4BA7dQRhv7sfvF3IoZea8ws98JVgs",
+        "id": "NVIt5j_dXaiKykDJcgbSIw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-27T11:18:20.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-Yjg5OWMxNjctMTIyNS00YzkxLWFkZjctNDE3ZDZlMTNlYTJjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAceJDwBxQqhRsMnlpA6Q8WUtCaK1L4W_Cs",
+        "id": "_VN73XN1VguK-IQCAfPiuQ"
+      },
+      {
+        "object": "Chat",
+        "name": "Optimizing instructions",
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "subject": "Optimizing instructions",
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-27T05:18:33.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MTQ1NzhjZjEtZGIxYS00YzNkLTg0YTAtZjc1Mjk0NmVlYWRiXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADPE5REBUm-nj_gbKhMwNjPOrJ_tguO0DTU",
+        "id": "fG9HVWy0UU-dBAe9JY-F9Q",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-26T15:07:43.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-N2E0MDdmNWQtYjY3My00YmMzLTk2MGEtNTBmZDZkNjNiMDM3XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAD2ErlYBia6Zv8uYqdQcO0MiJw9aYAgupMI",
+        "id": "34TKr0-0V7C9U0ytX56FOQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-26T14:53:59.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NGUyMjU4ODktNzM3MS00Yjk5LThkNWMtMDFhOTQ3ODFkZWQ1XzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAED6h00BH7NF1EbmpZqxm8lQQV-EJrnoOAM",
+        "id": "WPK1oxz0VPa6PJx_l5qmYg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-25T14:10:58.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YzJjNDU5NTctOWQ3OC00ZTI1LTliYjMtMTNlNGNjYjc5ZTg0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAB4nHvgB8uPBY1hizddUhZgqLKN-gvO-NNM",
+        "id": "PbdUZMBKUemmqlQJZPHE1g",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": "Question about B2B-SaaS-proxies",
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "subject": "Question about B2B-SaaS-proxies",
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-24T15:17:39.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NGZiYjg5ZDgtYjU4My00NDBiLWI4YjYtNzgxNDNkNDMwMDNiXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAACHAJ9YBGTLR6FuZMigoVyt8giOLoeLRPQ0",
+        "id": "FC40JBfmUc2LncQadJvezQ",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-24T12:37:09.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-OTM2NjhmNWEtY2QzYi01NTBkLWE3Y2EtZWRkMmRmNzE0YTJmXzAwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAB0vjhkB6B8GVaOhSeVqRTVYxw0qv1RrzvE",
+        "id": "zhEWi90EW1WDUUC2fET6cA"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-23T16:58:35.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NmQyMjQ0ZjUtMWE0MC00MDUzLTk2YTEtNWM4MDEwMzQ5Y2FlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACGcdaUBVVRalWF8PaiARylz_RNeTcmjv3Q",
+        "id": "7qLFziGbWweYccg9YPBJUg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-23T13:48:56.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MzE3MjM1MTMtYTViZS00ZjY4LTgyYTMtNmY4YWRlYmQ2OWRiXzAxMw==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAuaInoBsV2BzOYC3usDUT-7QSyWW0ISrig",
+        "id": "X5tI958HVimKxZ33ZvI_ew",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-22T20:10:04.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NjQyNmM1YTctMzY3Yy00N2FlLThhNjgtNGUyNmMwMDA1NGJhXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAFlNrLMBpPxAWltkiz5Gl0soCZ1JVEmLKfA",
+        "id": "WpQoada2W4mMsTNm5hf4DA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-22T14:17:48.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ZTcwYzMwNmItMmY5NS00NGI2LWI0MTMtNjU4NDYxOGNhYTdiXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAClvrCEBFeBnU7gVrh4c7UZ8l9fLVjpFb_c",
+        "id": "RpUMoCU3Xw2rMdSY9D_opA"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-22T14:17:12.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MDNiMzE3MTAtMTg0NC00ZjlkLWJjZTctY2NjYTk3NWFmYmZkXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAEkff4gBSaZZsmLrMYtBOa3lfmfHdwR3Alw",
+        "id": "aLCRuNRaWOarQlr0XSxz2A"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-22T03:10:34.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YzE3Zjc1NGMtYTBlYS00NjQ2LTg5MzMtNzE0MTcyNGYwMzc3XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABUOVj4BBYGT0bFJ9BoYtQ7R7AfHZ3BjNM8",
+        "id": "qqQYDIp-V3SAQAW6Fbj1vA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-21T21:05:13.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NTdmMTRhOTEtZGM5Yi00YmMwLWJkMTEtZTk0YTdjNDUzNTYxXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAFqn6jgB76kpGNx7sTSqFl32AfYivxL-cu4",
+        "id": "rkglH1ikX-i8Knhi3x00cg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-21T17:57:23.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ZTZiZDFkYWItNjU2ZC00MjE4LWFiMTYtMGUxMGU1MTMzZjI4XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAwjrUQBdYZcBt6rPAYW1dp1Uia041SF2Is",
+        "id": "quePlZ_FU0yJKUpI5PZpsQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-21T10:19:19.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-ZGFmNjcwMDItYjBlZS00NTU0LTg4MWYtOTY3ODA3Y2QwMDI0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAD2TE_kBV3NoEoh1MHoo7nL4_sy4upeWwyk",
+        "id": "gLQ_E860WIm6mjAd961UzQ",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-21T07:06:30.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NDJhNTVjMzgtYzcwZS00MjRkLTk4YjQtZjE4YzAyYzY0MzFmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAE6axRcBC7F_lWvIMnF6UVvjlH5nLiF9VfY",
+        "id": "7myczIH2UNaDMj2I68khdg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:50:20.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YWExNWM1ZDQtYTRjYy00OWVjLWFlZmEtZmY0YTE3Nzk4NGU0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACaxovoB1l6YvWWxLDnYv5R22WilRsl3SSw",
+        "id": "JBsrQV7EVxy6TyStt4Wk6Q",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:18:13.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YWRhYmM4MDgtZDQ1YS00ZmNlLTk1ZDQtOTMzNjdjMTA2Y2NmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAC25dUwBs0D7tbPusBf0bKSxchU0RFtiPAQ",
+        "id": "Fs7y6TvDWhuF1cft9JKHiA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:17:36.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-M2FjMTgxMzctMDQ0MC00ZDM3LThlZjQtMThhMDcyMmVhMDg0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAMqR44BoEewCqfG8w2clpsHSTmh7cHAxd8",
+        "id": "JxOiQnCnUxaBzsEmLKGpew",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:16:49.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-M2Y3OTdiM2YtYzVlZi00OGFlLWJiZjUtNzEwYzc5MmZmNjA3XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACRjXG8BJWV6it1MVmW-pIlXulbvbX61Ebs",
+        "id": "NIrCejMXWQCT40_lmFTJBg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:16:47.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MGIyZWI1ZTYtZmNiOS00MmUxLTg5NTctOTJhZDk5NTQ5MzRmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAE2UBJsBt0xBghrQIg_hUhzEfF8ooCkpk5s",
+        "id": "Gyz8FcDSUSeJJLe9Uh4wHg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:16:46.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NjM0NWRiN2QtNzE3ZS00NDM3LWJlYmMtMDdlYWQ3MjE2ODNlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAMzb0MBRFo7UxaTzrjZz5JPfGkAYvOzEHQ",
+        "id": "yWl1tuVmWDSw1mvFyILUJw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:16:45.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YzY0NjYwOTAtYjY0NS00NWE3LTk2Y2ItNzkwZTIxYjdiMDZlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAASuNpcBMOmZMOMjc-LEYtsMGgjSBoC2euk",
+        "id": "lQM4ssXjUSe-6PexpiTlmQ",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T14:16:36.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MzljY2FhZGEtYzRiNC00ZTFkLWEzOTgtNzlhMTI1MWI1ZWI0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADzGpUQBmTmmKzvddMNBvUEx5R3x0ldFGys",
+        "id": "XftJ5RPQV2eE77QWwXt0lA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T10:18:22.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NWQ4YzAxMTAtNzk5MS00NDg0LTkzZGYtZTBjZjJmMTg0Y2JmXzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAEw8SABISGzeLTZ5_h_OUu54Ox8a_zHsrU",
+        "id": "xp2S7jD1V9-1sLpVs_bB8A"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 1,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-20T09:11:26.000Z",
+        "account_id": "NIg4-l1sQ3qqun2KKUV0Qg",
+        "provider_id": "2-OWZkMzRkNTctYjNmYS00ZjNkLWEwZTMtMmQzMzNkNDJmZTE4XzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 1,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAB768BABB0V27sYWEpFlBkU4X6fjospf2n0",
+        "id": "laus-5e5WU6KlhBcaNOj5Q",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-19T18:58:46.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-OTQzOGViZTktYTUwMS00M2ZjLWJjZDMtOTBiNzQzNTYyZmIzXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAAJ7wcgBdJm2ho5byX9RVviSIw25HJ05aBw",
+        "id": "XBpxhe_zW56HbZWHicd6Qg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-19T14:30:38.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YzMxMGRiOGYtOGEyMC00YjZmLWFhMGEtNjhjNjAzMmU4MGQxXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAADnjKbsBpwO9hXr0UkrRNXJ_0piPG5-OcSY",
+        "id": "CLg4-MmMUGaX12WTJNQxIw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-19T13:27:52.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-Y2MwNjcyMDktYzQzNi00MTVhLWI3ODUtNTQ5YjNkNzc4YjA0XzAxMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAAjEpoBf2Nh9_hW3uUc9szw9_JobLaV6HI",
+        "id": "mPSwHzmBV8iNGrDnRqJJCQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-19T12:27:42.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-ZThhZTI3ZTQtODBjNC00MWFmLWFhODEtMmRiMGVmM2FjMmJmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADjrfaUBUmop50DqrcJCsKqZsBDi836wzfU",
+        "id": "ot2WO1n_W7OxCUf5MbG21g",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-19T06:45:57.000Z",
+        "account_id": "vDKLhOyeTgqjWGE6X3UdKQ",
+        "provider_id": "2-Nzg5NGRlMWYtNmY4OS00ZDMyLTk1Y2MtZDUyMjk3OTJhMmNkXzAxMw==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAANpkgBlr25MrfaAgz9X3nAl22dxppyvto",
+        "id": "xmcMXJ2iUliBzdGFN1VQfA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-19T05:27:21.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MjBiZDJiNjMtMTZjZi00MTRkLWI3NTYtNzRlMDNlNmIzMWNhXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAB2kPP0BjUAcO1af-7I2sF8rVvvc-yYV64E",
+        "id": "upzgnQzYWoiqoa_9_lLRpg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-18T18:08:21.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NmEyMThhNzItY2NkYy00NTVkLWEzNDktN2JjNTFkMmEwMjBkXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABUmdGoBofX4q3fXfc18-P69p9is0oKLql0",
+        "id": "Yptn6jOOVheoJEQUUBhpsw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-18T08:07:30.000Z",
+        "account_id": "vDKLhOyeTgqjWGE6X3UdKQ",
+        "muted_until": null,
+        "provider_id": "2-OTFhMzU5MTItZDg3ZS00N2Y4LWJiZTEtZGU3Y2Y3NTkyZDM4XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABelPvEB7aeEDJddjyRBXw3Datmizrwvgq4",
+        "id": "_fTMVbMgWi6HoBpgQpGnFQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-17T13:18:14.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YTFiY2ViNWYtMzlmYS00YTYzLWJkZTUtNjcxMTE3YzBlZjU5XzAxMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAaFSGQBcH_Vn6ltGGvX8756iIgmlgcEJCc",
+        "id": "TmuREFZyUVqyR-ePewsl7A"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-17T01:10:19.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MDNjYzZlZjctZWJiMy00YzExLTgyNzktYjBmZmMzZTA1ZDYyXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAD1ffdcB8Wevc6FDNTfMw-_HGxSwWP1alMI",
+        "id": "guVgWx9FWAeH0_BmGKvpXA"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-16T18:51:37.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NzhmZjBmNTAtMWM4Mi00ZjFjLTgyMWYtY2IxNmYzNTEyNmQ3XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABtpej8BJM4THVAf771D7ms_L3QvFEqOZHM",
+        "id": "llaR2le1XTCSHqwXVvY5iQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-16T18:48:24.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NGY2ZGM4MTYtYTkzNC00ZDZlLWI1OWUtMDUyYzBjZDVlYzQyXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAAQq4UBMLP4JpqVyG8B87uHCjAQ-RLA4KU",
+        "id": "3toOJMiDXZCS-lGV5V_jmA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-16T07:37:10.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YTMxYTcwMTYtYmQyOS00YmZiLWEwZWYtNDQ3NjY5ZThmZDk2XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAA8biu0BY3kU-NUXidGEvf9CLfIhU6_DfgY",
+        "id": "w-LD68ZtX2-ipK8-F1_u1Q"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-15T18:29:40.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MzIyYzYxMjMtNDlkOS00MDM5LTliZTQtOTRkMWQ1OWVjY2Q0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAFnBpb0B5T6u9mNLc9lEP-SfGaM19UFjZrA",
+        "id": "BCG6GhYzXIGHhruFKApnPg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-15T14:50:21.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ODVhNjE0NmQtYjczZi00NDQ1LWI1MmUtYjU5Yzg1ZDBhZmZmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAfYsbwBP71skVAi-ebwVpzUVLbTkfk5FEA",
+        "id": "tl_wiWeIUpWkRWFM1JN3Rg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-15T13:58:19.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NTBiYzdlYmQtNDBkZS00NjYyLWFkZTUtZTVkYzU3NWI4NDFmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAAQq4UBMLP4JpqVyG8B87uHCjAQ-RLA4KU",
+        "id": "Eq_OSBOKWquH61IRLl6FWg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-14T18:42:51.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NmIzNWFmMDMtNzNkOS00YTE4LTk1OTItM2JlNGRmNWFlMDcxXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAEcuZiYBwc3EZIIweIhMHsAk7fF-fyYVUDQ",
+        "id": "jgA3DHGfWa6fJFbCY4ffBA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-14T16:26:28.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-ODdkNmM3NTgtMGY1ZS00NWRiLTkyMDMtN2MzNzkyYjE0YWExXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAUj75cBczpJ5yv_ucK3_5LM177Mu-ZQbeo",
+        "id": "6EhlseOZVDyH9R_dDbZWZA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-14T16:12:37.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-OGE1NTA3OTMtNjAxYi00OTAxLWEwNGEtYjIxYjc3MTQ1MmJmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAATUh3EBf4K-J0tuLRhWQyb8eoAGtd7UTzc",
+        "id": "DsQkzb2oVmOMBwhzKUmZEw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-14T07:29:05.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NThkZDczNmYtYzU2NS00NThhLWIzNWItNDgzYWM0ZDJjYjUwXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAEIXOTcBPND6YyyRvQ2lNpL28x5QuLTqKO8",
+        "id": "5YCjs8b0UmWZxNJr3DuXcA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T21:21:09.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-YzdiYmRlOTUtNjkwOS00YjRkLWIxNjUtMjNiNDYxN2NiYjJjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAADm8eakBaEthAMVmoG0qpJofmQbaRFOPFUc",
+        "id": "C8HNLWnfWh6xLkmPTho55w",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T15:27:20.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MjFmMzA4OWYtZjcxNS00NjExLWJhNGYtMWQ0Y2M1ODlkMzZjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAstdgsB_81kNJjC84jk3SkETuBusD8JuUk",
+        "id": "7kECwY70XVKreq3JE03nyg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:56:00.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MTZlNGI2ODAtZDMwYi00NWQyLTg5MmYtY2JkYTc5ODdhMzFmXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABc6lRoBw1wszmqujKlFtAnFJ4xphz99Eak",
+        "id": "AU-HPKtwWPOWXRSTW1Nnag"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:17:01.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-MDI0OGNkNGItODJhMi00N2FkLWE1MDktZDg3OTk4ZDE1ODI1XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADUPSCMBtAC3j_-PVRQMggnKE0blaGJJqKk",
+        "id": "qGbUaJSkVs6TfQEw1E4BCw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:16:55.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-OTA1YjA0ZDItYmE4MS00ZTY5LWJmMzMtNTZmYmE5MzJhN2I4XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAA2D5e8BFcRRei4lgqDtMC1TlE4fAiiquWU",
+        "id": "xn3bjwaUW1aZM8TFRZvgsQ",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:16:55.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-M2U1ZjljNzMtZWMyOC00NjIwLWJmNjUtMjFlYmQxOGI3NTVjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAADrpVucBKA0AJfvSCxrrJcLtEQF0AevEIrs",
+        "id": "Hgjlnhe8UCypt9gTY2_pxw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:16:53.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NDEwYTE0ODctYTYxMS00ZmI4LTg4M2EtMzgxOTA2M2Y3ZDQ3XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAudKV4BJsxtjO5gKE8bh7WX9Fc6dwSYc9U",
+        "id": "YeMENJS1VDSH9WxklVTSkg",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:16:51.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-OGVhMWMwMTYtNDUzMC00MTVlLTgzY2EtYTJjMDI4ODY4MTQ0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAbvQ2YB_JVrkUSF9AvTHl-AajJG06Nm5yQ",
+        "id": "J8I1CJbaX3KE5zZu0C11KA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T14:16:47.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NjUxMmQwMDctNDIwMi00YTdlLTkzMDQtOTYyODljODgyOWVlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACCdLW0Bqe63fJuS5s9IpmV_ILdOLWGUCmE",
+        "id": "n3x_41VRV9eYSsx8HmtNBw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T13:16:51.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-OTk2YTAwNjMtMzg0OC00ZDc1LWEwN2YtM2NlZGZiNWYwYTk0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAfht_cBsR3xctKUO4FcHs_Gj9-kDN3KPRE",
+        "id": "mblLbAjJXRWc3ksI8mAn7Q"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-13T09:15:33.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-ODEyZjhlZmUtOTA1OS00YjViLWI0YTktN2Y2M2M0YTU0NjM1XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAEiy34B6tnfBlO5Qgp8SAVxj2h7-FCc4bI",
+        "id": "Le9E_qs-XHaZVccqYj9ZzA",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-12T10:13:09.000Z",
+        "account_id": "vDKLhOyeTgqjWGE6X3UdKQ",
+        "provider_id": "2-MWUzMzNjNjktY2JhMC00Njc5LWIzNjgtZTI5NDQ1YTU2NTU2XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABIbNiQBGmAkdY8xd7aHJ99_xPIyZ40U8lY",
+        "id": "joJ7pIB4WUuZGKVFSz_cqw",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-12T06:24:39.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YjQxNzlkMWMtZDc0Yi00YjY4LWJjZGEtMjljOWZhY2M3YzEyXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAFH8yxkBpze3Y1IZNBC_2oetFwq_qhqpcJw",
+        "id": "MhDYOGX7UjmkKSya3cUS4w"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 1,
+        "read_only": 1,
+        "timestamp": "2025-05-11T14:23:21.000Z",
+        "account_id": "vDKLhOyeTgqjWGE6X3UdKQ",
+        "muted_until": null,
+        "provider_id": "2-OWQ3YWJkMTMtNWM4MS00YjA1LWJiMWItNjhmZTQ1YjgwYmI1XzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "linkedin_offer",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reply",
+          "reactions"
+        ],
+        "attendee_provider_id": "3519575",
+        "id": "x-kROHrIUpS663JpWgfGdg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-11T11:33:00.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-ZjViZmRkY2ItOGU1MS00YmQxLTg0YTAtYmE4MGZkY2QxZDU4XzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAEb9feMBaNindFMj2GDVqKSY96kdc0KnYsc",
+        "id": "dt2wBr5oWNG5xK--vCW36g",
+        "muted_until": null
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 1,
+        "read_only": 1,
+        "timestamp": "2025-05-11T11:08:38.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ZWRmNjdjYjUtZTcyZi00ODNhLWE0YjUtMTM0NjI0ZjFlMmVjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "sponsored",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reply",
+          "reactions"
+        ],
+        "attendee_provider_id": "3185",
+        "id": "eS-8CS5JUlOsEsROsQWR-g"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-11T07:16:39.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ODI5MzFlYzEtMmQwZS00MGUzLTgxMjEtMjFlZmJkNDUzODc5XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABSAbewBmLRljG1oenSTWesO7vDqdPa1sPU",
+        "id": "MBfxV0gzV7GTubEjxUmwRw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_ORGANIZATION"
+        ],
+        "unread": 0,
+        "subject": "Other",
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-10T21:28:53.000Z",
+        "account_id": "NIg4-l1sQ3qqun2KKUV0Qg",
+        "mailbox_id": "78315355",
+        "muted_until": null,
+        "provider_id": "2-ZmYwOWY5OWMtNzJhMy00ODMyLWEzNTAtZWE1ZTBlODBkN2U2XzEwMA==",
+        "account_type": "LINKEDIN",
+        "mailbox_name": "KINOVARTA | Ukrajinské filmy v Česku.",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAwdMusBCY9n4YmGxjot8BzMKoNVIUnacMA",
+        "id": "6XGs42MuX2eJIT8oMTDUDA"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_ORGANIZATION"
+        ],
+        "unread": 0,
+        "subject": "Other",
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-10T21:28:53.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "mailbox_id": "78315355",
+        "muted_until": null,
+        "provider_id": "2-ZmYwOWY5OWMtNzJhMy00ODMyLWEzNTAtZWE1ZTBlODBkN2U2XzEwMA==",
+        "account_type": "LINKEDIN",
+        "mailbox_name": "KINOVARTA | Ukrajinské filmy v Česku.",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAAwdMusBCY9n4YmGxjot8BzMKoNVIUnacMA",
+        "id": "aYCgi4ckWymE0YQmESHOYw"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-10T08:44:48.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ODdjZDM2ZjctM2QyNC00NzE4LWI4MzQtZTExNGJkZjkxZjVlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACldt0MBnZyN_77onbE9WOg7tjeokuIf4Pc",
+        "id": "h8rmURCMUDGzoXYTSfIs-w"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-09T05:07:14.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MzgyZGU2ZmUtMGE0My00ODM5LWFhMTMtNTRiNmRiOGQyMzFhXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAAACo_38BGFeC8eu47eprs_b1MUGi19eIZA8",
+        "id": "r-_GxIsWXs2r5BdAZgWVNg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-08T23:21:35.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-NGU1MmM0MzctM2U0Yi00ZmFmLTk5MDEtMTU0Zjk5YWViZjNlXzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABr4O5ABh8X-5WBGlj6AipDggZT7opvhJr8",
+        "id": "NjCB4nT5VOCrKeVfWH9Lpg"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-08T14:54:04.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-YjVlODQzNGMtMjE5OS00N2Q1LWExMjYtMTNjYzBkNWMxZDUzXzAxMg==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAACRoxgwBxx087pbX3dUxkrBKl6iezv4WhxE",
+        "id": "DDQ_wb-vUf-TKUCqk1TS9w"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-08T14:33:40.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-ODRkMzA2NGYtYjQ0ZC00YThlLTk4OWEtZTk3NDZkOGVjM2I1XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABIHXHQBbdXynCM4-I2OHjS0FWgZXnVHvjQ",
+        "id": "-Aq-CdMYUluBjw2kH2f9EQ"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-08T14:23:05.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "muted_until": null,
+        "provider_id": "2-MWU3ZTU3NzYtYWI1MC00NmM4LWJlNDAtODUyMDk4NThjNjZjXzEwMA==",
+        "account_type": "LINKEDIN",
+        "content_type": "inmail",
+        "unread_count": 0,
+        "disabledFeatures": [
+          "reactions"
+        ],
+        "attendee_provider_id": "ACoAAC5bIaQBXze7NLGBYIKmcapcJ9rtnf6Dl3k",
+        "id": "n0S_liuBXa-2-oyjVusB_g"
+      },
+      {
+        "object": "Chat",
+        "name": null,
+        "type": 0,
+        "folder": [
+          "INBOX",
+          "INBOX_LINKEDIN_CLASSIC"
+        ],
+        "unread": 0,
+        "archived": 0,
+        "read_only": 0,
+        "timestamp": "2025-05-08T14:19:28.000Z",
+        "account_id": "FMFdIO_9RsWA6Hjej6mwgg",
+        "provider_id": "2-NDc4MmM4ODEtZWJiZC00N2ExLTg0Y2ItMGFiZTc4Zjc1Y2M0XzEwMA==",
+        "account_type": "LINKEDIN",
+        "unread_count": 0,
+        "disabledFeatures": [],
+        "attendee_provider_id": "ACoAABq7yPQBmqehdbg4ukzme6zhUq2SSjEAeIU",
+        "id": "_qA_z70FXtqwol6V6riXeQ",
+        "muted_until": null
+      }
+    ],
+    "cursor": "eyJsaW1pdCI6MTAwLCJjdXJzb3IiOnsibGFzdF9kYXRlIjoiMjAyNS0wNS0wOFQxNDoxOToyOC4wMDBaIiwibGFzdF9pZCI6Il9xQV96NzBGWHRxd29sNlY2cmlYZVEifX0="
+  }
