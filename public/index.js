@@ -506,6 +506,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Process markdown in text
   function processMarkdown(text) {
+    // Replace Stripe checkout URLs with a user-friendly link
+    const stripeCheckoutRegex = /(https:\/\/checkout\.stripe\.com\/(?:c\/)?pay\/[a-zA-Z0-9_#%-]+)/g;
+    if (stripeCheckoutRegex.test(text)) {
+        // Check if the specific boilerplate text is present
+        const boilerplateTextPattern = /Please use this link to complete your payment\/subscription: (https:\/\/checkout\.stripe\.com\/(?:c\/)?pay\/[a-zA-Z0-9_#%-]+)/;
+        if (boilerplateTextPattern.test(text)) {
+            text = text.replace(boilerplateTextPattern, 
+                'Please use this <a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">secure link</a> to complete your subscription. You\'ll be redirected to Stripe to enter your payment details.'
+            );
+        } else {
+            // Generic replacement if the specific boilerplate isn't found but a Stripe link is
+            text = text.replace(stripeCheckoutRegex, 
+                'Please use this <a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">secure payment link</a>.'
+            );
+        }
+    }
+
     // Process code blocks with language support
     text = text.replace(
       /```([\w-]*)\s*\n([\s\S]*?)```/g,
@@ -590,128 +607,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Render the response text with markdown formatting, with append option
-  async function streamText(element, text, append = false) {
-    // Clear previous content except for typing indicator if it exists and not appending
-    const typingIndicator = element.querySelector(".typing-indicator");
-    if (!append && !typingIndicator) {
-      element.innerHTML = "";
-    }
-
-    // Process Markdown for the new chunk of text
-    const processedText = processMarkdown(text);
-
-    // Append the new text. DOMPurify is not used here as processMarkdown should handle sanitization.
-    // If direct HTML injection is a concern from markdown, consider adding DOMPurify here.
-    element.innerHTML += processedText;
-
-  // Process bold
-  text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-
-  // Process italic
-  text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-
-  // Process links
-  text = text.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-
-  // Process lists (simple implementation)
-  text = text.replace(/^\s*-\s+(.+)$/gm, "<li>$1</li>");
-  text = text.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
-
-  // Process paragraphs (simple implementation)
-  text = text.replace(/^(.+)$/gm, function (match) {
-    if (match.startsWith("<")) return match; // Skip HTML
-    return "<p>" + match + "</p>";
-  });
-
-  return text;
-}
-
-// Escape HTML to prevent XSS
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-// Copy code to clipboard
-window.copyToClipboard = async function (button) {
-  const codeBlock = button.previousSibling;
-  const text = codeBlock.textContent;
-
-  try {
-    // Use the modern Clipboard API
-    await navigator.clipboard.writeText(text);
-
-    // Change button text temporarily
-    const originalText = button.textContent;
-    button.textContent = "Copied!";
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  } catch (err) {
-    console.error("Failed to copy text: ", err);
-
-    // Show error message on button
-    button.textContent = "Copy failed";
-    setTimeout(() => {
-      button.textContent = "Copy";
-    }, 2000);
-  }
-};
-
-// Render the response text with markdown formatting, with append option
-async function streamText(element, text, append = false) {
-  // Hide the typing indicator in the parent container when content is being displayed
-  const parentContainer = element.closest('.rounded-lg');
-  if (parentContainer) {
-    const typingIndicator = parentContainer.querySelector('.typing-indicator');
-    if (typingIndicator) {
-      typingIndicator.style.display = 'none';
-    }
-  }
-
-  // Process Markdown for the text
-  const processedText = processMarkdown(text);
-
-  // If not appending, clear the element first
-  if (!append) {
-    element.innerHTML = "";
-    // Apply the processed text directly when not appending
-    element.innerHTML = processedText;
-  } else {
-    // When appending, we want to update the content
-    // Store the current scroll position
-    const chatContainer = document.getElementById("chat-container");
-    const isScrolledToBottom = chatContainer ? 
-      (chatContainer.scrollHeight - chatContainer.clientHeight <= chatContainer.scrollTop + 50) : false;
-    
-    // Update with new content
-    element.innerHTML = processedText;
-
-    // Restore scroll position if user was at bottom
-    if (chatContainer && isScrolledToBottom) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-  }
-
-  // Apply highlighting to any new code blocks within the element
-  applyHighlightingInElement(element);
-
-  // Scroll to bottom of the chat container to ensure new content is visible
-  const chatContainer = document.getElementById("chat-container");
-  if (chatContainer) {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
-}
-
-// Store current bot message element for streaming text
+  // Store current bot message element for streaming text
 let currentBotMessageContentElement = null;
 
 // Store tool call elements for reference when updating with results
@@ -963,21 +859,20 @@ async function sendMessage(message) {
                 continue; // Skip to next iteration
               }
               
-              // Clear thinking indicator on first actual content
+              // Clear thinking indicator on first actual content & stream
               if (!hasClearedProcessingMessage) {
-                console.log("Clearing thinking indicator");
-                const typingIndicators = document.querySelectorAll(".typing-indicator");
-                typingIndicators.forEach(indicator => {
-                  if (indicator) indicator.remove();
-                });
-                
-                if (initialBotTextElement) {
-                  // Clear the initial bot message element
-                  initialBotTextElement.innerHTML = "";
+                console.log("Clearing temporary loading dot and streaming first content_chunk");
+                // Main typing indicator should persist, only remove the temporary loading dot from text area
+                const loadingDotIndicator = activeTextElement.querySelector(".loading-indicator");
+                if (loadingDotIndicator) {
+                  loadingDotIndicator.remove();
                 }
                 hasClearedProcessingMessage = true;
-                window.accumulatedContent = ""; // Reset accumulated content
+                streamText(activeTextElement, content, false); // Stream first chunk
+              } else {
+                streamText(activeTextElement, content, true); // Stream subsequent chunks
               }
+              accumulatedResponseForHistory += content;
               
               // Instead of updating with the entire accumulated content,
               // we'll implement a typewriter effect
@@ -1081,6 +976,13 @@ async function sendMessage(message) {
     chatHistory[currentThreadId].messages.push({ role: "assistant", content: errorText });
     saveChatHistory();
   } finally {
+    // Remove the persistent typing indicator for the current bot message
+    if (currentBotMessageContentElement && currentBotMessageContentElement.parentElement) {
+      const finalBotMessageSpinner = currentBotMessageContentElement.parentElement.querySelector('.typing-indicator');
+      if (finalBotMessageSpinner) {
+        finalBotMessageSpinner.remove();
+      }
+    }
     messageInput.disabled = false;
     messageInput.focus();
     chatContainer.scrollTop = chatContainer.scrollHeight;
