@@ -506,23 +506,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Process markdown in text
   function processMarkdown(text) {
-    // Replace Stripe checkout URLs with a user-friendly link
-    const stripeCheckoutRegex = /(https:\/\/checkout\.stripe\.com\/(?:c\/)?pay\/[a-zA-Z0-9_#%-]+)/g;
-    if (stripeCheckoutRegex.test(text)) {
-        // Check if the specific boilerplate text is present
-        const boilerplateTextPattern = /Please use this link to complete your payment\/subscription: (https:\/\/checkout\.stripe\.com\/(?:c\/)?pay\/[a-zA-Z0-9_#%-]+)/;
-        if (boilerplateTextPattern.test(text)) {
-            text = text.replace(boilerplateTextPattern, 
-                'Please use this <a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">secure link</a> to complete your subscription. You\'ll be redirected to Stripe to enter your payment details.'
-            );
-        } else {
-            // Generic replacement if the specific boilerplate isn't found but a Stripe link is
-            text = text.replace(stripeCheckoutRegex, 
-                'Please use this <a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">secure payment link</a>.'
-            );
-        }
-    }
-
     // Process code blocks with language support
     text = text.replace(
       /```([\w-]*)\s*\n([\s\S]*?)```/g,
@@ -612,6 +595,24 @@ let currentBotMessageContentElement = null;
 
 // Store tool call elements for reference when updating with results
 let currentToolCallElements = {};
+
+async function streamText(element, textChunk, append = false) {
+  let newRawText;
+  if (append) {
+    newRawText = (element.dataset.rawText || "") + textChunk;
+  } else {
+    newRawText = textChunk;
+  }
+  element.dataset.rawText = newRawText; // Store the raw text
+
+  element.innerHTML = processMarkdown(newRawText);
+  applyHighlightingInElement(element);
+
+  const chatContainer = document.getElementById("chat-container");
+  if (chatContainer) {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+}
 
 // Helper to create/get the current bot message element for text streaming
 function ensureCurrentBotMessageElement() {
@@ -872,50 +873,6 @@ async function sendMessage(message) {
               } else {
                 streamText(activeTextElement, content, true); // Stream subsequent chunks
               }
-              accumulatedResponseForHistory += content;
-              
-              // Instead of updating with the entire accumulated content,
-              // we'll implement a typewriter effect
-              if (!window.typingInProgress && content.length > 0) {
-                window.typingInProgress = true;
-                
-                // Create an array of the content characters
-                const characters = content.split('');
-                let currentIndex = 0;
-                
-                // Set up the typewriter function
-                const typeNextCharacter = () => {
-                  // Add a single character at a time
-                  if (currentIndex < characters.length) {
-                    window.accumulatedContent += characters[currentIndex];
-                    
-                    // Display the accumulated content with markdown
-                    if (activeTextElement) {
-                      activeTextElement.innerHTML = processMarkdown(window.accumulatedContent);
-                      applyHighlightingInElement(activeTextElement);
-                      
-                      // Scroll to bottom
-                      const chatContainer = document.getElementById("chat-container");
-                      if (chatContainer) {
-                        chatContainer.scrollTop = chatContainer.scrollHeight;
-                      }
-                    }
-                    
-                    currentIndex++;
-                    // Schedule the next character with a random delay for realistic effect
-                    setTimeout(typeNextCharacter, Math.floor(Math.random() * 5) + 5);
-                  } else {
-                    window.typingInProgress = false;
-                  }
-                };
-                
-                // Start the typewriter effect
-                typeNextCharacter();
-              } else {
-                // If typing is already in progress, just add to the accumulated content
-                window.accumulatedContent += content;
-              }
-            
               accumulatedResponseForHistory += content;
             } else if (eventData.type === "tool_invocation") {
               // Handle tool invocation silently without displaying in UI

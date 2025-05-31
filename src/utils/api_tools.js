@@ -427,7 +427,7 @@ function createStripeTools() {
           );
 
           if (response.data && response.data.url) {
-            return `Please use this link to complete your payment/subscription: ${response.data.url}`;
+            return response.data.url;
           } else {
             console.error("Checkout URL not found in response:", response.data);
             return "Could not retrieve payment link. The response from the server did not contain a URL. Please try again later or contact support.";
@@ -443,12 +443,11 @@ function createStripeTools() {
         schema: z.object({
           email: z.string().email().describe("The user's email address. This email will be associated with the Stripe customer and the checkout session."),
           authToken: z.string().optional().describe("The JWT token if the user is already authenticated with the system. This helps associate the payment with an existing authenticated user if applicable, but is not strictly required to initiate checkout."),
-          // We don't need to pass productId or priceId here if the backend's 
-          // createCheckoutSession is configured to use a default one from STRIPE_PRICE_ID
+          
         }),
       }
     ),
-    // Existing Stripe tools follow...
+   
     tool(
       async (input) => {
         try {
