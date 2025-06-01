@@ -369,11 +369,11 @@ document.addEventListener("DOMContentLoaded", function () {
           messageElement.innerHTML = `
             <div class="flex-shrink-0 mr-3 mt-1">
               <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                <span class="icon-user text-white text-sm flex items-center justify-center w-full h-full"></span>
+                <span class="icon-user text-sm flex items-center justify-center w-full h-full"></span>
               </div>
             </div>
             <div class="rounded-lg p-3 flex-grow markdown">
-              <p class="text-sm text-white user-message">${escapeHtml(message.content)}</p>
+              <p class="text-sm user-message">${escapeHtml(message.content)}</p>
             </div>
           `;
           chatContainer.appendChild(messageElement);
