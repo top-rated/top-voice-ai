@@ -526,6 +526,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Process italic
     text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    
+    // Process Stripe checkout URLs - convert to clean payment links
+    // Look for stripe checkout URLs in the text and completely replace them
+    const stripeUrlRegex = /(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/g;
+    if (stripeUrlRegex.test(text)) {
+      // If we have a Stripe URL, create a completely clean message
+      const matches = text.match(stripeUrlRegex);
+      if (matches && matches.length > 0) {
+        // Get the first URL (in case there are multiple)
+        const url = matches[0];
+        // Replace the entire text with a clean message
+        return `<p>Please use this secure link to complete your payment:</p>
+<p><a href="${url}" target="_blank" rel="noopener noreferrer" class="payment-button">Complete Your Payment</a></p>
+<p>You'll be redirected to Stripe to enter your payment details securely.</p>`;
+      }
+    }
 
     // Process links
     text = text.replace(
@@ -835,7 +851,7 @@ async function sendMessage(message) {
             if (eventData.type === "connected") {
               console.log("Connection established with server");
             } else if (eventData.type === "content_chunk") {
-              const content = eventData.data;
+              let content = eventData.data;
               console.log("Received content chunk:", content);
               
               // Skip if this is just echoing the user's query
@@ -858,6 +874,18 @@ async function sendMessage(message) {
                 console.log("Skipped rendering likely JSON data:", content);
                 accumulatedResponseForHistory += content; 
                 continue; // Skip to next iteration
+              }
+              
+              // Handle Stripe payment URLs - preprocess before rendering
+              if (content.includes("checkout.stripe.com")) {
+                console.log("Processing Stripe payment URL for better display");
+                // Extract just the URL from the content
+                const urlMatch = content.match(/(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/);
+                if (urlMatch && urlMatch[1]) {
+                  // Just pass the URL through - the markdown processor will handle it
+                  // We want to keep this simple to avoid duplication issues
+                  content = urlMatch[1];
+                }
               }
               
               // Clear thinking indicator on first actual content & stream
