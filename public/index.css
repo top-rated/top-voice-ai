@@ -1,4 +1,62 @@
 
+/* Theme Variables */
+:root {
+  /* Dark theme colors (default) */
+  --bg-primary: #212121;
+  --bg-secondary: #181818;
+  --border-color: #303030;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --hover-bg: rgba(255, 255, 255, 0.1);
+  --active-bg: rgba(37, 99, 235, 0.2);
+  --active-color: #60a5fa;
+  --spinner-border: rgba(255, 255, 255, 0.3);
+  --spinner-highlight: #ffffff;
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --pattern-bg: rgba(255, 255, 255, 0.05);
+  --input-bg: #212121;
+}
+
+
+
+#welcome-message-box .welcome-text-item {
+  color: rgba(255, 255, 255, 0.7); /* Default secondary text color for animated items */
+}
+
+/* Light theme colors */
+[data-theme="light"] {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --border-color: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --hover-bg: rgba(0, 0, 0, 0.05);
+  --active-bg: rgba(59, 130, 246, 0.1);
+  --active-color: #2563eb;
+  --spinner-border: rgba(0, 0, 0, 0.2);
+  --spinner-highlight: #2563eb;
+  --card-shadow: rgba(0, 0, 0, 0.05);
+  --pattern-bg: rgba(0, 0, 0, 0.02);
+  --input-bg: #ffffff;
+
+  #welcome-message-box {
+   
+    color: var(--text-primary); /* Dark text for light theme */
+  }
+
+  #welcome-message-box .welcome-text-item {
+    color: var(--text-secondary); /* Slightly lighter dark text for animated items in light theme */
+  }
+
+  /* Ensure message text is readable in light mode */
+  .chat-message .message-content,
+  .chat-message .message-content p,
+  .chat-message .message-content span,
+  .chat-message .message-content div {
+    color: var(--text-primary);
+  }
+}
+
 /* Font Awesome icons are now used directly in the HTML */
 
 /* Custom icon classes mapped to Font Awesome */
@@ -54,11 +112,11 @@
 
 /* Consistent loading spinner */
 .spinner {
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid var(--spinner-border);
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border-left-color: #ffffff;
+  border-left-color: var(--spinner-highlight);
   animation: spin 1s linear infinite;
   display: inline-block;
   vertical-align: middle;
@@ -76,8 +134,12 @@
 
 /* Pattern background */
 .pattern {
-  background-color: rgba(255, 255, 255, 0.05);
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-color: var(--pattern-bg);
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23333333' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-theme="light"] .pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Dashboard gradient */
@@ -177,13 +239,13 @@
 }
 
 .sidebar-mini .mini-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
 }
 
 .sidebar-mini .mini-button.active {
-  background-color: rgba(37, 99, 235, 0.2);
-  color: #60a5fa;
+  background-color: var(--active-bg);
+  color: var(--active-color);
 }
 
 .sidebar-mini .mini-history {
@@ -278,13 +340,26 @@
   background: rgba(30, 41, 59, 0.5);
 }
 
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.8);
+}
+
 ::-webkit-scrollbar-thumb {
   background: rgba(71, 85, 105, 0.5);
   border-radius: 4px;
 }
 
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 4px;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.5);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.7);
 }
 
 /* Typing indicator */
@@ -421,19 +496,57 @@ pre code {
   font-weight: 500;
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
-  color: #a5b4fc; /* Indigo accent */
+  color: var(--text-secondary);
 }
 
 .tool-call-details pre {
-  background-color: rgba(20, 25, 40, 0.8); /* Darker pre background */
+  background-color: rgba(20, 25, 40, 0.8); /* User/assistant chat message general styling */
   padding: 0.5rem;
   border-radius: 0.375rem;
   font-size: 0.8em;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #e5e7eb; /* Lighter text for pre */
+  color: var(--text-primary);
   max-height: 200px;
   overflow-y: auto;
+}
+
+.chat-bubble {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  max-width: 85%;
+  line-height: 1.5;
+  position: relative;
+  color: var(--text-primary);
+}
+
+/* User chat bubble - right side */
+.user-bubble {
+  background-color: #0084ff; /* Facebook Messenger blue */
+  align-self: flex-end;
+  margin-left: auto;
+  color: white; /* Ensure text is always white regardless of theme */
+}
+
+[data-theme="light"] .user-bubble {
+  background-color: #0084ff; /* Keep the blue background */
+  color: white; /* Keep text white but ensure it's visible on blue */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
+}
+
+/* Bot chat bubble - left side */
+.bot-bubble {
+  background-color: #292934; /* Dark slate blue-gray for dark mode */
+  align-self: flex-start;
+  margin-right: auto;
+  color: white; /* White text for dark mode */
+}
+
+[data-theme="light"] .bot-bubble {
+  background-color: #f0f0f0; /* Light gray for light mode */
+  color: #333333; /* Dark text for light mode */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
 }
 
 /* Inline code styling */
@@ -462,7 +575,7 @@ p code, li code {
 }
 
 .copy-button:hover {
-  background-color: rgba(71, 85, 105, 0.8);
+  background-color: var(--hover-bg);
   color: white;
 }
 
@@ -477,6 +590,17 @@ p code, li code {
   align-items: center;
 }
 
+#chat-history-list button.chat-history-item {
+  text-align: left;
+  transition: all 0.2s;
+  position: relative;
+  padding-right: 2rem;
+  color: var(--text-primary);
+  background-color: var(--hover-bg);
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+
 #chat-history-list button.flex-grow {
   min-width: 0;
   width: calc(100% - 30px);
@@ -489,6 +613,7 @@ p code, li code {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  color: var(--text-primary);
 }
 
 /* Hide scrollbar but allow scrolling */
@@ -498,9 +623,38 @@ p code, li code {
   -ms-overflow-style: none; /* IE and Edge */
 }
 
+/* Theme toggle button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.theme-toggle:hover {
+  background-color: var(--hover-bg);
+}
+
 #chat-history::-webkit-scrollbar,
 #chat-history-list::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+/* User message styling */
+.user-message {
+  color: white !important; /* Ensure user messages are always white */
+}
+
+/* Icon styling for light mode */
+[data-theme="light"] .icon-comment, 
+[data-theme="light"] .icon-times,
+[data-theme="light"] .icon-robot {
+  color: var(--text-primary);
 }
 
 /* Markdown styling */

@@ -54,20 +54,20 @@
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"></script>
   <link rel="stylesheet" href="./index.css" >
 </head>
-<body class="bg-[#212121] min-h-screen font-sans antialiased text-white">
-  <div id="chat-app" class="flex h-screen">
+<body class="min-h-screen font-sans antialiased transition-colors duration-300">
+  <div id="chat-app" class="flex h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
     <!-- Sidebar -->
-    <div id="sidebar" class="w-64 bg-[#181818] border-r border-[#303030] flex flex-col hidden md:flex transition-all duration-300">
+    <div id="sidebar" class="w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] flex flex-col hidden md:flex transition-all duration-300">
       <!-- Full Sidebar Content -->
       <div class="sidebar-full flex flex-col h-full">
         <!-- Logo and Title -->
-        <div class="p-4 border-b border-[#303030]">
+        <div class="p-4 border-b border-[var(--border-color)]">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <img src="/top-voices.png" alt="Top Voice AI Logo" class="h-10 w-auto mr-3" id="sidebar-logo">
-              <h1 class="text-xl font-semibold text-white">Top Voice AI</h1>
+              <h1 class="text-xl font-semibold text-[var(--text-primary)]">Top Voice AI</h1>
             </div>
-            <button id="sidebar-toggle" class="text-white hover:text-gray-300 transition-colors">
+            <button id="sidebar-toggle" class="text-[var(--text-primary)] hover:opacity-70 transition-colors">
               <i class="fas fa-chevron-left flex items-center justify-center w-5 h-5"></i>
             </button>
           </div>
@@ -77,8 +77,8 @@
         <nav class="flex-1 flex flex-col overflow-hidden p-4">
           <!-- Chat Controls -->
           <div class="mb-6">
-            <button id="new-chat" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium bg-gray-100 text-black hover:bg-gray-200 transition-colors mb-2">
-              <i class="fas fa-plus-circle w-5 h-5 mr-3 text-black flex items-center justify-center"></i>
+            <button id="new-chat" class="w-full text-left px-3 py-2 rounded-md flex items-center text-sm font-medium transition-colors mb-2 bg-gray-800 text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-black dark:hover:bg-gray-200">
+              <i class="fas fa-plus-circle w-5 h-5 mr-3 text-white dark:text-black flex items-center justify-center"></i>
               New Chat
             </button>
 
@@ -86,14 +86,14 @@
 
           <!-- Chat History -->
           <div id="chat-history" class="flex-1 overflow-y-auto min-h-0">
-            <h2 class="text-xs uppercase tracking-wider text-white font-semibold mb-3">Chat History</h2>
+            <h2 class="text-xs uppercase tracking-wider text-[var(--text-primary)] font-semibold mb-3">Chat History</h2>
             <div id="chat-history-list" class="space-y-1 overflow-y-auto overflow-x-hidden w-full">
               <!-- Chat history items will be added here dynamically -->
             </div>
           </div>
 
           <!-- Delete All Chats Button at Bottom -->
-          <button id="delete-all-chats" class="flex items-center text-gray-400 hover:text-red-500 hover:bg-[#303030] py-2 px-3 rounded-md text-sm transition-colors duration-150 w-full mt-4 self-start">
+          <button id="delete-all-chats" class="flex items-center text-[var(--text-secondary)] hover:text-red-500 hover:bg-[var(--hover-bg)] py-2 px-3 rounded-md text-sm transition-colors duration-150 w-full mt-4 self-start">
             <i class="fas fa-trash-alt w-4 h-4 mr-2 flex items-center justify-center text-inherit"></i>
             Delete All Chats
           </button>
@@ -108,13 +108,13 @@
         </div>
 
         <!-- Mini Expand Button -->
-        <button id="sidebar-expand-mini" class="mini-button mb-4 text-white hover:bg-[#303030]">
+        <button id="sidebar-expand-mini" class="mini-button mb-4 text-[var(--text-primary)] hover:bg-[var(--hover-bg)]">
           <i class="fas fa-chevron-right flex items-center justify-center w-5 h-5 text-inherit"></i>
         </button>
 
         <!-- Mini New Chat Button -->
-        <button id="new-chat-mini" class="mini-button text-white hover:bg-[#303030]">
-          <i class="fas fa-plus-circle mr-2 text-white"></i>
+        <button id="new-chat-mini" class="mini-button text-[var(--text-primary)] hover:bg-[var(--hover-bg)]">
+          <i class="fas fa-plus-circle mr-2 text-[var(--text-primary)]"></i>
         </button>
 
         <!-- Mini Chat History -->
@@ -136,7 +136,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center">
             <!-- Mobile menu button -->
-            <button id="mobile-menu-button" class="md:hidden mr-3 text-gray-400 hover:text-white">
+            <button id="mobile-menu-button" class="md:hidden mr-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
               <i class="fas fa-bars flex items-center justify-center w-6 h-6"></i>
             </button>
 
@@ -144,6 +144,9 @@
             <h1 class="text-xl font-semibold text-white md:hidden">Top Voice AI</h1>
           </div>
           <div class="flex items-center space-x-3">
+            <button id="theme-toggle" class="theme-toggle">
+              <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
             <button id="delete-all-chats-mobile" class="md:hidden text-gray-400 hover:text-white transition-colors">
               <i class="fas fa-trash-alt w-5 h-5 flex items-center justify-center"></i>
             </button>
@@ -158,10 +161,10 @@
       <div class="flex-1 overflow-y-auto p-4 flex flex-col items-center" id="chat-container">
         <!-- Welcome Message -->
         <div class="flex flex-col items-center justify-center h-full animate-fade-in max-w-xl w-full mx-auto self-center mt-12 md:mt-20" id="welcome-container">
-          <div class="bg-[#212121] rounded-lg p-4  w-full flex flex-col items-center">
+          <div id="welcome-message-box" class="rounded-lg p-4  w-full flex flex-col items-center">
             <!-- New Welcome Section -->
             <div class="w-full max-w-lg text-left mb-8">
-                <p class="font-semibold text-lg text-white text-center mb-6">Brainstorm and generate AI-powered, HUMANIZED posts LinkedIn® Top Voices trends, insights and reach boost!</p>
+                <p class="font-semibold text-lg text-center mb-6">Brainstorm and generate AI-powered, HUMANIZED posts LinkedIn® Top Voices trends, insights and reach boost!</p>
                 <div class="welcome-text-anim-container" style="height: 60px; /* Adjust as needed */">
                     <p class="welcome-text-item">Struggling to stay relevant, authentic and unique?</p>
                     <p class="welcome-text-item">How often do your posts get organically boosted?</p>
@@ -171,33 +174,33 @@
 
             <!-- New Quick Questions -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mx-auto max-w-xl w-full">
-              <div class="prompt-card bg-[#212121] border border-[#303030] rounded-lg p-4 shadow-md hover:shadow-blue-500/30 hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="FREE: show new posts of LinkedIn Top Voices 2025">
+              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-blue-500/30 hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="FREE: show new posts of LinkedIn Top Voices 2025">
                 <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-white text-base font-medium">LinkedIn Top Voices 2025</div>
-                  <i class="fas fa-newspaper w-5 h-5 text-white"></i>
+                  <div class="text-[var(--text-primary)] text-base font-medium">LinkedIn Top Voices 2025</div>
+                  <i class="fas fa-newspaper w-5 h-5 text-[var(--text-primary)]"></i>
                 </div>
-                <p class="text-white text-xs">FREE: show new posts of LinkedIn Top Voices 2025</p>
+                <p class="text-[var(--text-secondary)] text-xs">FREE: show new posts of LinkedIn Top Voices 2025</p>
               </div>
-              <div class="prompt-card bg-[#212121] border border-[#303030] rounded-lg p-4 shadow-md hover:shadow-purple-500/30 hover:border-purple-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Generate post from article in a certain profile style">
+              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-purple-500/30 hover:border-purple-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Generate post from article in a certain profile style">
                 <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-white text-base font-medium">Generate Post</div>
-                  <i class="fas fa-magic w-5 h-5 text-white"></i>
+                  <div class="text-[var(--text-primary)] text-base font-medium">Generate Post</div>
+                  <i class="fas fa-magic w-5 h-5 text-[var(--text-primary)]"></i>
                 </div>
-                <p class="text-white text-xs">Generate post from article in a certain profile style</p>
+                <p class="text-[var(--text-secondary)] text-xs">Generate post from article in a certain profile style</p>
               </div>
-              <div class="prompt-card bg-[#212121] border border-[#303030] rounded-lg p-4 shadow-md hover:shadow-green-500/30 hover:border-green-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Analyze posts content and style of certain profile">
+              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-green-500/30 hover:border-green-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Analyze posts content and style of certain profile">
                 <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-white text-base font-medium">Analyze Profile</div>
-                  <i class="fas fa-chart-pie w-5 h-5 text-white"></i>
+                  <div class="text-[var(--text-primary)] text-base font-medium">Analyze Profile</div>
+                  <i class="fas fa-chart-pie w-5 h-5 text-[var(--text-primary)]"></i>
                 </div>
-                <p class="text-white text-xs">Analyze posts content and style of certain profile</p>
+                <p class="text-[var(--text-secondary)] text-xs">Analyze posts content and style of certain profile</p>
               </div>
-              <div class="prompt-card bg-[#212121] border border-[#303030] rounded-lg p-4 shadow-md hover:shadow-amber-500/30 hover:border-amber-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Search past 24hr posts with certain keywords">
+              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-amber-500/30 hover:border-amber-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Search past 24hr posts with certain keywords">
                 <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-white text-base font-medium">Keyword Search</div>
-                  <i class="fas fa-search w-5 h-5 text-white"></i>
+                  <div class="text-[var(--text-primary)] text-base font-medium">Keyword Search</div>
+                  <i class="fas fa-search w-5 h-5 text-[var(--text-primary)]"></i>
                 </div>
-                <p class="text-white text-xs">Search past 24hr posts with certain keywords</p>
+                <p class="text-[var(--text-secondary)] text-xs">Search past 24hr posts with certain keywords</p>
               </div>
             </div>
           </div>
@@ -206,12 +209,12 @@
       </div>
 
       <!-- Input Area -->
-      <div class="bg-[#212121] p-4 flex justify-center">
+      <div class="bg-[var(--bg-primary)] p-4 flex justify-center">
         <form id="chat-form" class="flex items-end space-x-2 w-full max-w-2xl">
           <div class="flex-1 relative">
             <input
               id="message-input"
-              class="w-full bg-[#212121] border border-[#303030] rounded-lg py-4 px-4 pr-12 focus:outline-none focus:border-[#404040] text-white placeholder-white/70"
+              class="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg py-4 px-4 pr-12 focus:outline-none focus:border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
               placeholder="Ask Knowledge Base for LinkedIn Top Voices..."
               type="text"
             />

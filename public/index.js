@@ -1,4 +1,39 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Theme Handling
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+  
+  // Function to set theme
+  function setTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      themeIcon.classList.remove('fa-moon');
+      themeIcon.classList.add('fa-sun');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      themeIcon.classList.remove('fa-sun');
+      themeIcon.classList.add('fa-moon');
+    }
+    localStorage.setItem('theme', theme);
+  }
+  
+  // Check for saved theme preference or use device preference
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (savedTheme) {
+    setTheme(savedTheme);
+  } else {
+    setTheme(prefersDarkMode ? 'dark' : 'light');
+  }
+  
+  // Theme toggle click event
+  themeToggle.addEventListener('click', function() {
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  });
+
   // Initialize highlight.js with auto-detection
   hljs.configure({
     languages: [
@@ -245,11 +280,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const historyItem = document.createElement("button");
         historyItem.className = `flex-grow text-left px-3 py-2 rounded-md flex items-center text-sm font-medium min-w-0 ${
           threadId === currentThreadId
-            ? "bg-white/10 text-blue-300"
-            : "text-white hover:bg-white/5 hover:text-blue-300"
-        } transition-colors`;
+            ? "bg-[var(--hover-bg)] text-[var(--active-color)]"
+            : "text-[var(--text-primary)] hover:bg-[var(--hover-bg)] hover:text-[var(--active-color)]"
+        } transition-colors chat-history-item`;
         historyItem.innerHTML = `
-          <span class="icon-comment w-4 h-4 mr-2 flex-shrink-0 text-white flex items-center justify-center"></span>
+          <span class="icon-comment w-4 h-4 mr-2 flex-shrink-0 text-[var(--text-primary)] flex items-center justify-center"></span>
           <span class="truncate w-full">${escapeHtml(title)}</span>
         `;
 
@@ -260,7 +295,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create delete button
         const deleteButton = document.createElement("button");
         deleteButton.className =
-          "p-1 ml-1 flex-shrink-0 text-white hover:text-red-500 transition-colors";
+          "p-1 ml-1 flex-shrink-0 text-[var(--text-primary)] hover:text-red-500 transition-colors";
         deleteButton.innerHTML = `<span class="icon-times"></span>`;
         deleteButton.title = "Delete this chat";
 
@@ -280,8 +315,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create mini sidebar history item (only show first 5 for space)
         if (index < 5) {
           const miniHistoryItem = document.createElement("button");
-          miniHistoryItem.className = `mini-button text-white ${
-            threadId === currentThreadId ? "bg-[#303030]" : "hover:bg-[#303030]"
+          miniHistoryItem.className = `mini-button text-[var(--text-primary)] ${
+            threadId === currentThreadId ? "bg-[var(--hover-bg)]" : "hover:bg-[var(--hover-bg)]"
           }`;
           miniHistoryItem.title = title;
           miniHistoryItem.innerHTML = `<span class="icon-comment"></span>`;
@@ -338,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
               </div>
             </div>
             <div class="rounded-lg p-3 flex-grow markdown">
-              <p class="text-sm text-white">${escapeHtml(message.content)}</p>
+              <p class="text-sm text-white user-message">${escapeHtml(message.content)}</p>
             </div>
           `;
           chatContainer.appendChild(messageElement);
@@ -433,12 +468,12 @@ document.addEventListener("DOMContentLoaded", function () {
     messageElement.innerHTML = `
       <div class="flex-shrink-0 mr-3 mt-1">
         <div class="w-8 h-8 rounded-full flex items-center justify-center">
-          <span class="icon-user text-white text-sm flex items-center justify-center w-full h-full"></span>
+          <span class="icon-user text-sm flex items-center justify-center w-full h-full"></span>
         </div>
       </div>
       
       <div class="rounded-lg p-3 flex-grow markdown">
-        <p class="text-sm text-white">${escapeHtml(message)}</p>
+        <p class="text-sm">${escapeHtml(message)}</p>
       </div>
     `;
 
@@ -469,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Create text content area for actual message content
     const textContent = document.createElement("div");
-    textContent.className = "text-content text-sm text-white";
+    textContent.className = "text-content text-sm";
     contentDiv.appendChild(textContent);
   
     // Create typing indicator (will be hidden when content is displayed)
