@@ -48,12 +48,21 @@
     color: var(--text-secondary); /* Slightly lighter dark text for animated items in light theme */
   }
 
-  /* Ensure message text is readable in light mode */
+  /* Send Button Icon Styling */
+#send-button-icon {
+  color: var(--text-secondary); /* Default color for dark mode */
+}
+
+/* Ensure message text is readable in light mode */
   .chat-message .message-content,
   .chat-message .message-content p,
   .chat-message .message-content span,
   .chat-message .message-content div {
     color: var(--text-primary);
+  }
+
+  #send-button-icon {
+    color: var(--text-primary); /* Color for light mode */
   }
 }
 
