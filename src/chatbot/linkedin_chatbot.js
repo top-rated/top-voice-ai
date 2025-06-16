@@ -1,4 +1,4 @@
-const { ChatOpenAI } = require("@langchain/openai");
+const { AzureChatOpenAI } = require("@langchain/openai");
 const { createReactAgent } = require("@langchain/langgraph/prebuilt");
 const dotenv = require("dotenv");
 const { MemorySaver } = require("@langchain/langgraph");
@@ -7,9 +7,16 @@ const { getAllApiTools } = require("../utils/api_tools");
 const { HumanMessage } = require("@langchain/core/messages");
 dotenv.config();
 
-// Initialize the model
-const model = new ChatOpenAI({
-  model: "gpt-4o",
+// Initialize the llm
+const llm = new AzureChatOpenAI({
+  model: process.env.MODEL_NAME,
+  temperature: 0.7,
+  maxTokens: undefined,
+  maxRetries: 2,
+  azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+  azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
+  azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+  azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
 });
 
 // Get all API tools
@@ -29,26 +36,28 @@ const memoryStore = new Map();
  */
 async function getCurrentPrompt() {
   const now = Date.now();
-  
+
   // Use cached prompt if it's still fresh
-  if (cachedPrompt && (now - lastPromptFetchTime < PROMPT_CACHE_TTL)) {
+  if (cachedPrompt && now - lastPromptFetchTime < PROMPT_CACHE_TTL) {
     return cachedPrompt;
   }
-  
+
   try {
     // Fetch fresh prompt
     cachedPrompt = await getSystemPrompt();
     lastPromptFetchTime = now;
     return cachedPrompt;
   } catch (error) {
-    console.error('Error fetching system prompt:', error);
+    console.error("Error fetching system prompt:", error);
     // If we have a cached version, use it as fallback
     if (cachedPrompt) {
-      console.log('Using cached prompt as fallback');
+      console.log("Using cached prompt as fallback");
       return cachedPrompt;
     }
     // Last resort fallback - throw error
-    throw new Error('Failed to get system prompt and no cached version available');
+    throw new Error(
+      "Failed to get system prompt and no cached version available"
+    );
   }
 }
 
@@ -61,7 +70,7 @@ async function getCurrentPrompt() {
 async function processQuery(threadId, query) {
   // Get current prompt
   const prompt = await getCurrentPrompt();
-  
+
   // Initialize or retrieve memory for this thread
   if (!memoryStore.has(threadId)) {
     memoryStore.set(threadId, new MemorySaver());
@@ -70,7 +79,7 @@ async function processQuery(threadId, query) {
 
   // Create agent with thread-specific memory
   const agent = createReactAgent({
-    llm: model,
+    llm: llm,
     tools: apiTools,
     checkpointSaver: memory,
     stateModifier: prompt,
@@ -85,7 +94,7 @@ async function processQuery(threadId, query) {
   // Process the query with thread_id in the configurable and stream the response
   const stream = agent.stream(inputs, {
     ...config,
-    streamMode: "values", 
+    streamMode: "values",
   });
 
   // Return the stream to be handled by the API route
@@ -95,35 +104,33 @@ async function processQuery(threadId, query) {
 async function processLinkedInQuery(threadId, query) {
   // Get current prompt
   const basePrompt = await getCurrentPrompt();
-  
+
   // Initialize or retrieve memory for this thread
   if (!memoryStore.has(threadId)) {
     memoryStore.set(threadId, new MemorySaver());
   }
   const memory = memoryStore.get(threadId);
 
-  const newPrompt = `${basePrompt} Markdown is not allowed on LinkedIn so use LinkedIn styling for response rendering`
-  
-  
+  const newPrompt = `${basePrompt} Markdown is not allowed on LinkedIn so use LinkedIn styling for response rendering`;
+
   // Create agent with thread-specific memory
   const agent = createReactAgent({
-    llm: model,
+    llm: llm,
     tools: apiTools,
     checkpointSaver: memory,
     stateModifier: newPrompt,
   });
 
- 
   // Process the query with thread_id in the configurable and stream the response
   const agentFinalState = await agent.invoke(
     { messages: [new HumanMessage(query)] },
-    { configurable: { thread_id: threadId } },
+    { configurable: { thread_id: threadId } }
   );
-  
-  const response = agentFinalState.messages[agentFinalState.messages.length - 1].content;
-  
+
+  const response =
+    agentFinalState.messages[agentFinalState.messages.length - 1].content;
+
   return response;
-  
 }
 module.exports = {
   processQuery,
