@@ -10,6 +10,7 @@ env.example
 test-keys.md
 /unipile_response/
 /langgraph_docs/
+.cursor/
 /.windsurf/
 
 

@@ -7,17 +7,16 @@ const { getAllApiTools } = require("../utils/api_tools");
 const { HumanMessage } = require("@langchain/core/messages");
 dotenv.config();
 
-// Initialize the llm
-const llm = new AzureChatOpenAI({
+// Temporary hardcoded fallback for testing
+const azureConfig = {
   model: process.env.MODEL_NAME,
-  temperature: 0.7,
-  maxTokens: undefined,
-  maxRetries: 2,
   azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
   azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME,
-  azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+  azureOpenAIApiDeploymentName: process.env.MODEL_NAME,
   azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
-});
+};
+
+const llm = new AzureChatOpenAI(azureConfig);
 
 // Get all API tools
 const apiTools = getAllApiTools();
