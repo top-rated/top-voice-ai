@@ -1,9 +1,11 @@
 const { tool } = require("@langchain/core/tools");
 const { z } = require("zod");
 const axios = require("axios");
+const dotenv = require("dotenv");
+dotenv.config();
 
 // Base API URL from OpenAPI spec
-const BASE_URL = "http://localhost:3000/api/v1";
+const BASE_URL = process.env.BASE_URL;
 
 /**
  * Create tools for Top Voices API endpoints
@@ -318,7 +320,6 @@ function createAuthAndLicenseTools() {
       }
     ),
 
-
     tool(
       async (input) => {
         try {
@@ -333,7 +334,8 @@ function createAuthAndLicenseTools() {
       },
       {
         name: "create_stripe_customer",
-        description: "Creates a new customer in Stripe using their email and optionally a name.",
+        description:
+          "Creates a new customer in Stripe using their email and optionally a name.",
         schema: z.object({
           email: z.string().email().describe("Customer's email address"),
           name: z.string().optional().describe("Customer's full name"),
@@ -344,11 +346,14 @@ function createAuthAndLicenseTools() {
     tool(
       async (input) => {
         try {
-          const response = await axios.post(`${BASE_URL}/stripe/invoices/create-and-pay`, {
-            email: input.email,
-            name: input.name,
-            payment_method_id: input.payment_method_id,
-          });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/invoices/create-and-pay`,
+            {
+              email: input.email,
+              name: input.name,
+              payment_method_id: input.payment_method_id,
+            }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
           return `Error creating and paying Stripe invoice: ${error.message}`;
@@ -356,11 +361,17 @@ function createAuthAndLicenseTools() {
       },
       {
         name: "create_and_pay_stripe_invoice_for_product",
-        description: "Creates a Stripe customer (if not existing), creates an invoice for the standard product, and attempts to pay it immediately with the provided payment method. No emails will be sent by Stripe.",
+        description:
+          "Creates a Stripe customer (if not existing), creates an invoice for the standard product, and attempts to pay it immediately with the provided payment method. No emails will be sent by Stripe.",
         schema: z.object({
           email: z.string().email().describe("Customer's email address"),
-          name: z.string().optional().describe("Customer's full name (for new customer creation)"),
-          payment_method_id: z.string().describe("Stripe PaymentMethod ID (e.g., pm_xxxx)"),
+          name: z
+            .string()
+            .optional()
+            .describe("Customer's full name (for new customer creation)"),
+          payment_method_id: z
+            .string()
+            .describe("Stripe PaymentMethod ID (e.g., pm_xxxx)"),
         }),
       }
     ),
@@ -368,11 +379,14 @@ function createAuthAndLicenseTools() {
     tool(
       async (input) => {
         try {
-          const response = await axios.post(`${BASE_URL}/stripe/subscriptions/create`, {
-            email: input.email,
-            name: input.name,
-            payment_method_id: input.payment_method_id,
-          });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/subscriptions/create`,
+            {
+              email: input.email,
+              name: input.name,
+              payment_method_id: input.payment_method_id,
+            }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
           return `Error creating Stripe subscription: ${error.message}`;
@@ -380,11 +394,17 @@ function createAuthAndLicenseTools() {
       },
       {
         name: "create_stripe_subscription_for_product",
-        description: "Creates a Stripe customer (if not existing), and sets up a subscription for the standard product using the provided payment method. No emails will be sent by Stripe for initial setup.",
+        description:
+          "Creates a Stripe customer (if not existing), and sets up a subscription for the standard product using the provided payment method. No emails will be sent by Stripe for initial setup.",
         schema: z.object({
           email: z.string().email().describe("Customer's email address"),
-          name: z.string().optional().describe("Customer's full name (for new customer creation)"),
-          payment_method_id: z.string().describe("Stripe PaymentMethod ID (e.g., pm_xxxx)"),
+          name: z
+            .string()
+            .optional()
+            .describe("Customer's full name (for new customer creation)"),
+          payment_method_id: z
+            .string()
+            .describe("Stripe PaymentMethod ID (e.g., pm_xxxx)"),
         }),
       }
     ),
@@ -417,12 +437,13 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
           // The backend's createCheckoutSession now only needs 'email'
           // Success/cancel URLs and Price ID are handled by the backend using .env variables
-          const response = await axios.post(`${BASE_URL}/stripe/create-checkout-session`, 
-            { email: input.email }, 
+          const response = await axios.post(
+            `${BASE_URL}/stripe/create-checkout-session`,
+            { email: input.email },
             { headers }
           );
 
@@ -433,46 +454,76 @@ function createStripeTools() {
             return "Could not retrieve payment link. The response from the server did not contain a URL. Please try again later or contact support.";
           }
         } catch (error) {
-          console.error("Error in initiate_payment_checkout tool:", error.response?.data || error.message);
-          return `Error initiating payment: ${error.response?.data?.message || 'An unexpected error occurred. Please ensure your email is correct and try again.'}`;
+          console.error(
+            "Error in initiate_payment_checkout tool:",
+            error.response?.data || error.message
+          );
+          return `Error initiating payment: ${
+            error.response?.data?.message ||
+            "An unexpected error occurred. Please ensure your email is correct and try again."
+          }`;
         }
       },
       {
         name: "initiate_payment_checkout",
-        description: "Initiates a payment or subscription process by generating a Stripe Checkout link for the user. This should be used when a user expresses intent to subscribe or purchase. Requires the user's email address. If the user is already known to be authenticated with the system, their authToken can be provided.",
+        description:
+          "Initiates a payment or subscription process by generating a Stripe Checkout link for the user. This should be used when a user expresses intent to subscribe or purchase. Requires the user's email address. If the user is already known to be authenticated with the system, their authToken can be provided.",
         schema: z.object({
-          email: z.string().email().describe("The user's email address. This email will be associated with the Stripe customer and the checkout session."),
-          authToken: z.string().optional().describe("The JWT token if the user is already authenticated with the system. This helps associate the payment with an existing authenticated user if applicable, but is not strictly required to initiate checkout."),
-          
+          email: z
+            .string()
+            .email()
+            .describe(
+              "The user's email address. This email will be associated with the Stripe customer and the checkout session."
+            ),
+          authToken: z
+            .string()
+            .optional()
+            .describe(
+              "The JWT token if the user is already authenticated with the system. This helps associate the payment with an existing authenticated user if applicable, but is not strictly required to initiate checkout."
+            ),
         }),
       }
     ),
-   
+
     tool(
       async (input) => {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/customers`, {
-            email: input.email,
-            name: input.name,
-            paymentMethodId: input.paymentMethodId,
-          }, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/customers`,
+            {
+              email: input.email,
+              name: input.name,
+              paymentMethodId: input.paymentMethodId,
+            },
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error managing Stripe customer: ${error.response?.data?.message || error.message}`;
+          return `Error managing Stripe customer: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "manage_stripe_customer",
-        description: "Creates a new Stripe customer or retrieves an existing one. Can optionally attach a payment method. Requires authToken for authorization.",
+        description:
+          "Creates a new Stripe customer or retrieves an existing one. Can optionally attach a payment method. Requires authToken for authorization.",
         schema: z.object({
           email: z.string().describe("The customer's email address."),
           name: z.string().optional().describe("The customer's full name."),
-          paymentMethodId: z.string().optional().describe("A Stripe PaymentMethod ID (e.g., pm_xxxx) to attach to the customer and set as default for invoices/subscriptions."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          paymentMethodId: z
+            .string()
+            .optional()
+            .describe(
+              "A Stripe PaymentMethod ID (e.g., pm_xxxx) to attach to the customer and set as default for invoices/subscriptions."
+            ),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
     ),
@@ -481,23 +532,38 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/payment-methods/${input.paymentMethodId}/attach`, {
-            customerId: input.customerId,
-          }, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/payment-methods/${input.paymentMethodId}/attach`,
+            {
+              customerId: input.customerId,
+            },
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error attaching payment method: ${error.response?.data?.message || error.message}`;
+          return `Error attaching payment method: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "attach_payment_method_to_customer",
-        description: "Attaches a given Stripe PaymentMethod ID to a specified Stripe Customer ID and sets it as the default for future invoices/subscriptions. Requires authToken for authorization.",
+        description:
+          "Attaches a given Stripe PaymentMethod ID to a specified Stripe Customer ID and sets it as the default for future invoices/subscriptions. Requires authToken for authorization.",
         schema: z.object({
-          customerId: z.string().describe("The Stripe Customer ID (cus_xxxx) to attach the payment method to."),
-          paymentMethodId: z.string().describe("The Stripe PaymentMethod ID (pm_xxxx) to attach."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          customerId: z
+            .string()
+            .describe(
+              "The Stripe Customer ID (cus_xxxx) to attach the payment method to."
+            ),
+          paymentMethodId: z
+            .string()
+            .describe("The Stripe PaymentMethod ID (pm_xxxx) to attach."),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
     ),
@@ -506,30 +572,55 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/payment-intents`, {
-            customerId: input.customerId,
-            amount: input.amount,
-            currency: input.currency,
-            paymentMethodId: input.paymentMethodId,
-            description: input.description
-          }, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/payment-intents`,
+            {
+              customerId: input.customerId,
+              amount: input.amount,
+              currency: input.currency,
+              paymentMethodId: input.paymentMethodId,
+              description: input.description,
+            },
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error creating payment intent: ${error.response?.data?.message || error.message}`;
+          return `Error creating payment intent: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "create_stripe_payment_intent",
-        description: "Creates and optionally confirms a Stripe PaymentIntent for a one-off charge. Requires customerId, amount (in smallest currency unit, e.g., cents), currency, paymentMethodId, and authToken for authorization.",
+        description:
+          "Creates and optionally confirms a Stripe PaymentIntent for a one-off charge. Requires customerId, amount (in smallest currency unit, e.g., cents), currency, paymentMethodId, and authToken for authorization.",
         schema: z.object({
           customerId: z.string().describe("The Stripe Customer ID (cus_xxxx)."),
-          amount: z.number().int().positive().describe("Amount to charge, in the smallest currency unit (e.g., cents for USD)."),
-          currency: z.string().length(3).describe("Three-letter ISO currency code (e.g., usd)."),
-          paymentMethodId: z.string().describe("A Stripe PaymentMethod ID (pm_xxxx) to charge."),
-          description: z.string().optional().describe("An arbitrary string to be displayed on the customer's credit card statement."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          amount: z
+            .number()
+            .int()
+            .positive()
+            .describe(
+              "Amount to charge, in the smallest currency unit (e.g., cents for USD)."
+            ),
+          currency: z
+            .string()
+            .length(3)
+            .describe("Three-letter ISO currency code (e.g., usd)."),
+          paymentMethodId: z
+            .string()
+            .describe("A Stripe PaymentMethod ID (pm_xxxx) to charge."),
+          description: z
+            .string()
+            .optional()
+            .describe(
+              "An arbitrary string to be displayed on the customer's credit card statement."
+            ),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
     ),
@@ -538,32 +629,73 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/invoices`, {
-            customerId: input.customerId,
-            lineItems: input.lineItems,
-            daysUntilDue: input.daysUntilDue,
-            description: input.description
-          }, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/invoices`,
+            {
+              customerId: input.customerId,
+              lineItems: input.lineItems,
+              daysUntilDue: input.daysUntilDue,
+              description: input.description,
+            },
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error creating draft invoice: ${error.response?.data?.message || error.message}`;
+          return `Error creating draft invoice: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "create_stripe_draft_invoice",
-        description: "Creates a new draft invoice in Stripe. Requires customerId, lineItems, and authToken for authorization. lineItems should be an array of objects, each with description, quantity, and amount (in smallest currency unit).",
+        description:
+          "Creates a new draft invoice in Stripe. Requires customerId, lineItems, and authToken for authorization. lineItems should be an array of objects, each with description, quantity, and amount (in smallest currency unit).",
         schema: z.object({
-          customerId: z.string().describe("The Stripe Customer ID (cus_xxxx) for whom the invoice is created."),
-          lineItems: z.array(z.object({
-            description: z.string().describe("Description of the line item."),
-            quantity: z.number().int().positive().describe("Quantity of the item."),
-            amount: z.number().int().positive().describe("Unit amount in smallest currency unit (e.g., cents).")
-          })).min(1).describe("An array of line items for the invoice."),
-          daysUntilDue: z.number().int().optional().describe("Number of days until the invoice is due. Defaults to Stripe's setting if not provided."),
-          description: z.string().optional().describe("An optional description for the invoice, often displayed on the invoice PDF."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          customerId: z
+            .string()
+            .describe(
+              "The Stripe Customer ID (cus_xxxx) for whom the invoice is created."
+            ),
+          lineItems: z
+            .array(
+              z.object({
+                description: z
+                  .string()
+                  .describe("Description of the line item."),
+                quantity: z
+                  .number()
+                  .int()
+                  .positive()
+                  .describe("Quantity of the item."),
+                amount: z
+                  .number()
+                  .int()
+                  .positive()
+                  .describe(
+                    "Unit amount in smallest currency unit (e.g., cents)."
+                  ),
+              })
+            )
+            .min(1)
+            .describe("An array of line items for the invoice."),
+          daysUntilDue: z
+            .number()
+            .int()
+            .optional()
+            .describe(
+              "Number of days until the invoice is due. Defaults to Stripe's setting if not provided."
+            ),
+          description: z
+            .string()
+            .optional()
+            .describe(
+              "An optional description for the invoice, often displayed on the invoice PDF."
+            ),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
     ),
@@ -572,20 +704,33 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/invoices/${input.invoiceId}/finalize`, null, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/invoices/${input.invoiceId}/finalize`,
+            null,
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error finalizing invoice: ${error.response?.data?.message || error.message}`;
+          return `Error finalizing invoice: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "finalize_stripe_draft_invoice",
-        description: "Finalizes a draft invoice in Stripe, making it ready for payment. Requires the Invoice ID and authToken for authorization.",
+        description:
+          "Finalizes a draft invoice in Stripe, making it ready for payment. Requires the Invoice ID and authToken for authorization.",
         schema: z.object({
-          invoiceId: z.string().describe("The Stripe Invoice ID (in_xxxx) of the draft invoice to finalize."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          invoiceId: z
+            .string()
+            .describe(
+              "The Stripe Invoice ID (in_xxxx) of the draft invoice to finalize."
+            ),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
     ),
@@ -594,23 +739,39 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/invoices/${input.invoiceId}/pay`, {
-            paymentMethodId: input.paymentMethodId,
-          }, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/invoices/${input.invoiceId}/pay`,
+            {
+              paymentMethodId: input.paymentMethodId,
+            },
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error paying invoice: ${error.response?.data?.message || error.message}`;
+          return `Error paying invoice: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "pay_stripe_invoice",
-        description: "Pays a finalized Stripe invoice. Requires the Invoice ID and authToken for authorization. Optionally, a specific PaymentMethod ID can be provided to pay the invoice, otherwise the customer's default will be used.",
+        description:
+          "Pays a finalized Stripe invoice. Requires the Invoice ID and authToken for authorization. Optionally, a specific PaymentMethod ID can be provided to pay the invoice, otherwise the customer's default will be used.",
         schema: z.object({
-          invoiceId: z.string().describe("The Stripe Invoice ID (in_xxxx) to pay."),
-          paymentMethodId: z.string().optional().describe("An optional Stripe PaymentMethod ID (pm_xxxx) to use for this payment. If not provided, the customer's default payment method will be attempted."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          invoiceId: z
+            .string()
+            .describe("The Stripe Invoice ID (in_xxxx) to pay."),
+          paymentMethodId: z
+            .string()
+            .optional()
+            .describe(
+              "An optional Stripe PaymentMethod ID (pm_xxxx) to use for this payment. If not provided, the customer's default payment method will be attempted."
+            ),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
     ),
@@ -619,33 +780,54 @@ function createStripeTools() {
         try {
           const headers = {};
           if (input.authToken) {
-            headers['Authorization'] = `Bearer ${input.authToken}`;
+            headers["Authorization"] = `Bearer ${input.authToken}`;
           }
-          const response = await axios.post(`${BASE_URL}/stripe/subscriptions/create`, {
-            email: input.email,
-            name: input.name,
-            payment_method_id: input.paymentMethodId, // Ensure snake_case for this specific API endpoint parameter
-          }, { headers });
+          const response = await axios.post(
+            `${BASE_URL}/stripe/subscriptions/create`,
+            {
+              email: input.email,
+              name: input.name,
+              payment_method_id: input.paymentMethodId, // Ensure snake_case for this specific API endpoint parameter
+            },
+            { headers }
+          );
           return JSON.stringify(response.data);
         } catch (error) {
-          return `Error creating subscription: ${error.response?.data?.message || error.message}`;
+          return `Error creating subscription: ${
+            error.response?.data?.message || error.message
+          }`;
         }
       },
       {
         name: "create_stripe_subscription",
-        description: "Creates a new Stripe subscription for a user. Requires email, a PaymentMethod ID, and authToken for authorization. A customer will be created/retrieved based on the email.",
+        description:
+          "Creates a new Stripe subscription for a user. Requires email, a PaymentMethod ID, and authToken for authorization. A customer will be created/retrieved based on the email.",
         schema: z.object({
-          email: z.string().email().describe("The user's email address. A Stripe customer will be created or retrieved based on this email."),
-          name: z.string().optional().describe("The user's full name. Used if a new customer needs to be created."),
-          paymentMethodId: z.string().describe("A Stripe PaymentMethod ID (pm_xxxx) to be attached to the customer and used for the subscription."),
-          authToken: z.string().describe("The JWT token for authorizing the API call."),
+          email: z
+            .string()
+            .email()
+            .describe(
+              "The user's email address. A Stripe customer will be created or retrieved based on this email."
+            ),
+          name: z
+            .string()
+            .optional()
+            .describe(
+              "The user's full name. Used if a new customer needs to be created."
+            ),
+          paymentMethodId: z
+            .string()
+            .describe(
+              "A Stripe PaymentMethod ID (pm_xxxx) to be attached to the customer and used for the subscription."
+            ),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call."),
         }),
       }
-    )
+    ),
   ];
 }
-
-
 
 /**
  * Create tools for Content Analysis API endpoints (conceptual)
@@ -661,7 +843,8 @@ function createContentAnalysisTools() {
 
           if (!apiKey) {
             return JSON.stringify({
-              error: "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.",
+              error:
+                "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.",
             });
           }
 
@@ -673,7 +856,11 @@ function createContentAnalysisTools() {
 ${post_text}
 """
 
-${reference_author_style_id ? `Reference Author Style ID: "${reference_author_style_id}". Please factor this into your mimicry and humanization advice.` : ''}
+${
+  reference_author_style_id
+    ? `Reference Author Style ID: "${reference_author_style_id}". Please factor this into your mimicry and humanization advice.`
+    : ""
+}
 
 Please provide your analysis in a single, valid JSON object. The JSON object MUST include the following keys and structure:
 {
@@ -698,7 +885,7 @@ Please provide your analysis in a single, valid JSON object. The JSON object MUS
     "suggested_vocabulary_or_phrasing": "(Array of strings, e.g., ['key takeaway', 'from my perspective', 'what are your thoughts?'])",
     "structural_notes": "(e.g., 'Balance paragraphs with bullet points for readability. Consider a strong opening hook and a closing call to engagement.')"
   }
-}`;          
+}`;
 
           const response = await axios.post(
             "https://api.openai.com/v1/chat/completions",
@@ -719,28 +906,43 @@ Please provide your analysis in a single, valid JSON object. The JSON object MUS
             }
           );
 
-          if (response.data && response.data.choices && response.data.choices.length > 0) {
+          if (
+            response.data &&
+            response.data.choices &&
+            response.data.choices.length > 0
+          ) {
             const llm_output = response.data.choices[0].message.content;
             // Attempt to parse, as OpenAI should return valid JSON string in 'content' when json_object mode is used
             try {
               return JSON.parse(llm_output);
             } catch (parseError) {
-              console.error("Error parsing LLM JSON response:", parseError, "Raw LLM output:", llm_output);
+              console.error(
+                "Error parsing LLM JSON response:",
+                parseError,
+                "Raw LLM output:",
+                llm_output
+              );
               return JSON.stringify({
                 error: "Failed to parse LLM JSON response.",
                 details: parseError.message,
-                raw_output: llm_output
+                raw_output: llm_output,
               });
             }
           } else {
-            console.error("Invalid response structure from OpenAI API:", response.data);
+            console.error(
+              "Invalid response structure from OpenAI API:",
+              response.data
+            );
             return JSON.stringify({
               error: "Invalid or empty response from OpenAI API.",
-              details: response.data
+              details: response.data,
             });
           }
         } catch (error) {
-          console.error("Error in analyze_linkedin_post_human_touch (OpenAI call):", error.response ? error.response.data : error.message);
+          console.error(
+            "Error in analyze_linkedin_post_human_touch (OpenAI call):",
+            error.response ? error.response.data : error.message
+          );
           return JSON.stringify({
             error: `Error calling OpenAI for post analysis: ${error.message}`,
             details: error.response ? error.response.data : error.stack,

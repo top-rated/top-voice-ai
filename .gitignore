@@ -9,6 +9,7 @@ feedback.md
 env.example
 test-keys.md
 /unipile_response/
+UNIPILE_CONFIGURATION.md
 /langgraph_docs/
 .cursor/
 /.windsurf/
