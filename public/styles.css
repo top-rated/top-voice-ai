@@ -58,12 +58,13 @@ input:focus {
 .welcome-text-anim-container {
     position: relative; /* Establishes a positioning context for absolute children */
     width: 100%;
-    /* height: 60px; /* Set inline in HTML, or define here. Adjust as needed. */
+    height: 35px; /* More compact height */
     perspective: 600px; /* Creates the 3D space. Adjust for more/less dramatic effect. */
     overflow: hidden; /* Clips text animating outside its bounds */
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: 0.75rem 0; /* Reduced vertical spacing */
 }
 
 .welcome-text-item {
@@ -72,17 +73,23 @@ input:focus {
     left: 0; 
     width: 100%; 
     transform: translateY(-50%); /* Vertically center based on its own height */
-    color: white;
-    font-size: 0.875rem; /* Tailwind's text-sm equivalent (14px) */
-    line-height: 1.25rem; /* Tailwind's text-sm line-height (20px) */
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem; /* Smaller font size for better fit */
+    line-height: 1.25rem; 
     text-align: center;
     opacity: 0; /* Start invisible */
     transform-origin: center center; /* Animation transforms originate from the center */
+    font-weight: 400; /* Normal weight for better readability */
     
     animation-name: textCycle;
     animation-duration: 9s; /* Total duration for one item's full cycle (3s per item * 3 items) */
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .welcome-text-item {
+    color: rgba(75, 85, 99, 0.8); /* Darker color for light theme */
 }
 
 /* Stagger the animation for each text item */
@@ -100,23 +107,23 @@ input:focus {
 
 @keyframes textCycle {
     0% { /* Start of cycle: item is above, rotated back, invisible */
-        transform: translateY(-50%) rotateX(90deg) translateZ(50px);
+        transform: translateY(-70%) rotateX(90deg) translateZ(40px);
         opacity: 0;
     }
-    5% { /* Fully entered and visible at the center */
-        transform: translateY(0) rotateX(0deg) translateZ(0);
+    8% { /* Fully entered and visible at the center */
+        transform: translateY(-50%) rotateX(0deg) translateZ(0);
         opacity: 1;
     }
-    33% { /* Still visible at the center, just before starting to exit */
-        transform: translateY(0) rotateX(0deg) translateZ(0);
+    30% { /* Still visible at the center, just before starting to exit */
+        transform: translateY(-50%) rotateX(0deg) translateZ(0);
         opacity: 1;
     }
     38% { /* Fully exited: item is below, rotated forward, invisible */
-        transform: translateY(50%) rotateX(-90deg) translateZ(50px);
+        transform: translateY(-30%) rotateX(-90deg) translateZ(40px);
         opacity: 0;
     }
     100% { /* Remainder of the cycle, item stays invisible and out (below) */
-        transform: translateY(50%) rotateX(-90deg) translateZ(50px);
+        transform: translateY(-30%) rotateX(-90deg) translateZ(40px);
         opacity: 0;
     }
 }

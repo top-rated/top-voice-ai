@@ -664,7 +664,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Typewriter effect variables
   let typewriterQueue = [];
   let isTyping = false;
-  let typewriterSpeed = 5; // milliseconds between characters (adjustable: 15=fast, 25=normal, 50=slow)
+  let typewriterSpeed = 1; // milliseconds between characters (adjustable: 15=fast, 25=normal, 50=slow)
 
   // Typewriter effect function
   async function typeWriter(element, text, isComplete = false) {

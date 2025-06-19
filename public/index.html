@@ -160,47 +160,73 @@
       <!-- Chat Container -->
       <div class="flex-1 overflow-y-auto p-4 flex flex-col items-center" id="chat-container">
         <!-- Welcome Message -->
-        <div class="flex flex-col items-center justify-center h-full animate-fade-in max-w-xl w-full mx-auto self-center mt-12 md:mt-20" id="welcome-container">
-          <div id="welcome-message-box" class="rounded-lg p-4  w-full flex flex-col items-center">
-            <!-- New Welcome Section -->
-            <div class="w-full max-w-lg text-left mb-8">
-                <p class="font-semibold text-lg text-center mb-6">Brainstorm and generate AI-powered, HUMANIZED posts LinkedIn® Top Voices trends, insights and reach boost!</p>
-                <div class="welcome-text-anim-container" style="height: 60px; /* Adjust as needed */">
-                    <p class="welcome-text-item">Struggling to stay relevant, authentic and unique?</p>
-                    <p class="welcome-text-item">How often do your posts get organically boosted?</p>
-                    <p class="welcome-text-item">Don’t want to delegate your content to someone?</p>
+        <div class="flex flex-col items-center justify-center h-full animate-fade-in max-w-2xl w-full mx-auto self-center mt-4 md:mt-8" id="welcome-container">
+          <div id="welcome-message-box" class="rounded-lg p-4 w-full flex flex-col items-center">
+            <!-- Hero Section -->
+            <div class="w-full text-center mb-6">
+              <!-- Main Title -->
+              <div class="mb-3">
+                <h1 class="font-bold text-xl md:text-2xl lg:text-3xl text-[var(--text-primary)] leading-tight text-center">
+                  Brainstorm and generate AI-powered, <span class="bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-600 bg-clip-text text-transparent font-bold whitespace-nowrap">HUMANIZED posts</span>
+                </h1>
+              </div>
+              
+              <!-- Animated Questions Container -->
+              <div class="w-full max-w-lg mx-auto mb-4">
+                <div class="welcome-text-anim-container">
+                  <p class="welcome-text-item">Struggling to stay relevant, authentic and unique?</p>
+                  <p class="welcome-text-item">How often do your posts get organically boosted?</p>
+                  <p class="welcome-text-item">Don't want to delegate your content to someone?</p>
                 </div>
+              </div>
+              
+              <!-- Subtitle -->
+              <h2 class="font-semibold text-base md:text-lg text-[var(--text-secondary)] mb-2">
+                LinkedIn® Top Voices trends, insights and reach boost!
+              </h2>
+              
             </div>
 
-            <!-- New Quick Questions -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mx-auto max-w-xl w-full">
-              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-blue-500/30 hover:border-blue-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="FREE: show new posts of LinkedIn Top Voices 2025">
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-[var(--text-primary)] text-base font-medium">LinkedIn Top Voices 2025</div>
-                  <i class="fas fa-newspaper w-5 h-5 text-[var(--text-primary)]"></i>
+            <!-- Quick Action Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+              <div class="prompt-card group border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-lg hover:shadow-blue-500/20 hover:border-blue-400 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-blue-50/5 to-blue-100/5" data-prompt="FREE: show new posts of LinkedIn Top Voices 2025">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[var(--text-primary)] text-base font-semibold group-hover:text-blue-400 transition-colors">LinkedIn Top Voices 2025</div>
+                  <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                    <i class="fas fa-newspaper text-blue-500 text-sm"></i>
+                  </div>
                 </div>
-                <p class="text-[var(--text-secondary)] text-xs">FREE: show new posts of LinkedIn Top Voices 2025</p>
+                <p class="text-[var(--text-secondary)] text-xs leading-relaxed">FREE: show new posts of LinkedIn Top Voices 2025</p>
               </div>
-              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-purple-500/30 hover:border-purple-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Generate post from article in a certain profile style">
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-[var(--text-primary)] text-base font-medium">Generate Post</div>
-                  <i class="fas fa-magic w-5 h-5 text-[var(--text-primary)]"></i>
+              
+              <div class="prompt-card group border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-lg hover:shadow-purple-500/20 hover:border-purple-400 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-purple-50/5 to-purple-100/5" data-prompt="Generate post from article in a certain profile style">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[var(--text-primary)] text-base font-semibold group-hover:text-purple-400 transition-colors">Generate Post</div>
+                  <div class="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                    <i class="fas fa-magic text-purple-500 text-sm"></i>
+                  </div>
                 </div>
-                <p class="text-[var(--text-secondary)] text-xs">Generate post from article in a certain profile style</p>
+                <p class="text-[var(--text-secondary)] text-xs leading-relaxed">Generate post from article in a certain profile style</p>
               </div>
-              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-green-500/30 hover:border-green-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Analyze posts content and style of certain profile">
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-[var(--text-primary)] text-base font-medium">Analyze Profile</div>
-                  <i class="fas fa-chart-pie w-5 h-5 text-[var(--text-primary)]"></i>
+              
+              <div class="prompt-card group border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-lg hover:shadow-green-500/20 hover:border-green-400 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-green-50/5 to-green-100/5" data-prompt="Analyze posts content and style of certain profile">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[var(--text-primary)] text-base font-semibold group-hover:text-green-400 transition-colors">Analyze Profile</div>
+                  <div class="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+                    <i class="fas fa-chart-pie text-green-500 text-sm"></i>
+                  </div>
                 </div>
-                <p class="text-[var(--text-secondary)] text-xs">Analyze posts content and style of certain profile</p>
+                <p class="text-[var(--text-secondary)] text-xs leading-relaxed">Analyze posts content and style of certain profile</p>
               </div>
-              <div class="prompt-card border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-amber-500/30 hover:border-amber-500 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer" data-prompt="Search past 24hr posts with certain keywords">
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="text-[var(--text-primary)] text-base font-medium">Keyword Search</div>
-                  <i class="fas fa-search w-5 h-5 text-[var(--text-primary)]"></i>
+              
+              <div class="prompt-card group border border-[var(--border-color)] rounded-lg p-4 shadow-md hover:shadow-lg hover:shadow-amber-500/20 hover:border-amber-400 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer bg-gradient-to-br from-amber-50/5 to-amber-100/5" data-prompt="Search past 24hr posts with certain keywords">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[var(--text-primary)] text-base font-semibold group-hover:text-amber-400 transition-colors">Keyword Search</div>
+                  <div class="w-8 h-8 bg-amber-500/10 rounded-lg flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                    <i class="fas fa-search text-amber-500 text-sm"></i>
+                  </div>
                 </div>
-                <p class="text-[var(--text-secondary)] text-xs">Search past 24hr posts with certain keywords</p>
+                <p class="text-[var(--text-secondary)] text-xs leading-relaxed">Search past 24hr posts with certain keywords</p>
               </div>
             </div>
           </div>

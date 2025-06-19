@@ -1,4 +1,3 @@
-
 /* Theme Variables */
 :root {
   /* Dark theme colors (default) */
@@ -785,5 +784,31 @@ h1, h2, h3, h4 {
 
 .markdown th {
   background-color: rgba(51, 65, 85, 0.5);
+}
+
+/* Welcome section styles - ensure no unwanted decorative elements */
+#welcome-message-box h1,
+#welcome-message-box h2,
+#welcome-message-box p {
+  text-decoration: none !important;
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#welcome-message-box h1::before,
+#welcome-message-box h1::after,
+#welcome-message-box h2::before,
+#welcome-message-box h2::after {
+  display: none !important;
+  content: none !important;
+}
+
+#welcome-message-box .welcome-text-item {
+  color: rgba(255, 255, 255, 0.7); /* Default secondary text color for animated items */
+  text-decoration: none !important;
+  border: none !important;
 }
 
