@@ -24,58 +24,6 @@ const { processQuery } = require("./chatbot/linkedin_chatbot");
 const { UnipileClient } = require("unipile-node-sdk");
 const { processLinkedInQuery } = require("./chatbot/linkedin_chatbot");
 const recentlySentMessageIds = new Set();
-// Unipile Configuration and Helper
-const UNIPILE_BASE_URL = process.env.UNIPILE_BASE_URL;
-const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
-
-async function sendUnipileMessage(chat_id, text) {
-  if (!UNIPILE_BASE_URL || !UNIPILE_ACCESS_TOKEN) {
-    console.error(
-      "Unipile configuration (UNIPILE_BASE_URL or UNIPILE_ACCESS_TOKEN) is missing from .env file."
-    );
-    return null; // Return null or throw an error to indicate failure
-  }
-  try {
-    const client = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
-    const response = await client.messaging.sendMessage({
-      // Capture response
-      chat_id,
-      text,
-    });
-    console.log(
-      "Unipile message sent successfully to chat_id:",
-      chat_id,
-      "Response:",
-      JSON.stringify(response)
-    );
-
-    // Check if the response contains a message_id
-    if (response && response.message_id) {
-      const sentMessageId = response.message_id;
-      recentlySentMessageIds.add(sentMessageId);
-      console.log(
-        `Added message_id ${sentMessageId} to recentlySentMessageIds.`
-      );
-      // Remove the ID after a timeout (e.g., 60 seconds)
-      setTimeout(() => {
-        recentlySentMessageIds.delete(sentMessageId);
-        console.log(
-          `Removed message_id ${sentMessageId} from recentlySentMessageIds after timeout.`
-        );
-      }, 60000); // 60 seconds
-      return sentMessageId; // Return the message ID
-    } else {
-      console.warn(
-        "Unipile sendMessage response did not include a message_id:",
-        response
-      );
-      return null; // Indicate no message_id was found
-    }
-  } catch (error) {
-    console.error("Error sending Unipile message to chat_id:", chat_id, error);
-    return null; // Return null or throw
-  }
-}
 
 // Initialize express app
 const app = express();
@@ -316,6 +264,75 @@ app.post(
   }
 );
 
+// Unipile Configuration and Helper
+const UNIPILE_BASE_URL = process.env.UNIPILE_BASE_URL;
+const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
+
+async function sendUnipileMessage(chat_id, text, account_id = null) {
+  if (!UNIPILE_BASE_URL || !UNIPILE_ACCESS_TOKEN) {
+    console.error(
+      "Unipile configuration (UNIPILE_BASE_URL or UNIPILE_ACCESS_TOKEN) is missing from .env file."
+    );
+    return null; // Return null or throw an error to indicate failure
+  }
+  try {
+    const client = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
+
+    // Prepare message payload
+    const messagePayload = {
+      chat_id,
+      text,
+    };
+
+    // If account_id is provided, add it to the payload for organization accounts
+    if (account_id) {
+      messagePayload.account_id = account_id;
+    }
+
+    const response = await client.messaging.sendMessage(messagePayload);
+    console.log(
+      "Unipile message sent successfully to chat_id:",
+      chat_id,
+      "Account ID:",
+      account_id || "default",
+      "Response:",
+      JSON.stringify(response)
+    );
+
+    // Check if the response contains a message_id
+    if (response && response.message_id) {
+      const sentMessageId = response.message_id;
+      recentlySentMessageIds.add(sentMessageId);
+      console.log(
+        `Added message_id ${sentMessageId} to recentlySentMessageIds.`
+      );
+      // Remove the ID after a timeout (e.g., 60 seconds)
+      setTimeout(() => {
+        recentlySentMessageIds.delete(sentMessageId);
+        console.log(
+          `Removed message_id ${sentMessageId} from recentlySentMessageIds after timeout.`
+        );
+      }, 60000); // 60 seconds
+      return sentMessageId; // Return the message ID
+    } else {
+      console.warn(
+        "Unipile sendMessage response did not include a message_id:",
+        response
+      );
+      return null; // Indicate no message_id was found
+    }
+  } catch (error) {
+    console.error(
+      "Error sending Unipile message to chat_id:",
+      chat_id,
+      "Account ID:",
+      account_id || "default",
+      error
+    );
+    return null; // Return null or throw
+  }
+}
+
 //linkedin webhook route with usage limiting
 app.post(
   "/api/v1/linked/webhook",
@@ -329,13 +346,14 @@ app.post(
       sender,
       subject,
       timestamp,
+      account_info,
     } = req.body;
 
-    // Enhanced logging for better debugging
+    // Enhanced logging for better debugging including account_info
     console.log(
       `LinkedIn Webhook received - AccountID: ${account_id}, ChatID: ${chat_id}, Message: "${message}", MessageID: ${message_id}, Sender: ${JSON.stringify(
         sender
-      )}`
+      )}, AccountInfo: ${JSON.stringify(account_info)}`
     );
 
     // Return early if essential data is missing
@@ -362,10 +380,7 @@ app.post(
 
     // Enhanced echo prevention for different account types
     const targetAccountId = process.env.ACCOUNT_ID;
-    const targetCompanyId = process.env.COMPANY_MAILBOX_ID; // Add this to your .env
-
-    // Extract account_info from request body for organization accounts
-    const { account_info } = req.body;
+    const targetCompanyId = process.env.COMPANY_MAILBOX_ID; // Should be set to "79109442"
 
     // Check if sender is our own account (personal profile)
     if (sender && sender.id === targetAccountId) {
@@ -378,7 +393,7 @@ app.post(
       });
     }
 
-    // Check if sender is our own company page
+    // Enhanced check for organization accounts - check if sender is our own company page
     if (sender && sender.attendee_provider_id === targetCompanyId) {
       console.log(
         `Ignoring webhook for message from our own company page ${targetCompanyId}.`
@@ -389,7 +404,7 @@ app.post(
       });
     }
 
-    // Check if this is a company/organization account and sender matches the company
+    // Additional check: If this is an organization account and sender matches the company mailbox_id
     if (
       account_info &&
       account_info.feature === "organization" &&
@@ -406,6 +421,24 @@ app.post(
       });
     }
 
+    // Check for specific Top-Voice.AI organization case
+    if (
+      account_info &&
+      account_info.feature === "organization" &&
+      account_info.name === "Top-Voice.AI" &&
+      account_info.mailbox_id === "79109442" &&
+      sender &&
+      sender.attendee_name === "Top-Voice.AI"
+    ) {
+      console.log(
+        `Ignoring webhook: message from our own Top-Voice.AI organization page.`
+      );
+      return res.status(200).json({
+        status: "received",
+        message: "Webhook for Top-Voice.AI self-message ignored.",
+      });
+    }
+
     // Check if usage limit was exceeded
     if (req.limitExceededResponse) {
       console.log(
@@ -415,7 +448,8 @@ app.post(
       try {
         const sentMessageId = await sendUnipileMessage(
           chat_id,
-          req.limitExceededResponse
+          req.limitExceededResponse,
+          account_id
         );
         if (sentMessageId) {
           console.log(
@@ -455,14 +489,17 @@ app.post(
         console.log(
           `Sending reply to LinkedIn chat_id ${chat_id}: "${fullReplyMessage}"`
         );
+
+        // Use account_id when sending message for organization accounts
         const sentMessageId = await sendUnipileMessage(
           chat_id,
-          fullReplyMessage
+          fullReplyMessage,
+          account_id
         );
 
         if (sentMessageId) {
           console.log(
-            `Successfully sent reply (ID: ${sentMessageId}) for chat_id ${chat_id}.`
+            `Successfully sent reply (ID: ${sentMessageId}) for chat_id ${chat_id} using account_id ${account_id}.`
           );
 
           // Track usage after successful message sending (only if not exempt)
