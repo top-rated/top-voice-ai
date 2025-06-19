@@ -7,7 +7,6 @@ const { getAllApiTools } = require("../utils/api_tools");
 const { HumanMessage } = require("@langchain/core/messages");
 dotenv.config();
 
-// Temporary hardcoded fallback for testing
 const azureConfig = {
   model: process.env.MODEL_NAME,
   azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,

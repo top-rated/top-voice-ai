@@ -1,36 +1,38 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Theme Handling
-  const themeToggle = document.getElementById('theme-toggle');
-  const themeIcon = document.getElementById('theme-icon');
-  
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeIcon = document.getElementById("theme-icon");
+
   // Function to set theme
   function setTheme(theme) {
-    if (theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-      themeIcon.classList.remove('fa-moon');
-      themeIcon.classList.add('fa-sun');
+    if (theme === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      themeIcon.classList.remove("fa-moon");
+      themeIcon.classList.add("fa-sun");
     } else {
-      document.documentElement.removeAttribute('data-theme');
-      themeIcon.classList.remove('fa-sun');
-      themeIcon.classList.add('fa-moon');
+      document.documentElement.removeAttribute("data-theme");
+      themeIcon.classList.remove("fa-sun");
+      themeIcon.classList.add("fa-moon");
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }
-  
+
   // Check for saved theme preference or use device preference
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
+  const savedTheme = localStorage.getItem("theme");
+  const prefersDarkMode = window.matchMedia(
+    "(prefers-color-scheme: dark)"
+  ).matches;
+
   if (savedTheme) {
     setTheme(savedTheme);
   } else {
-    setTheme(prefersDarkMode ? 'dark' : 'light');
+    setTheme(prefersDarkMode ? "dark" : "light");
   }
-  
+
   // Theme toggle click event
-  themeToggle.addEventListener('click', function() {
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  themeToggle.addEventListener("click", function () {
+    const currentTheme = localStorage.getItem("theme") || "dark";
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
     setTheme(newTheme);
   });
 
@@ -114,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
   newChatMiniButton.addEventListener("click", function () {
     createNewChat();
   });
-  
+
   // Main new chat button functionality
   newChatButton.addEventListener("click", function () {
     createNewChat();
@@ -316,7 +318,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (index < 5) {
           const miniHistoryItem = document.createElement("button");
           miniHistoryItem.className = `mini-button text-[var(--text-primary)] ${
-            threadId === currentThreadId ? "bg-[var(--hover-bg)]" : "hover:bg-[var(--hover-bg)]"
+            threadId === currentThreadId
+              ? "bg-[var(--hover-bg)]"
+              : "hover:bg-[var(--hover-bg)]"
           }`;
           miniHistoryItem.title = title;
           miniHistoryItem.innerHTML = `<span class="icon-comment"></span>`;
@@ -487,7 +491,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Add bot message to chat
   function addBotMessage() {
     const messageContainer = document.createElement("div");
-    messageContainer.className = "flex items-start w-full max-w-2xl mb-4 animate-slide-up mx-auto";
+    messageContainer.className =
+      "flex items-start w-full max-w-2xl mb-4 animate-slide-up mx-auto";
 
     // Create avatar container similar to user message
     const avatarDiv = document.createElement("div");
@@ -497,27 +502,27 @@ document.addEventListener("DOMContentLoaded", function () {
         <img src="/top-voices.png" alt="AI" class="w-6 h-6 object-cover" />
       </div>
     `;
-    
+
     // Create message content container
     const contentDiv = document.createElement("div");
     contentDiv.className = "rounded-lg p-3 flex-grow markdown";
-    
+
     // Create text content area for actual message content
     const textContent = document.createElement("div");
     textContent.className = "text-content text-sm";
     contentDiv.appendChild(textContent);
-  
+
     // Create typing indicator (will be hidden when content is displayed)
     const typingIndicator = document.createElement("div");
     typingIndicator.className = "typing-indicator";
     contentDiv.appendChild(typingIndicator);
-    
+
     // Assemble the message
     messageContainer.appendChild(avatarDiv);
     messageContainer.appendChild(contentDiv);
     chatContainer.appendChild(messageContainer);
     chatContainer.scrollTop = chatContainer.scrollHeight;
-    
+
     return messageContainer;
   }
 
@@ -556,12 +561,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // Process inline code
     text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
 
+    // Process headers (must be at start of line or after newline)
+    text = text.replace(/^#### (.+)$/gm, "<h4>$1</h4>");
+    text = text.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+    text = text.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+    text = text.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+
     // Process bold
     text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
 
     // Process italic
     text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-    
+
     // Process Stripe checkout URLs - convert to clean payment links
     // Look for stripe checkout URLs in the text and completely replace them
     const stripeUrlRegex = /(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/g;
@@ -632,183 +643,308 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 2000);
     }
   }
-  
+
   // Set up event delegation for copy buttons to avoid CSP issues with inline handlers
-  document.addEventListener('click', function(event) {
+  document.addEventListener("click", function (event) {
     // Check if the clicked element is a copy button
-    if (event.target.classList.contains('copy-button') || event.target.hasAttribute('data-copy')) {
+    if (
+      event.target.classList.contains("copy-button") ||
+      event.target.hasAttribute("data-copy")
+    ) {
       copyToClipboard(event.target);
     }
   });
 
   // Store current bot message element for streaming text
-let currentBotMessageContentElement = null;
+  let currentBotMessageContentElement = null;
 
-// Store tool call elements for reference when updating with results
-let currentToolCallElements = {};
+  // Store tool call elements for reference when updating with results
+  let currentToolCallElements = {};
 
-async function streamText(element, textChunk, append = false) {
-  let newRawText;
-  if (append) {
-    newRawText = (element.dataset.rawText || "") + textChunk;
-  } else {
-    newRawText = textChunk;
+  // Typewriter effect variables
+  let typewriterQueue = [];
+  let isTyping = false;
+  let typewriterSpeed = 5; // milliseconds between characters (adjustable: 15=fast, 25=normal, 50=slow)
+
+  // Typewriter effect function
+  async function typeWriter(element, text, isComplete = false) {
+    return new Promise((resolve) => {
+      if (!element) {
+        resolve();
+        return;
+      }
+
+      const chatContainer = document.getElementById("chat-container");
+      let currentIndex = 0;
+      const characters = text.split("");
+
+      // Clear any existing content when starting fresh
+      if (!element.dataset.typedText) {
+        element.dataset.typedText = "";
+        element.innerHTML = "";
+      }
+
+      function typeNextChar() {
+        if (currentIndex < characters.length) {
+          element.dataset.typedText += characters[currentIndex];
+
+          // Process markdown progressively during typing and add cursor
+          const processedText = processMarkdown(element.dataset.typedText);
+          element.innerHTML = `<div class="typewriter-content">${processedText}</div><span class="typewriter-cursor"></span>`;
+
+          // Apply syntax highlighting to any new code blocks
+          applyHighlightingInElement(element);
+
+          // Auto-scroll to bottom
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+
+          currentIndex++;
+          setTimeout(typeNextChar, typewriterSpeed);
+        } else {
+          // When typing is complete or this is the final chunk, process markdown
+          if (isComplete) {
+            // Remove cursor and process final markdown
+            element.innerHTML = processMarkdown(element.dataset.typedText);
+            applyHighlightingInElement(element);
+            if (chatContainer) {
+              chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+          } else {
+            // Keep cursor while waiting for more text, with processed markdown
+            const processedText = processMarkdown(element.dataset.typedText);
+            element.innerHTML = `<div class="typewriter-content">${processedText}</div><span class="typewriter-cursor"></span>`;
+            applyHighlightingInElement(element);
+          }
+          resolve();
+        }
+      }
+
+      typeNextChar();
+    });
   }
-  element.dataset.rawText = newRawText; // Store the raw text
 
-  element.innerHTML = processMarkdown(newRawText);
-  applyHighlightingInElement(element);
+  // Process typewriter queue
+  async function processTypewriterQueue() {
+    if (isTyping || typewriterQueue.length === 0) return;
 
-  const chatContainer = document.getElementById("chat-container");
-  if (chatContainer) {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    isTyping = true;
+
+    while (typewriterQueue.length > 0) {
+      const { element, text, isComplete } = typewriterQueue.shift();
+      await typeWriter(element, text, isComplete);
+    }
+
+    isTyping = false;
   }
-}
 
-// Helper to create/get the current bot message element for text streaming
-function ensureCurrentBotMessageElement() {
-  // Find the last bot message using the new class structure
-  let lastBotMessage = chatContainer.querySelector(".flex.items-start.mx-auto:last-child");
-  
-  // Check if the currentBotMessageContentElement is valid and part of the DOM
-  if (currentBotMessageContentElement && document.body.contains(currentBotMessageContentElement)) {
+  async function streamText(element, textChunk, append = false) {
+    if (!element) return;
+
+    let newRawText;
+    if (append) {
+      newRawText = (element.dataset.rawText || "") + textChunk;
+    } else {
+      newRawText = textChunk;
+      // Reset typed text when starting fresh
+      element.dataset.typedText = "";
+    }
+    element.dataset.rawText = newRawText;
+
+    // Add to typewriter queue - only the new chunk, not the entire text
+    const textToType = append ? textChunk : newRawText;
+    const isComplete = false; // We'll mark complete when stream ends
+
+    typewriterQueue.push({
+      element,
+      text: textToType,
+      isComplete,
+    });
+
+    processTypewriterQueue();
+  }
+
+  // Function to mark typing as complete and process final markdown
+  function completeTypewriting(element) {
+    if (!element) return;
+
+    // Add a final queue item to process markdown
+    typewriterQueue.push({
+      element,
+      text: "",
+      isComplete: true,
+    });
+
+    processTypewriterQueue();
+  }
+
+  // Helper to create/get the current bot message element for text streaming
+  function ensureCurrentBotMessageElement() {
+    // Find the last bot message using the new class structure
+    let lastBotMessage = chatContainer.querySelector(
+      ".flex.items-start.mx-auto:last-child"
+    );
+
+    // Check if the currentBotMessageContentElement is valid and part of the DOM
+    if (
+      currentBotMessageContentElement &&
+      document.body.contains(currentBotMessageContentElement)
+    ) {
+      return currentBotMessageContentElement;
+    }
+
+    // If no last bot message, create one
+    if (!lastBotMessage) {
+      lastBotMessage = addBotMessage();
+      currentBotMessageContentElement =
+        lastBotMessage.querySelector(".text-content");
+      return currentBotMessageContentElement;
+    }
+
+    // Find the text content element in the last bot message
+    let textElement = lastBotMessage.querySelector(".text-content");
+
+    // If no text element found, or it's part of a tool UI, create a new one
+    if (!textElement || textElement.closest(".tool-invocation-item")) {
+      // Create a new text element
+      const newTextElement = document.createElement("div");
+      newTextElement.className = "text-content text-sm text-white";
+
+      // Find the content div to append to
+      const contentDiv = lastBotMessage.querySelector(
+        ".rounded-lg.p-3.flex-grow"
+      );
+      if (contentDiv) {
+        contentDiv.appendChild(newTextElement);
+      } else {
+        // Fallback if content div not found
+        lastBotMessage.appendChild(newTextElement);
+      }
+      textElement = newTextElement;
+    }
+
+    currentBotMessageContentElement = textElement;
     return currentBotMessageContentElement;
   }
 
-  // If no last bot message, create one
-  if (!lastBotMessage) {
-    lastBotMessage = addBotMessage();
-    currentBotMessageContentElement = lastBotMessage.querySelector(".text-content");
-    return currentBotMessageContentElement;
-  }
-
-  // Find the text content element in the last bot message
-  let textElement = lastBotMessage.querySelector(".text-content");
-  
-  // If no text element found, or it's part of a tool UI, create a new one
-  if (!textElement || textElement.closest('.tool-invocation-item')) {
-    // Create a new text element
-    const newTextElement = document.createElement("div");
-    newTextElement.className = "text-content text-sm text-white";
-    
-    // Find the content div to append to
-    const contentDiv = lastBotMessage.querySelector(".rounded-lg.p-3.flex-grow");
-    if (contentDiv) {
-      contentDiv.appendChild(newTextElement);
-    } else {
-      // Fallback if content div not found
-      lastBotMessage.appendChild(newTextElement);
+  // Handles tool invocation message processing without displaying in the UI
+  function addToolInvocationMessage(toolInvocations, botMessageDiv) {
+    if (!botMessageDiv) {
+      console.error("Bot message div not provided for tool invocation");
+      botMessageDiv = addBotMessage(); // Fallback, though it should be passed
     }
-    textElement = newTextElement;
-  }
-  
-  currentBotMessageContentElement = textElement;
-  return currentBotMessageContentElement;
-}
 
-// Handles tool invocation message processing without displaying in the UI
-function addToolInvocationMessage(toolInvocations, botMessageDiv) {
-  if (!botMessageDiv) {
-    console.error("Bot message div not provided for tool invocation");
-    botMessageDiv = addBotMessage(); // Fallback, though it should be passed
-  }
-
-  // Hide typing indicator
-  const typingIndicator = botMessageDiv.querySelector(".typing-indicator");
-  if (typingIndicator) {
-    typingIndicator.style.display = 'none';
-  }
-
-  // Find the content div and text content element
-  const contentDiv = botMessageDiv.querySelector(".rounded-lg.p-3.flex-grow");
-  let textContentElement = botMessageDiv.querySelector(".text-content");
-  
-  if (!textContentElement) {
-    // If .text-content doesn't exist, create it
-    textContentElement = document.createElement('div');
-    textContentElement.className = 'text-content text-sm text-white';
-    if (contentDiv) {
-      contentDiv.appendChild(textContentElement);
-    } else {
-      botMessageDiv.appendChild(textContentElement);
+    // Hide typing indicator
+    const typingIndicator = botMessageDiv.querySelector(".typing-indicator");
+    if (typingIndicator) {
+      typingIndicator.style.display = "none";
     }
+
+    // Find the content div and text content element
+    const contentDiv = botMessageDiv.querySelector(".rounded-lg.p-3.flex-grow");
+    let textContentElement = botMessageDiv.querySelector(".text-content");
+
+    if (!textContentElement) {
+      // If .text-content doesn't exist, create it
+      textContentElement = document.createElement("div");
+      textContentElement.className = "text-content text-sm text-white";
+      if (contentDiv) {
+        contentDiv.appendChild(textContentElement);
+      } else {
+        botMessageDiv.appendChild(textContentElement);
+      }
+    }
+
+    // Store tool invocations in memory without displaying them
+    toolInvocations.forEach((toolInvo) => {
+      const toolCallId =
+        toolInvo.id ||
+        `tool-call-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      // Just store a reference to the tool call without creating UI elements
+      currentToolCallElements[toolCallId] = {
+        name: toolInvo.name,
+        args: toolInvo.args,
+      };
+    });
+
+    // Set the current bot message content element for future text responses
+    currentBotMessageContentElement = textContentElement;
   }
 
-  // Store tool invocations in memory without displaying them
-  toolInvocations.forEach((toolInvo) => {
-    const toolCallId = toolInvo.id || `tool-call-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    // Just store a reference to the tool call without creating UI elements
-    currentToolCallElements[toolCallId] = {
-      name: toolInvo.name,
-      args: toolInvo.args
-    };
-  });
+  // Processes tool results without displaying them in the UI
+  function updateToolResultMessage(toolResult) {
+    if (!toolResult || !toolResult.tool_call_id) {
+      console.warn(
+        "Skipping tool_result due to missing tool_call_id:",
+        toolResult
+      );
+      return;
+    }
+    const toolCallId = toolResult.tool_call_id;
+    const toolCallElement = currentToolCallElements[toolCallId];
 
-  // Set the current bot message content element for future text responses
-  currentBotMessageContentElement = textContentElement;
-}
+    if (toolCallElement) {
+      // Just update the stored data without modifying the UI
+      toolCallElement.result = toolResult.content;
+      toolCallElement.completed = true;
 
-// Processes tool results without displaying them in the UI
-function updateToolResultMessage(toolResult) {
-  if (!toolResult || !toolResult.tool_call_id) {
-    console.warn('Skipping tool_result due to missing tool_call_id:', toolResult);
-    return;
-  }
-  const toolCallId = toolResult.tool_call_id;
-  const toolCallElement = currentToolCallElements[toolCallId];
+      // Log for debugging purposes only
+      console.debug(
+        `Tool ${toolResult.name || toolCallId} executed successfully`
+      );
+    } else {
+      console.warn("No matching tool invocation found for result:", toolResult);
+      // We don't need to display a fallback message anymore since we're hiding tool results
+    }
 
-  if (toolCallElement) {
-    // Just update the stored data without modifying the UI
-    toolCallElement.result = toolResult.content;
-    toolCallElement.completed = true;
-    
-    // Log for debugging purposes only
-    console.debug(`Tool ${toolResult.name || toolCallId} executed successfully`);
-  } else {
-    console.warn("No matching tool invocation found for result:", toolResult);
-    // We don't need to display a fallback message anymore since we're hiding tool results
-  }
-  
-  // We don't force a new message bubble since we're not displaying tool results
-}
-
-
-// Send message to API and handle response via SSE
-async function sendMessage(message) {
-  // Reset accumulated content for a new message
-  window.accumulatedContent = "";
-  
-  if (welcomeContainer.style.display !== "none") {
-    welcomeContainer.style.display = "none";
+    // We don't force a new message bubble since we're not displaying tool results
   }
 
-  addUserMessage(message);
+  // Send message to API and handle response via SSE
+  async function sendMessage(message) {
+    // Reset accumulated content for a new message
+    window.accumulatedContent = "";
 
-  if (!chatHistory[currentThreadId]) {
-    chatHistory[currentThreadId] = { messages: [], lastMessageTime: Date.now() };
-  }
-  chatHistory[currentThreadId].messages.push({ role: "user", content: message });
-  chatHistory[currentThreadId].lastMessageTime = Date.now();
-  saveChatHistory();
+    if (welcomeContainer.style.display !== "none") {
+      welcomeContainer.style.display = "none";
+    }
 
-  currentBotMessageContentElement = null; // Ensure a fresh element is fetched/created by ensureCurrentBotMessageElement
-  let accumulatedResponseForHistory = "";
-  const typingIndicator = document.getElementById("typing-indicator");
-  if (typingIndicator) typingIndicator.remove();
+    addUserMessage(message);
 
-  // Create a bot message bubble and get its text content area
-  const botMessageBubble = addBotMessage(); // Always create a fresh bot message bubble
-  const initialBotTextElement = botMessageBubble.querySelector('.text-content');
-  
-  if (initialBotTextElement) {
-    // Clean loading indicator - single pulsing dot with no text
-    initialBotTextElement.innerHTML = '<div class="loading-indicator"><div class="loading-dot"></div></div>';
-    
-    // Add this style to the head if it doesn't exist
-    if (!document.getElementById('loading-style')) {
-      const style = document.createElement('style');
-      style.id = 'loading-style';
-      style.textContent = `
+    if (!chatHistory[currentThreadId]) {
+      chatHistory[currentThreadId] = {
+        messages: [],
+        lastMessageTime: Date.now(),
+      };
+    }
+    chatHistory[currentThreadId].messages.push({
+      role: "user",
+      content: message,
+    });
+    chatHistory[currentThreadId].lastMessageTime = Date.now();
+    saveChatHistory();
+
+    currentBotMessageContentElement = null; // Ensure a fresh element is fetched/created by ensureCurrentBotMessageElement
+    let accumulatedResponseForHistory = "";
+    const typingIndicator = document.getElementById("typing-indicator");
+    if (typingIndicator) typingIndicator.remove();
+
+    // Create a bot message bubble and get its text content area
+    const botMessageBubble = addBotMessage(); // Always create a fresh bot message bubble
+    const initialBotTextElement =
+      botMessageBubble.querySelector(".text-content");
+
+    if (initialBotTextElement) {
+      // Clean loading indicator - single pulsing dot with no text
+      initialBotTextElement.innerHTML =
+        '<div class="loading-indicator"><div class="loading-dot"></div></div>';
+
+      // Add this style to the head if it doesn't exist
+      if (!document.getElementById("loading-style")) {
+        const style = document.createElement("style");
+        style.id = "loading-style";
+        style.textContent = `
         .loading-indicator {
           display: flex;
           align-items: flex-start;
@@ -828,189 +964,244 @@ async function sendMessage(message) {
           100% { transform: scale(0.8); opacity: 0.3; }
         }
       `;
-      document.head.appendChild(style);
-    }
-  } else {
-    console.error("Could not find .text-content in newly created bot message");
-  }
-  
-  // Set currentBotMessageContentElement to the initial text element
-  currentBotMessageContentElement = initialBotTextElement;
-
-  let hasClearedProcessingMessage = false;
-  let isEchoedQueryProcessed = false;
-
-  try {
-    console.log("Sending chat request to server:", message);
-    const response = await fetch("/api/v1/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: message, threadId: currentThreadId }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "Server error." }));
-      const errorText = `Error: ${errorData.message || response.statusText}`;
-      if (initialBotTextElement) streamText(initialBotTextElement, errorText, false);
-      else {
-        const errElem = ensureCurrentBotMessageElement();
-        if (errElem) streamText(errElem, errorText, false);
+        document.head.appendChild(style);
       }
-      accumulatedResponseForHistory = errorText;
-      chatHistory[currentThreadId].messages.push({ role: "assistant", content: accumulatedResponseForHistory });
-      saveChatHistory();
-      return;
+    } else {
+      console.error(
+        "Could not find .text-content in newly created bot message"
+      );
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
+    // Set currentBotMessageContentElement to the initial text element
+    currentBotMessageContentElement = initialBotTextElement;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let boundary;
-      while ((boundary = buffer.indexOf("\n\n")) !== -1) {
-        const sseMessage = buffer.substring(0, boundary);
-        buffer = buffer.substring(boundary + 2);
-        if (sseMessage.startsWith("data: ")) {
-          const jsonData = sseMessage.substring(6);
-          try {
-            const eventData = JSON.parse(jsonData);
-            console.log("Parsed event:", eventData.type, eventData.data);
+    let hasClearedProcessingMessage = false;
+    let isEchoedQueryProcessed = false;
 
-            // Ensure currentBotMessageContentElement is up-to-date, especially after tool calls
-            const activeTextElement = ensureCurrentBotMessageElement(); 
+    try {
+      console.log("Sending chat request to server:", message);
+      const response = await fetch("/api/v1/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: message, threadId: currentThreadId }),
+      });
 
-            if (eventData.type === "connected") {
-              console.log("Connection established with server");
-            } else if (eventData.type === "content_chunk") {
-              let content = eventData.data;
-              console.log("Received content chunk:", content);
-              
-              // Skip if this is just echoing the user's query
-              if (!isEchoedQueryProcessed && content === message) {
-                isEchoedQueryProcessed = true;
-                console.log("Skipped echoed user query:", content);
-                accumulatedResponseForHistory += content; // Echoed query is part of history
-                continue; // Skip to next iteration
-              }
-              
-              // Handle actual content
-              const isLikelyJson = (str) => {
-                  if (typeof str !== 'string') return false;
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Server error." }));
+        const errorText = `Error: ${errorData.message || response.statusText}`;
+        if (initialBotTextElement)
+          streamText(initialBotTextElement, errorText, false);
+        else {
+          const errElem = ensureCurrentBotMessageElement();
+          if (errElem) streamText(errElem, errorText, false);
+        }
+        accumulatedResponseForHistory = errorText;
+        chatHistory[currentThreadId].messages.push({
+          role: "assistant",
+          content: accumulatedResponseForHistory,
+        });
+        saveChatHistory();
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let boundary;
+        while ((boundary = buffer.indexOf("\n\n")) !== -1) {
+          const sseMessage = buffer.substring(0, boundary);
+          buffer = buffer.substring(boundary + 2);
+          if (sseMessage.startsWith("data: ")) {
+            const jsonData = sseMessage.substring(6);
+            try {
+              const eventData = JSON.parse(jsonData);
+              console.log("Parsed event:", eventData.type, eventData.data);
+
+              // Ensure currentBotMessageContentElement is up-to-date, especially after tool calls
+              const activeTextElement = ensureCurrentBotMessageElement();
+
+              if (eventData.type === "connected") {
+                console.log("Connection established with server");
+              } else if (eventData.type === "content_chunk") {
+                let content = eventData.data;
+                console.log("Received content chunk:", content);
+
+                // Skip if this is just echoing the user's query
+                if (!isEchoedQueryProcessed && content === message) {
+                  isEchoedQueryProcessed = true;
+                  console.log("Skipped echoed user query:", content);
+                  accumulatedResponseForHistory += content; // Echoed query is part of history
+                  continue; // Skip to next iteration
+                }
+
+                // Handle actual content
+                const isLikelyJson = (str) => {
+                  if (typeof str !== "string") return false;
                   str = str.trim();
-                  return (str.startsWith('{') && str.endsWith('}')) || (str.startsWith('[') && str.endsWith(']'));
-              };
-              
-              // Skip json content (usually internal state)
-              if (isLikelyJson(content)) {
-                console.log("Skipped rendering likely JSON data:", content);
-                accumulatedResponseForHistory += content; 
-                continue; // Skip to next iteration
-              }
-              
-              // Handle Stripe payment URLs - preprocess before rendering
-              if (content.includes("checkout.stripe.com")) {
-                console.log("Processing Stripe payment URL for better display");
-                // Extract just the URL from the content
-                const urlMatch = content.match(/(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/);
-                if (urlMatch && urlMatch[1]) {
-                  // Just pass the URL through - the markdown processor will handle it
-                  // We want to keep this simple to avoid duplication issues
-                  content = urlMatch[1];
+                  return (
+                    (str.startsWith("{") && str.endsWith("}")) ||
+                    (str.startsWith("[") && str.endsWith("]"))
+                  );
+                };
+
+                // Skip json content (usually internal state)
+                if (isLikelyJson(content)) {
+                  console.log("Skipped rendering likely JSON data:", content);
+                  accumulatedResponseForHistory += content;
+                  continue; // Skip to next iteration
                 }
-              }
-              
-              // Clear thinking indicator on first actual content & stream
-              if (!hasClearedProcessingMessage) {
-                console.log("Clearing temporary loading dot and streaming first content_chunk");
-                // Main typing indicator should persist, only remove the temporary loading dot from text area
-                const loadingDotIndicator = activeTextElement.querySelector(".loading-indicator");
-                if (loadingDotIndicator) {
-                  loadingDotIndicator.remove();
+
+                // Handle Stripe payment URLs - preprocess before rendering
+                if (content.includes("checkout.stripe.com")) {
+                  console.log(
+                    "Processing Stripe payment URL for better display"
+                  );
+                  // Extract just the URL from the content
+                  const urlMatch = content.match(
+                    /(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/
+                  );
+                  if (urlMatch && urlMatch[1]) {
+                    // Just pass the URL through - the markdown processor will handle it
+                    // We want to keep this simple to avoid duplication issues
+                    content = urlMatch[1];
+                  }
                 }
-                hasClearedProcessingMessage = true;
-                streamText(activeTextElement, content, false); // Stream first chunk
-              } else {
-                streamText(activeTextElement, content, true); // Stream subsequent chunks
+
+                // Clear thinking indicator on first actual content & stream
+                if (!hasClearedProcessingMessage) {
+                  console.log(
+                    "Clearing temporary loading dot and streaming first content_chunk"
+                  );
+                  // Main typing indicator should persist, only remove the temporary loading dot from text area
+                  const loadingDotIndicator =
+                    activeTextElement.querySelector(".loading-indicator");
+                  if (loadingDotIndicator) {
+                    loadingDotIndicator.remove();
+                  }
+                  hasClearedProcessingMessage = true;
+                  streamText(activeTextElement, content, false); // Stream first chunk
+                } else {
+                  streamText(activeTextElement, content, true); // Stream subsequent chunks
+                }
+                accumulatedResponseForHistory += content;
+              } else if (eventData.type === "tool_invocation") {
+                // Handle tool invocation silently without displaying in UI
+                if (!hasClearedProcessingMessage && initialBotTextElement) {
+                  hasClearedProcessingMessage = true;
+                }
+
+                // If botMessageBubble is somehow null (shouldn't happen now), create a new one
+                if (!botMessageBubble) {
+                  console.warn("botMessageBubble was null, creating a new one");
+                  botMessageBubble = addBotMessage();
+                }
+
+                // Process tool invocation without displaying in UI
+                addToolInvocationMessage(eventData.data, botMessageBubble);
+                console.debug(
+                  "Tool invocation processed silently:",
+                  eventData.data.map((t) => t.name).join(", ")
+                );
+              } else if (eventData.type === "tool_result") {
+                // Process tool result without displaying in UI
+                updateToolResultMessage(eventData.data);
+                // We don't add tool results to the accumulated response anymore
+              } else if (eventData.type === "error") {
+                if (activeTextElement)
+                  streamText(
+                    activeTextElement,
+                    `Error: ${eventData.data}`,
+                    true
+                  );
+                accumulatedResponseForHistory += `\nError: ${eventData.data}\n`;
               }
-              accumulatedResponseForHistory += content;
-            } else if (eventData.type === "tool_invocation") {
-              // Handle tool invocation silently without displaying in UI
-              if (!hasClearedProcessingMessage && initialBotTextElement) {
-                hasClearedProcessingMessage = true;
-              }
-              
-              // If botMessageBubble is somehow null (shouldn't happen now), create a new one
-              if (!botMessageBubble) {
-                console.warn("botMessageBubble was null, creating a new one");
-                botMessageBubble = addBotMessage();
-              }
-              
-              // Process tool invocation without displaying in UI
-              addToolInvocationMessage(eventData.data, botMessageBubble);
-              console.debug("Tool invocation processed silently:", eventData.data.map(t => t.name).join(', '));
-            } else if (eventData.type === "tool_result") {
-              // Process tool result without displaying in UI
-              updateToolResultMessage(eventData.data);
-              // We don't add tool results to the accumulated response anymore 
-            } else if (eventData.type === "error") {
-              if (activeTextElement) streamText(activeTextElement, `Error: ${eventData.data}`, true);
-              accumulatedResponseForHistory += `\nError: ${eventData.data}\n`;
+            } catch (e) {
+              console.error("Error parsing SSE JSON:", e, "Raw:", jsonData);
             }
-          } catch (e) {
-            console.error("Error parsing SSE JSON:", e, "Raw:", jsonData);
           }
         }
       }
-    }
 
-    if (currentBotMessageContentElement && currentBotMessageContentElement.innerHTML.trim() !== "") {
-      applyHighlightingInElement(currentBotMessageContentElement);
-    }
-    
-    const trimmedHistoryResponse = accumulatedResponseForHistory.trim();
-    if (trimmedHistoryResponse.length > 0) {
-      console.log("Saving response to history:", trimmedHistoryResponse);
-      const lastHistory = chatHistory[currentThreadId].messages;
-      if (lastHistory.length > 0 && lastHistory[lastHistory.length - 1].role === 'user') {
-        lastHistory.push({ role: "assistant", content: trimmedHistoryResponse });
-      } else if (lastHistory.length > 0 && lastHistory[lastHistory.length - 1].role === 'assistant') {
-        // Append to existing assistant message or create new if significantly different
-        // For now, let's just update if it's the same logical turn, or add if new turn after tool results
-        lastHistory[lastHistory.length - 1].content = trimmedHistoryResponse; // Simplistic update for now
-      } else {
-        lastHistory.push({ role: "assistant", content: trimmedHistoryResponse });
+      if (
+        currentBotMessageContentElement &&
+        currentBotMessageContentElement.innerHTML.trim() !== ""
+      ) {
+        applyHighlightingInElement(currentBotMessageContentElement);
       }
-      chatHistory[currentThreadId].lastMessageTime = Date.now();
+
+      const trimmedHistoryResponse = accumulatedResponseForHistory.trim();
+      if (trimmedHistoryResponse.length > 0) {
+        console.log("Saving response to history:", trimmedHistoryResponse);
+        const lastHistory = chatHistory[currentThreadId].messages;
+        if (
+          lastHistory.length > 0 &&
+          lastHistory[lastHistory.length - 1].role === "user"
+        ) {
+          lastHistory.push({
+            role: "assistant",
+            content: trimmedHistoryResponse,
+          });
+        } else if (
+          lastHistory.length > 0 &&
+          lastHistory[lastHistory.length - 1].role === "assistant"
+        ) {
+          // Append to existing assistant message or create new if significantly different
+          // For now, let's just update if it's the same logical turn, or add if new turn after tool results
+          lastHistory[lastHistory.length - 1].content = trimmedHistoryResponse; // Simplistic update for now
+        } else {
+          lastHistory.push({
+            role: "assistant",
+            content: trimmedHistoryResponse,
+          });
+        }
+        chatHistory[currentThreadId].lastMessageTime = Date.now();
+        saveChatHistory();
+      }
+    } catch (error) {
+      console.error("Error in sendMessage (outer catch):", error);
+      const errorText =
+        "Error: Connection issue or unexpected error. Please try again.";
+      const errElem = ensureCurrentBotMessageElement();
+      if (errElem) streamText(errElem, errorText, false);
+      chatHistory[currentThreadId].messages.push({
+        role: "assistant",
+        content: errorText,
+      });
       saveChatHistory();
-    }
-
-  } catch (error) {
-    console.error("Error in sendMessage (outer catch):", error);
-    const errorText = "Error: Connection issue or unexpected error. Please try again.";
-    const errElem = ensureCurrentBotMessageElement();
-    if(errElem) streamText(errElem, errorText, false);
-    chatHistory[currentThreadId].messages.push({ role: "assistant", content: errorText });
-    saveChatHistory();
-  } finally {
-    // Remove the persistent typing indicator for the current bot message
-    if (currentBotMessageContentElement && currentBotMessageContentElement.parentElement) {
-      const finalBotMessageSpinner = currentBotMessageContentElement.parentElement.querySelector('.typing-indicator');
-      if (finalBotMessageSpinner) {
-        finalBotMessageSpinner.remove();
+    } finally {
+      // Complete the typewriting effect and process final markdown
+      if (currentBotMessageContentElement) {
+        completeTypewriting(currentBotMessageContentElement);
       }
-    }
-    messageInput.disabled = false;
-    messageInput.focus();
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-    console.log("Chat interaction complete");
-  }
-}
 
-// Handle new chat mobile button
+      // Remove the persistent typing indicator for the current bot message
+      if (
+        currentBotMessageContentElement &&
+        currentBotMessageContentElement.parentElement
+      ) {
+        const finalBotMessageSpinner =
+          currentBotMessageContentElement.parentElement.querySelector(
+            ".typing-indicator"
+          );
+        if (finalBotMessageSpinner) {
+          finalBotMessageSpinner.remove();
+        }
+      }
+      messageInput.disabled = false;
+      messageInput.focus();
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      console.log("Chat interaction complete");
+    }
+  }
+
+  // Handle new chat mobile button
   newChatMobileButton.addEventListener("click", function () {
     createNewChat();
 
@@ -1030,22 +1221,21 @@ async function sendMessage(message) {
 
   // Focus input on page load
   messageInput.focus();
-  
+
   // Add form submission handler
-  chatForm.addEventListener("submit", function(event) {
+  chatForm.addEventListener("submit", function (event) {
     // Prevent the default form submission which would reload the page
     event.preventDefault();
-    
+
     const message = messageInput.value.trim();
     if (message) {
       sendMessage(message);
       messageInput.value = "";
     }
   });
-  
+
   // Apply event listeners to any existing copy buttons in the DOM
-  document.querySelectorAll('.copy-button').forEach(button => {
-    button.removeAttribute('onclick'); // Remove any existing onclick attributes for safety
+  document.querySelectorAll(".copy-button").forEach((button) => {
+    button.removeAttribute("onclick"); // Remove any existing onclick attributes for safety
   });
 });
-
