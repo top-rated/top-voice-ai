@@ -6,7 +6,10 @@ const fs = require("fs").promises;
 const topVoicesController = require("./topVoices.controller");
 const { topVoicesCache } = require("./topVoices.controller");
 const NodeCache = require("node-cache");
-const { getSystemPrompt, updateSystemPrompt } = require("../utils/systemPromptManager");
+const {
+  getSystemPrompt,
+  updateSystemPrompt,
+} = require("../utils/systemPromptManager");
 const {
   verifySubscription: verifyStripeSubscription,
   cancelSubscription: cancelStripeSubscription,
@@ -14,6 +17,14 @@ const {
 
 // Import subscription storage module to access the cache directly
 const subscriptionStorageModule = require("../storage/subscription.storage");
+
+// Import usage tracking functions
+const {
+  getAllUsage,
+  getMonthlyUsage,
+  resetUsage,
+  getCurrentMonthKey,
+} = require("../storage/subscription.storage");
 
 // File paths for top voices data
 const DATA_DIR = path.join(__dirname, "..", "data");
@@ -35,7 +46,10 @@ const login = async (req, res) => {
     }
 
     // Use admin credentials from environment variables
-    if (email === process.env.ADMIN_USER_NAME && password === process.env.ADMIN_USER_PASSWORD) {
+    if (
+      email === process.env.ADMIN_USER_NAME &&
+      password === process.env.ADMIN_USER_PASSWORD
+    ) {
       // Generate JWT token
       const token = jwt.sign(
         {
@@ -82,46 +96,88 @@ const getUsers = async (req, res) => {
 
     // Fetch all Stripe subscriptions to enrich user data
     // const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('all', 1000); // Moved down for logging
-    console.log('[AdminController] Fetching Stripe subscriptions for user list enrichment...');
-    const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('all', 1000); // Fetch a large number
-    console.log('[AdminController] stripeSubscriptionsResult:', JSON.stringify(stripeSubscriptionsResult, null, 2)); // Log the full result
+    console.log(
+      "[AdminController] Fetching Stripe subscriptions for user list enrichment..."
+    );
+    const stripeSubscriptionsResult =
+      await require("../utils/stripe").getAllStripeSubscriptions("all", 1000); // Fetch a large number
+    console.log(
+      "[AdminController] stripeSubscriptionsResult:",
+      JSON.stringify(stripeSubscriptionsResult, null, 2)
+    ); // Log the full result
 
     const stripeSubscriptionsMap = new Map();
     if (stripeSubscriptionsResult.success && stripeSubscriptionsResult.data) {
-      stripeSubscriptionsResult.data.forEach(sub => {
-        if (sub.customer_id) { // Use customer_id for mapping
+      stripeSubscriptionsResult.data.forEach((sub) => {
+        if (sub.customer_id) {
+          // Use customer_id for mapping
           // Store the most relevant (e.g., active or latest) subscription if multiple exist for a customer_id
           const existingSub = stripeSubscriptionsMap.get(sub.customer_id);
-          if (!existingSub || 
-              (sub.status === 'active' && existingSub.status !== 'active') || 
-              (new Date(sub.created) > new Date(existingSub.created))) {
+          if (
+            !existingSub ||
+            (sub.status === "active" && existingSub.status !== "active") ||
+            new Date(sub.created) > new Date(existingSub.created)
+          ) {
             stripeSubscriptionsMap.set(sub.customer_id, sub);
           }
         }
       });
     }
 
-    console.log('[AdminController] stripeSubscriptionsMap (keyed by customer_id) size:', stripeSubscriptionsMap.size);
+    console.log(
+      "[AdminController] stripeSubscriptionsMap (keyed by customer_id) size:",
+      stripeSubscriptionsMap.size
+    );
     // Enrich local users with Stripe subscription data
     // Log all user emails from userStorage and check for the specific user
-    console.log('[AdminController] Emails in userStorage:', JSON.stringify(usersArray.map(u => u.email), null, 2));
-    const targetUser = usersArray.find(user => user.email === 'raheesahmed256@gmail.com');
+    console.log(
+      "[AdminController] Emails in userStorage:",
+      JSON.stringify(
+        usersArray.map((u) => u.email),
+        null,
+        2
+      )
+    );
+    const targetUser = usersArray.find(
+      (user) => user.email === "raheesahmed256@gmail.com"
+    );
     if (targetUser) {
-      console.log('[AdminController] Local user object for raheesahmed256@gmail.com BEFORE enrichment:', JSON.stringify(targetUser, null, 2));
+      console.log(
+        "[AdminController] Local user object for raheesahmed256@gmail.com BEFORE enrichment:",
+        JSON.stringify(targetUser, null, 2)
+      );
     } else {
-      console.log('[AdminController] User raheesahmed256@gmail.com NOT FOUND in local userStorage during getUsers.');
+      console.log(
+        "[AdminController] User raheesahmed256@gmail.com NOT FOUND in local userStorage during getUsers."
+      );
     }
 
-    const enrichedUsers = usersArray.map(user => {
+    const enrichedUsers = usersArray.map((user) => {
       // Try to find Stripe subscription using user.stripeCustomerId if available
-      const stripeSub = user.stripeCustomerId ? stripeSubscriptionsMap.get(user.stripeCustomerId) : null;
+      const stripeSub = user.stripeCustomerId
+        ? stripeSubscriptionsMap.get(user.stripeCustomerId)
+        : null;
       return {
         ...user,
         stripeSubscriptionId: stripeSub?.id,
         stripeSubscriptionStatus: stripeSub?.status,
-        stripePlan: stripeSub?.plan_nickname || (stripeSub?.plan_id ? `${stripeSub.plan_amount / 100} ${stripeSub.plan_currency?.toUpperCase()} / ${stripeSub.plan_interval}` : null),
+        stripePlan:
+          stripeSub?.plan_nickname ||
+          (stripeSub?.plan_id
+            ? `${
+                stripeSub.plan_amount / 100
+              } ${stripeSub.plan_currency?.toUpperCase()} / ${
+                stripeSub.plan_interval
+              }`
+            : null),
         isStripeCustomer: !!stripeSub || !!user.stripeCustomerId, // User is a stripe customer if they have a stripeCustomerId or an active sub mapped
-        subscriptionSource: stripeSub ? 'stripe' : (user.subscriptionId ? (user.subscriptionId.toLowerCase().includes('gumroad') ? 'gumroad' : 'manual') : 'none'),
+        subscriptionSource: stripeSub
+          ? "stripe"
+          : user.subscriptionId
+          ? user.subscriptionId.toLowerCase().includes("gumroad")
+            ? "gumroad"
+            : "manual"
+          : "none",
       };
     });
 
@@ -133,8 +189,12 @@ const getUsers = async (req, res) => {
         (user) =>
           user.email.toLowerCase().includes(searchLower) ||
           (user.name && user.name.toLowerCase().includes(searchLower)) ||
-          (user.stripeSubscriptionStatus && user.stripeSubscriptionStatus.toLowerCase().includes(searchLower)) ||
-          (user.stripePlan && user.stripePlan.toLowerCase().includes(searchLower))
+          (user.stripeSubscriptionStatus &&
+            user.stripeSubscriptionStatus
+              .toLowerCase()
+              .includes(searchLower)) ||
+          (user.stripePlan &&
+            user.stripePlan.toLowerCase().includes(searchLower))
       );
     }
 
@@ -186,44 +246,69 @@ const getUserByEmail = async (req, res) => {
     // If Stripe customer ID exists, fetch and merge Stripe data
     if (localUser.stripeCustomerId) {
       try {
-        const stripeCustomerData = await stripeUtils.getCustomer(localUser.stripeCustomerId);
+        const stripeCustomerData = await stripeUtils.getCustomer(
+          localUser.stripeCustomerId
+        );
         if (stripeCustomerData.success && stripeCustomerData.customer) {
           // Merge Stripe customer details (Stripe's data might be more current for name/email)
-          combinedUser.name = stripeCustomerData.customer.name || localUser.name;
+          combinedUser.name =
+            stripeCustomerData.customer.name || localUser.name;
           // Note: Syncing email can be complex if it's a primary key. For now, let's assume local email is the key.
-          // combinedUser.email = stripeCustomerData.customer.email || localUser.email; 
+          // combinedUser.email = stripeCustomerData.customer.email || localUser.email;
           combinedUser.stripeCustomerDetails = stripeCustomerData.customer; // Store all Stripe customer details
         }
 
-        const stripeSubscriptionsData = await stripeUtils.getCustomerSubscriptions(localUser.stripeCustomerId);
-        if (stripeSubscriptionsData.success && stripeSubscriptionsData.subscriptions) {
-          combinedUser.stripeSubscriptions = stripeSubscriptionsData.subscriptions;
+        const stripeSubscriptionsData =
+          await stripeUtils.getCustomerSubscriptions(
+            localUser.stripeCustomerId
+          );
+        if (
+          stripeSubscriptionsData.success &&
+          stripeSubscriptionsData.subscriptions
+        ) {
+          combinedUser.stripeSubscriptions =
+            stripeSubscriptionsData.subscriptions;
           // Determine an overall subscription status or type based on Stripe subscriptions
           if (stripeSubscriptionsData.subscriptions.length > 0) {
-            const activeStripeSub = stripeSubscriptionsData.subscriptions.find(s => s.status === 'active' || s.status === 'trialing');
+            const activeStripeSub = stripeSubscriptionsData.subscriptions.find(
+              (s) => s.status === "active" || s.status === "trialing"
+            );
             if (activeStripeSub) {
               combinedUser.activeStripeSubscription = activeStripeSub; // Store the primary active Stripe sub
               combinedUser.subscriptionStatus = activeStripeSub.status;
-              combinedUser.active = combinedUser.active !== undefined ? combinedUser.active : true; // If user has active Stripe sub, assume active unless explicitly set otherwise locally
+              combinedUser.active =
+                combinedUser.active !== undefined ? combinedUser.active : true; // If user has active Stripe sub, assume active unless explicitly set otherwise locally
 
               // Safely determine subscriptionType
-              let subTypeDetail = 'Premium'; // Default
-              if (activeStripeSub.items && activeStripeSub.items.data && activeStripeSub.items.data.length > 0) {
+              let subTypeDetail = "Premium"; // Default
+              if (
+                activeStripeSub.items &&
+                activeStripeSub.items.data &&
+                activeStripeSub.items.data.length > 0
+              ) {
                 const firstItem = activeStripeSub.items.data[0];
                 if (firstItem && firstItem.price) {
-                  subTypeDetail = firstItem.price.nickname || firstItem.price.product?.name || 'Premium';
+                  subTypeDetail =
+                    firstItem.price.nickname ||
+                    firstItem.price.product?.name ||
+                    "Premium";
                 }
               }
               combinedUser.subscriptionType = `Stripe: ${subTypeDetail}`;
             } else {
-                // No active Stripe sub, check for past due etc.
-                const latestSub = stripeSubscriptionsData.subscriptions.sort((a,b) => b.created - a.created)[0];
-                if(latestSub) combinedUser.subscriptionStatus = latestSub.status;
+              // No active Stripe sub, check for past due etc.
+              const latestSub = stripeSubscriptionsData.subscriptions.sort(
+                (a, b) => b.created - a.created
+              )[0];
+              if (latestSub) combinedUser.subscriptionStatus = latestSub.status;
             }
           }
         }
       } catch (stripeError) {
-        console.error(`Error fetching Stripe data for user ${email} (Stripe ID ${localUser.stripeCustomerId}):`, stripeError);
+        console.error(
+          `Error fetching Stripe data for user ${email} (Stripe ID ${localUser.stripeCustomerId}):`,
+          stripeError
+        );
         // Optionally, add a note to combinedUser that Stripe data couldn't be fetched
         combinedUser.stripeDataError = true;
         combinedUser.stripeDataErrorMessage = stripeError.message;
@@ -474,24 +559,39 @@ const getSubscriptions = async (req, res) => {
     console.log("Fetching subscriptions, prioritizing Stripe...");
 
     // Fetch all subscriptions from Stripe
-    const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('all', 100); // Fetch all, up to 100
+    const stripeSubscriptionsResult =
+      await require("../utils/stripe").getAllStripeSubscriptions("all", 100); // Fetch all, up to 100
 
     let finalSubscriptions = [];
-    const sourceCount = { stripe: 0, local: 0, gumroad: 0, manual: 0, unknown: 0 };
+    const sourceCount = {
+      stripe: 0,
+      local: 0,
+      gumroad: 0,
+      manual: 0,
+      unknown: 0,
+    };
 
     if (stripeSubscriptionsResult.success && stripeSubscriptionsResult.data) {
-      console.log(`Fetched ${stripeSubscriptionsResult.data.length} subscriptions from Stripe.`);
+      console.log(
+        `Fetched ${stripeSubscriptionsResult.data.length} subscriptions from Stripe.`
+      );
       sourceCount.stripe = stripeSubscriptionsResult.data.length;
 
       // Map Stripe subscriptions to the desired format
-      finalSubscriptions = stripeSubscriptionsResult.data.map(sub => ({
+      finalSubscriptions = stripeSubscriptionsResult.data.map((sub) => ({
         id: sub.id,
         email: sub.customer_email,
         userName: sub.customer_name, // Added userName from Stripe customer
-        type: sub.plan_nickname || (sub.plan_amount ? `${sub.plan_amount / 100} ${sub.plan_currency.toUpperCase()} / ${sub.plan_interval}` : 'premium'), // More descriptive type
-        active: sub.status === 'active' || sub.status === 'trialing',
+        type:
+          sub.plan_nickname ||
+          (sub.plan_amount
+            ? `${sub.plan_amount / 100} ${sub.plan_currency.toUpperCase()} / ${
+                sub.plan_interval
+              }`
+            : "premium"), // More descriptive type
+        active: sub.status === "active" || sub.status === "trialing",
         status: sub.status, // Raw Stripe status
-        source: 'stripe',
+        source: "stripe",
         createdAt: sub.created,
         currentPeriodStart: sub.current_period_start,
         currentPeriodEnd: sub.current_period_end,
@@ -506,41 +606,58 @@ const getSubscriptions = async (req, res) => {
         // You can add more fields from the 'sub' object if needed
       }));
     } else {
-      console.error("Failed to fetch subscriptions from Stripe:", stripeSubscriptionsResult.message);
+      console.error(
+        "Failed to fetch subscriptions from Stripe:",
+        stripeSubscriptionsResult.message
+      );
       // Optionally, fall back to local storage or return an error
       // For now, we'll continue to see if there are any non-Stripe local subs
     }
 
     // Optionally, augment with or list separately any purely local/manual/Gumroad subscriptions
     // if they are still relevant and not managed via Stripe.
-    const localLegacySubscriptions = await subscriptionStorage.getAllSubscriptions();
+    const localLegacySubscriptions =
+      await subscriptionStorage.getAllSubscriptions();
     const localUsers = await userStorage.getAllUsers();
 
-    Object.values(localLegacySubscriptions).forEach(localSub => {
-      if (!finalSubscriptions.find(fs => fs.id === localSub.id)) { // Avoid duplicates if Stripe already returned it
-        const user = Object.values(localUsers).find(u => u.email === localSub.email);
-        const subSource = localSub.source || (localSub.id && localSub.id.toLowerCase().includes('gumroad') ? 'gumroad' : 'manual');
-        
+    Object.values(localLegacySubscriptions).forEach((localSub) => {
+      if (!finalSubscriptions.find((fs) => fs.id === localSub.id)) {
+        // Avoid duplicates if Stripe already returned it
+        const user = Object.values(localUsers).find(
+          (u) => u.email === localSub.email
+        );
+        const subSource =
+          localSub.source ||
+          (localSub.id && localSub.id.toLowerCase().includes("gumroad")
+            ? "gumroad"
+            : "manual");
+
         sourceCount[subSource] = (sourceCount[subSource] || 0) + 1;
-        if (subSource === 'stripe' && sourceCount.stripe > 0 && stripeSubscriptionsResult.success) {
+        if (
+          subSource === "stripe" &&
+          sourceCount.stripe > 0 &&
+          stripeSubscriptionsResult.success
+        ) {
           // This was likely an old local Stripe record, already counted.
         } else {
-            finalSubscriptions.push({
-                id: localSub.id,
-                email: localSub.email,
-                userName: user?.name,
-                type: localSub.type || 'unknown',
-                active: localSub.active === undefined ? true : localSub.active, // Default to true if undefined
-                status: localSub.active ? 'active' : 'inactive', // Simplified status for local
-                source: subSource,
-                createdAt: localSub.createdAt || user?.createdAt,
-                updatedAt: localSub.updatedAt, // Keep local updatedAt if available
-            });
+          finalSubscriptions.push({
+            id: localSub.id,
+            email: localSub.email,
+            userName: user?.name,
+            type: localSub.type || "unknown",
+            active: localSub.active === undefined ? true : localSub.active, // Default to true if undefined
+            status: localSub.active ? "active" : "inactive", // Simplified status for local
+            source: subSource,
+            createdAt: localSub.createdAt || user?.createdAt,
+            updatedAt: localSub.updatedAt, // Keep local updatedAt if available
+          });
         }
       }
     });
 
-    console.log(`Final count: ${finalSubscriptions.length} total subscriptions processed.`);
+    console.log(
+      `Final count: ${finalSubscriptions.length} total subscriptions processed.`
+    );
     console.log("Subscriptions by source:", sourceCount);
 
     // Log details for verification
@@ -555,7 +672,6 @@ const getSubscriptions = async (req, res) => {
       total: finalSubscriptions.length,
       sourceBreakdown: sourceCount,
     });
-
   } catch (error) {
     console.error("Error fetching subscriptions:", error);
     res
@@ -813,21 +929,31 @@ const getStats = async (req, res) => {
     ).length;
 
     // Fetch all subscriptions from Stripe for accurate MRR and active subscriptions count
-    const stripeSubscriptionsResult = await require('../utils/stripe').getAllStripeSubscriptions('active', 1000); // Fetch all active, up to a high limit
-    
+    const stripeSubscriptionsResult =
+      await require("../utils/stripe").getAllStripeSubscriptions(
+        "active",
+        1000
+      ); // Fetch all active, up to a high limit
+
     let activeStripeSubscriptionsCount = 0;
     let monthlyRevenueCents = 0;
 
     if (stripeSubscriptionsResult.success && stripeSubscriptionsResult.data) {
       activeStripeSubscriptionsCount = stripeSubscriptionsResult.data.length; // Assuming 'active' filter in getAllStripeSubscriptions works
-      stripeSubscriptionsResult.data.forEach(sub => {
+      stripeSubscriptionsResult.data.forEach((sub) => {
         // Ensure the subscription is active and has a monthly plan amount
-        if ((sub.status === 'active' || sub.status === 'trialing') && sub.plan_interval === 'month' && typeof sub.plan_amount === 'number') {
+        if (
+          (sub.status === "active" || sub.status === "trialing") &&
+          sub.plan_interval === "month" &&
+          typeof sub.plan_amount === "number"
+        ) {
           monthlyRevenueCents += sub.plan_amount;
         }
       });
     } else {
-      console.warn('Could not fetch Stripe subscriptions for stats calculation, MRR might be inaccurate.');
+      console.warn(
+        "Could not fetch Stripe subscriptions for stats calculation, MRR might be inaccurate."
+      );
       // Fallback or error handling if Stripe fetch fails - for now, MRR will be 0
     }
 
@@ -867,8 +993,8 @@ const getStats = async (req, res) => {
         premiumUsers,
         monthlyRevenue,
         newUsers7d,
-        conversionRate
-      }
+        conversionRate,
+      },
     });
   } catch (error) {
     console.error("Error fetching stats:", error);
@@ -913,7 +1039,7 @@ const generateMockActivity = (users) => {
       action: randomAction,
       details: `IP: 192.168.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
-      )}`
+      )}`,
     });
   }
 
@@ -1226,7 +1352,6 @@ const addManualSubscription = async (req, res) => {
   }
 };
 
-
 /**
  * Scan for missing subscriptions
  * @param {Object} req - Request object
@@ -1260,9 +1385,10 @@ const scanForMissingSubscriptions = async (req, res) => {
           email: user.email,
           type: user.subscriptionType || "premium",
           active: user.active || true,
-          source: user.subscriptionId && user.subscriptionId.includes("stripe")
-            ? "stripe"
-            : "manual",
+          source:
+            user.subscriptionId && user.subscriptionId.includes("stripe")
+              ? "stripe"
+              : "manual",
           createdAt: user.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -1518,7 +1644,6 @@ const addStripeSubscription = async (req, res) => {
   }
 };
 
-
 /**
  * Get Stripe Dashboard Data (Total Revenue and Subscriptions)
  * @param {Object} req - Request object
@@ -1526,142 +1651,172 @@ const addStripeSubscription = async (req, res) => {
  */
 const getStripeDashboardData = async (req, res) => {
   try {
-    console.log('[AdminController] Attempting to fetch Stripe dashboard data.');
+    console.log("[AdminController] Attempting to fetch Stripe dashboard data.");
 
     // For testing/demo purposes, let's use the subscription data from the admin stats route
     // In a production environment, you would integrate with your Stripe API client
-    
+
     // Get subscriptions from admin stats
     let stripeSubscriptions = { success: true, data: [] };
-    
+
     try {
       // Use the data that was logged in the console
-      console.log('[AdminController] Fetching Stripe subscriptions from stats API...');
-      
+      console.log(
+        "[AdminController] Fetching Stripe subscriptions from stats API..."
+      );
+
       // This is the same data we saw in the console log
       stripeSubscriptions.data = [
         {
-          "id": "sub_1RVeTlPCUfEbUbEPwPG8uiIj",
-          "status": "active",
-          "current_period_start": "2025-06-02T19:57:05.000Z",
-          "current_period_end": "2025-07-02T19:57:05.000Z",
-          "created": "2025-06-02T19:57:05.000Z",
-          "customer_id": "cus_SQVUsh5bi7kG19",
-          "customer_email": "rahesahmed37@gmail.com",
-          "customer_name": "Rahees Ahmed",
-          "plan_id": "price_1RQvvCPCUfEbUbEPn74qSbw4",
-          "plan_nickname": null,
-          "plan_amount": 900,
-          "plan_currency": "eur",
-          "plan_interval": "month",
-          "cancel_at_period_end": false,
-          "canceled_at": null,
-          "ended_at": null,
-          "trial_start": null,
-          "trial_end": null,
-          "metadata": {}
+          id: "sub_1RVeTlPCUfEbUbEPwPG8uiIj",
+          status: "active",
+          current_period_start: "2025-06-02T19:57:05.000Z",
+          current_period_end: "2025-07-02T19:57:05.000Z",
+          created: "2025-06-02T19:57:05.000Z",
+          customer_id: "cus_SQVUsh5bi7kG19",
+          customer_email: "rahesahmed37@gmail.com",
+          customer_name: "Rahees Ahmed",
+          plan_id: "price_1RQvvCPCUfEbUbEPn74qSbw4",
+          plan_nickname: null,
+          plan_amount: 900,
+          plan_currency: "eur",
+          plan_interval: "month",
+          cancel_at_period_end: false,
+          canceled_at: null,
+          ended_at: null,
+          trial_start: null,
+          trial_end: null,
+          metadata: {},
         },
         {
-          "id": "sub_1RUvRVPCUfEbUbEP1kib3xJO",
-          "status": "active",
-          "current_period_start": "2025-05-31T19:51:45.000Z",
-          "current_period_end": "2025-06-30T19:51:45.000Z",
-          "created": "2025-05-31T19:51:45.000Z",
-          "customer_id": "cus_SPkxVZ3IyHq5YP",
-          "customer_email": "allandriodtricks@gmail.com",
-          "customer_name": "Rahees Ahmed",
-          "plan_id": "price_1RQvvCPCUfEbUbEPn74qSbw4",
-          "plan_nickname": null,
-          "plan_amount": 900,
-          "plan_currency": "eur",
-          "plan_interval": "month",
-          "cancel_at_period_end": false,
-          "canceled_at": null,
-          "ended_at": null,
-          "trial_start": null,
-          "trial_end": null,
-          "metadata": {}
+          id: "sub_1RUvRVPCUfEbUbEP1kib3xJO",
+          status: "active",
+          current_period_start: "2025-05-31T19:51:45.000Z",
+          current_period_end: "2025-06-30T19:51:45.000Z",
+          created: "2025-05-31T19:51:45.000Z",
+          customer_id: "cus_SPkxVZ3IyHq5YP",
+          customer_email: "allandriodtricks@gmail.com",
+          customer_name: "Rahees Ahmed",
+          plan_id: "price_1RQvvCPCUfEbUbEPn74qSbw4",
+          plan_nickname: null,
+          plan_amount: 900,
+          plan_currency: "eur",
+          plan_interval: "month",
+          cancel_at_period_end: false,
+          canceled_at: null,
+          ended_at: null,
+          trial_start: null,
+          trial_end: null,
+          metadata: {},
         },
         {
-          "id": "sub_1RU3uYPCUfEbUbEP0fuK8tZo",
-          "status": "active",
-          "current_period_start": "2025-05-29T10:42:09.000Z",
-          "current_period_end": "2025-06-29T10:42:09.000Z",
-          "created": "2025-05-29T10:42:09.000Z",
-          "customer_id": "cus_SOrdwIdxYOKrCO",
-          "customer_email": "dan@top-rated.team",
-          "customer_name": "Danylo Burykin",
-          "plan_id": "price_1RQvvCPCUfEbUbEPn74qSbw4",
-          "plan_nickname": null,
-          "plan_amount": 900,
-          "plan_currency": "eur",
-          "plan_interval": "month",
-          "cancel_at_period_end": false,
-          "canceled_at": null,
-          "ended_at": null,
-          "trial_start": null,
-          "trial_end": null,
-          "metadata": {}
+          id: "sub_1RU3uYPCUfEbUbEP0fuK8tZo",
+          status: "active",
+          current_period_start: "2025-05-29T10:42:09.000Z",
+          current_period_end: "2025-06-29T10:42:09.000Z",
+          created: "2025-05-29T10:42:09.000Z",
+          customer_id: "cus_SOrdwIdxYOKrCO",
+          customer_email: "dan@top-rated.team",
+          customer_name: "Danylo Burykin",
+          plan_id: "price_1RQvvCPCUfEbUbEPn74qSbw4",
+          plan_nickname: null,
+          plan_amount: 900,
+          plan_currency: "eur",
+          plan_interval: "month",
+          cancel_at_period_end: false,
+          canceled_at: null,
+          ended_at: null,
+          trial_start: null,
+          trial_end: null,
+          metadata: {},
         },
         {
-          "id": "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
-          "status": "active",
-          "current_period_start": "2025-05-22T20:34:31.000Z",
-          "current_period_end": "2025-06-22T20:34:31.000Z",
-          "created": "2025-05-22T20:34:31.000Z",
-          "customer_id": "cus_SMOcRKXGTAacau",
-          "customer_email": "raheesahmed256@gmail.com",
-          "customer_name": "Rahees Ahmed",
-          "plan_id": "price_1RQvvCPCUfEbUbEPn74qSbw4",
-          "plan_nickname": null,
-          "plan_amount": 900,
-          "plan_currency": "eur",
-          "plan_interval": "month",
-          "cancel_at_period_end": false,
-          "canceled_at": null,
-          "ended_at": null,
-          "trial_start": null,
-          "trial_end": null,
-          "metadata": {}
-        }
+          id: "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
+          status: "active",
+          current_period_start: "2025-05-22T20:34:31.000Z",
+          current_period_end: "2025-06-22T20:34:31.000Z",
+          created: "2025-05-22T20:34:31.000Z",
+          customer_id: "cus_SMOcRKXGTAacau",
+          customer_email: "raheesahmed256@gmail.com",
+          customer_name: "Rahees Ahmed",
+          plan_id: "price_1RQvvCPCUfEbUbEPn74qSbw4",
+          plan_nickname: null,
+          plan_amount: 900,
+          plan_currency: "eur",
+          plan_interval: "month",
+          cancel_at_period_end: false,
+          canceled_at: null,
+          ended_at: null,
+          trial_start: null,
+          trial_end: null,
+          metadata: {},
+        },
       ];
-
     } catch (stripeError) {
-      console.error('[AdminController] Error retrieving Stripe subscriptions:', stripeError);
+      console.error(
+        "[AdminController] Error retrieving Stripe subscriptions:",
+        stripeError
+      );
       stripeSubscriptions = { success: false, message: stripeError.message };
     }
 
     // Now we have all the subscriptions from Stripe
     const subscriptionsData = {
       success: stripeSubscriptions?.success || false,
-      data: stripeSubscriptions?.data || []
+      data: stripeSubscriptions?.data || [],
     };
 
     // Placeholder for balance data due to MCP tool issue
     const balanceData = {
       success: false,
-      message: "Failed to retrieve Stripe balance due to a tool issue. This feature is temporarily unavailable.",
-      data: null
+      message:
+        "Failed to retrieve Stripe balance due to a tool issue. This feature is temporarily unavailable.",
+      data: null,
     };
 
     let processedSubscriptions = [];
     if (subscriptionsData.success && subscriptionsData.data) {
-      processedSubscriptions = subscriptionsData.data.map(sub => {
+      processedSubscriptions = subscriptionsData.data.map((sub) => {
         // Extract customer email and name directly from the subscription data
         // In the Stripe API response, customer_email and customer_name are provided directly
         return {
           id: sub.id,
           customer_id: sub.customer_id || sub.customer,
-          customer_email: sub.customer_email || 'N/A',
-          customer_name: sub.customer_name || 'N/A',
+          customer_email: sub.customer_email || "N/A",
+          customer_name: sub.customer_name || "N/A",
           status: sub.status,
-          current_period_start: sub.current_period_start ? new Date(typeof sub.current_period_start === 'number' ? sub.current_period_start * 1000 : new Date(sub.current_period_start).getTime()).toISOString() : null,
-          current_period_end: sub.current_period_end ? new Date(typeof sub.current_period_end === 'number' ? sub.current_period_end * 1000 : new Date(sub.current_period_end).getTime()).toISOString() : null,
-          created: sub.created ? new Date(typeof sub.created === 'number' ? sub.created * 1000 : new Date(sub.created).getTime()).toISOString() : null,
-          plan_name: sub.plan_nickname || sub.plan_id || sub.items?.data[0]?.plan?.nickname || sub.items?.data[0]?.plan?.id || 'N/A',
+          current_period_start: sub.current_period_start
+            ? new Date(
+                typeof sub.current_period_start === "number"
+                  ? sub.current_period_start * 1000
+                  : new Date(sub.current_period_start).getTime()
+              ).toISOString()
+            : null,
+          current_period_end: sub.current_period_end
+            ? new Date(
+                typeof sub.current_period_end === "number"
+                  ? sub.current_period_end * 1000
+                  : new Date(sub.current_period_end).getTime()
+              ).toISOString()
+            : null,
+          created: sub.created
+            ? new Date(
+                typeof sub.created === "number"
+                  ? sub.created * 1000
+                  : new Date(sub.created).getTime()
+              ).toISOString()
+            : null,
+          plan_name:
+            sub.plan_nickname ||
+            sub.plan_id ||
+            sub.items?.data[0]?.plan?.nickname ||
+            sub.items?.data[0]?.plan?.id ||
+            "N/A",
           plan_amount: sub.plan_amount || sub.items?.data[0]?.plan?.amount,
-          plan_currency: sub.plan_currency || sub.items?.data[0]?.plan?.currency,
-          plan_interval: sub.plan_interval || sub.items?.data[0]?.plan?.interval,
+          plan_currency:
+            sub.plan_currency || sub.items?.data[0]?.plan?.currency,
+          plan_interval:
+            sub.plan_interval || sub.items?.data[0]?.plan?.interval,
           quantity: sub.quantity || sub.items?.data[0]?.quantity || 1,
         };
       });
@@ -1671,13 +1826,20 @@ const getStripeDashboardData = async (req, res) => {
       success: true,
       balance: balanceData, // Include balance status/data
       subscriptions: processedSubscriptions,
-      subscriptions_raw: subscriptionsData.success ? subscriptionsData.data : null, // For debugging or more detailed frontend use
-      message: subscriptionsData.success ? "Stripe data fetched." : "Failed to fetch Stripe subscriptions."
+      subscriptions_raw: subscriptionsData.success
+        ? subscriptionsData.data
+        : null, // For debugging or more detailed frontend use
+      message: subscriptionsData.success
+        ? "Stripe data fetched."
+        : "Failed to fetch Stripe subscriptions.",
     });
-
   } catch (error) {
     console.error("Error fetching Stripe dashboard data:", error);
-    res.status(500).json({ success: false, message: "Server error while fetching Stripe dashboard data", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching Stripe dashboard data",
+      error: error.message,
+    });
   }
 };
 
@@ -1691,14 +1853,14 @@ const getSystemPromptConfig = async (req, res) => {
     const promptText = await getSystemPrompt();
     res.json({
       success: true,
-      prompt: promptText
+      prompt: promptText,
     });
   } catch (error) {
     console.error("Error fetching system prompt:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: "Failed to fetch system prompt", 
-      error: error.message 
+      message: "Failed to fetch system prompt",
+      error: error.message,
     });
   }
 };
@@ -1712,26 +1874,243 @@ const updateSystemPromptConfig = async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    if (!prompt) {
+    if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({
-        success: false,
-        message: "System prompt text is required"
+        message: "Prompt is required and must be a string",
       });
     }
 
-    // Update the system prompt
-    await updateSystemPrompt(prompt);
+    const success = await updateSystemPrompt(prompt);
 
-    res.json({
-      success: true,
-      message: "System prompt updated successfully"
-    });
+    if (success) {
+      res.json({
+        message: "System prompt updated successfully",
+        prompt: prompt.substring(0, 100) + (prompt.length > 100 ? "..." : ""),
+      });
+    } else {
+      res.status(500).json({
+        message: "Failed to update system prompt",
+      });
+    }
   } catch (error) {
     console.error("Error updating system prompt:", error);
-    res.status(500).json({ 
-      success: false,
-      message: "Failed to update system prompt", 
-      error: error.message 
+    res.status(500).json({
+      message: "Failed to update system prompt",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get all usage statistics
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+const getUsageStats = async (req, res) => {
+  try {
+    const allUsage = await getAllUsage();
+    const currentMonth = getCurrentMonthKey();
+
+    // Process and organize usage data
+    const usageByMonth = {};
+    const userUsage = {};
+    let totalMessages = 0;
+    let activeUsers = 0;
+
+    Object.entries(allUsage).forEach(([key, usage]) => {
+      const monthKey = usage.monthKey || currentMonth;
+
+      if (!usageByMonth[monthKey]) {
+        usageByMonth[monthKey] = {
+          totalMessages: 0,
+          uniqueUsers: new Set(),
+          userDetails: [],
+        };
+      }
+
+      usageByMonth[monthKey].totalMessages += usage.messageCount;
+      usageByMonth[monthKey].uniqueUsers.add(usage.userIdentifier);
+      usageByMonth[monthKey].userDetails.push({
+        userIdentifier: usage.userIdentifier,
+        messageCount: usage.messageCount,
+        lastActivity: usage.details[usage.details.length - 1]?.timestamp,
+      });
+
+      // Track per-user usage
+      if (!userUsage[usage.userIdentifier]) {
+        userUsage[usage.userIdentifier] = {
+          totalMessages: 0,
+          months: {},
+        };
+      }
+      userUsage[usage.userIdentifier].totalMessages += usage.messageCount;
+      userUsage[usage.userIdentifier].months[monthKey] = usage.messageCount;
+
+      totalMessages += usage.messageCount;
+      if (usage.messageCount > 0) {
+        activeUsers++;
+      }
+    });
+
+    // Convert sets to counts
+    Object.keys(usageByMonth).forEach((month) => {
+      usageByMonth[month].uniqueUsers = usageByMonth[month].uniqueUsers.size;
+    });
+
+    res.json({
+      currentMonth,
+      summary: {
+        totalMessages,
+        activeUsers,
+        currentMonthUsers: usageByMonth[currentMonth]?.uniqueUsers || 0,
+        currentMonthMessages: usageByMonth[currentMonth]?.totalMessages || 0,
+      },
+      usageByMonth,
+      topUsers: Object.entries(userUsage)
+        .sort(([, a], [, b]) => b.totalMessages - a.totalMessages)
+        .slice(0, 10)
+        .map(([identifier, data]) => ({
+          userIdentifier: identifier,
+          totalMessages: data.totalMessages,
+          currentMonthMessages: data.months[currentMonth] || 0,
+        })),
+    });
+  } catch (error) {
+    console.error("Error getting usage stats:", error);
+    res.status(500).json({
+      message: "Failed to get usage statistics",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get usage for a specific user
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+const getUserUsage = async (req, res) => {
+  try {
+    const { userIdentifier } = req.params;
+
+    if (!userIdentifier) {
+      return res.status(400).json({ message: "User identifier is required" });
+    }
+
+    const usage = await getMonthlyUsage(userIdentifier);
+
+    res.json({
+      userIdentifier,
+      currentMonth: getCurrentMonthKey(),
+      usage,
+    });
+  } catch (error) {
+    console.error("Error getting user usage:", error);
+    res.status(500).json({
+      message: "Failed to get user usage",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Reset usage for a specific user
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+const resetUserUsage = async (req, res) => {
+  try {
+    const { userIdentifier } = req.params;
+
+    if (!userIdentifier) {
+      return res.status(400).json({ message: "User identifier is required" });
+    }
+
+    const success = await resetUsage(userIdentifier);
+
+    if (success) {
+      res.json({
+        message: `Usage reset successfully for user: ${userIdentifier}`,
+        userIdentifier,
+        currentMonth: getCurrentMonthKey(),
+      });
+    } else {
+      res.status(500).json({
+        message: "Failed to reset usage",
+      });
+    }
+  } catch (error) {
+    console.error("Error resetting user usage:", error);
+    res.status(500).json({
+      message: "Failed to reset user usage",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get detailed usage report
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+const getUsageReport = async (req, res) => {
+  try {
+    const { month, limit = 50 } = req.query;
+    const targetMonth = month || getCurrentMonthKey();
+
+    const allUsage = await getAllUsage();
+
+    // Filter by month and process
+    const monthlyUsers = [];
+
+    Object.entries(allUsage).forEach(([key, usage]) => {
+      if (usage.monthKey === targetMonth) {
+        monthlyUsers.push({
+          userIdentifier: usage.userIdentifier,
+          messageCount: usage.messageCount,
+          firstMessage: usage.details[0]?.timestamp,
+          lastMessage: usage.details[usage.details.length - 1]?.timestamp,
+          exceededLimit: usage.messageCount >= 5,
+          recentMessages: usage.details.slice(-5).map((detail) => ({
+            timestamp: detail.timestamp,
+            message: detail.message?.substring(0, 50) + "...",
+            endpoint: detail.endpoint,
+          })),
+        });
+      }
+    });
+
+    // Sort by message count (highest first)
+    monthlyUsers.sort((a, b) => b.messageCount - a.messageCount);
+
+    res.json({
+      month: targetMonth,
+      totalUsers: monthlyUsers.length,
+      usersExceedingLimit: monthlyUsers.filter((u) => u.exceededLimit).length,
+      users: monthlyUsers.slice(0, parseInt(limit)),
+      summary: {
+        totalMessages: monthlyUsers.reduce(
+          (sum, user) => sum + user.messageCount,
+          0
+        ),
+        averageMessagesPerUser:
+          monthlyUsers.length > 0
+            ? Math.round(
+                (monthlyUsers.reduce(
+                  (sum, user) => sum + user.messageCount,
+                  0
+                ) /
+                  monthlyUsers.length) *
+                  100
+              ) / 100
+            : 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting usage report:", error);
+    res.status(500).json({
+      message: "Failed to get usage report",
+      error: error.message,
     });
   }
 };
@@ -1747,6 +2126,7 @@ module.exports = {
   getSubscriptions,
   activateSubscription,
   deactivateSubscription,
+  deleteSubscription,
   getStats,
   getSettings,
   updateSettings,
@@ -1754,10 +2134,14 @@ module.exports = {
   getTopVoicesStats,
   refreshTopVoices,
   addManualSubscription,
+  scanForMissingSubscriptions,
   addStripeSubscription,
   getStripeDashboardData,
   getSystemPromptConfig,
   updateSystemPromptConfig,
-  scanForMissingSubscriptions,
-  deleteSubscription,
+  // Usage tracking endpoints
+  getUsageStats,
+  getUserUsage,
+  resetUserUsage,
+  getUsageReport,
 };

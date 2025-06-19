@@ -408,6 +408,199 @@ function createAuthAndLicenseTools() {
         }),
       }
     ),
+
+    tool(
+      async (input) => {
+        try {
+          const headers = {};
+          if (input.authToken) {
+            headers["Authorization"] = `Bearer ${input.authToken}`;
+          }
+          const response = await axios.post(
+            `${BASE_URL}/auth/check-subscription/${input.email}`,
+            {},
+            { headers }
+          );
+          return JSON.stringify(response.data);
+        } catch (error) {
+          return `Error checking subscription: ${
+            error.response?.data?.message || error.message
+          }`;
+        }
+      },
+      {
+        name: "check_subscription_by_email",
+        description:
+          "Check subscription status for a user by their email address. This will check local storage first, then fetch directly from Stripe if needed.",
+        schema: z.object({
+          email: z.string().email().describe("User's email address"),
+          authToken: z
+            .string()
+            .optional()
+            .describe("The JWT token for authorizing the API call"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          const headers = {};
+          if (input.authToken) {
+            headers["Authorization"] = `Bearer ${input.authToken}`;
+          }
+          const response = await axios.get(
+            `${BASE_URL}/stripe/subscriptions/fetch-from-stripe/${input.email}`,
+            { headers }
+          );
+          return JSON.stringify(response.data);
+        } catch (error) {
+          return `Error fetching Stripe subscriptions: ${
+            error.response?.data?.message || error.message
+          }`;
+        }
+      },
+      {
+        name: "fetch_stripe_subscriptions_by_email",
+        description:
+          "Fetch subscription data directly from Stripe API by customer email. This bypasses local storage and queries Stripe directly. Requires authToken for authorization.",
+        schema: z.object({
+          email: z.string().email().describe("Customer's email address"),
+          authToken: z
+            .string()
+            .describe("The JWT token for authorizing the API call"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          // This is a client-side tool that helps determine if a user has reached their usage limit
+          // and provides appropriate upgrade messaging
+          const { userIdentifier, currentUsage } = input;
+
+          const limit = 5; // Monthly message limit for free users
+          const isLimitExceeded = currentUsage >= limit;
+
+          const upgradeMessage = `🌟 **Ready to Unlock Unlimited Access?**
+
+You're making great use of our LinkedIn AI assistant! 
+
+**Premium Benefits:**
+✅ Unlimited messages per month
+✅ Advanced LinkedIn insights & analytics  
+✅ Profile analysis & optimization tips
+✅ Priority customer support
+✅ Early access to new features
+
+**Current Usage:** ${currentUsage}/${limit} messages this month
+
+**How to upgrade:**
+Simply say "I want to upgrade to premium" or "How can I subscribe?" and I'll walk you through the quick and secure payment process.
+
+**Questions?** Ask me anything about premium features!`;
+
+          const limitMessage = `🚫 **Monthly Limit Reached (${currentUsage}/${limit})**
+
+You've used all your free messages this month! 
+
+**Want to continue the conversation?** 
+Upgrade to Premium for unlimited access:
+
+🌟 **Premium Benefits:**
+• Unlimited messages
+• Advanced insights  
+• Profile optimization
+• Priority support
+
+**Ready to upgrade?** Just ask me "How can I upgrade?" and I'll help you get started!
+
+Your free messages reset next month, or upgrade now for immediate access.`;
+
+          if (isLimitExceeded) {
+            return limitMessage;
+          } else if (currentUsage >= limit - 1) {
+            // Show upgrade prompt when user is close to limit
+            return upgradeMessage;
+          } else {
+            return `You have ${
+              limit - currentUsage
+            } messages remaining this month. ${
+              currentUsage >= 3 ? upgradeMessage : ""
+            }`;
+          }
+        } catch (error) {
+          return `Error checking usage limit: ${error.message}`;
+        }
+      },
+      {
+        name: "check_usage_and_suggest_upgrade",
+        description:
+          "Check if a user has reached their monthly message limit and provide appropriate upgrade messaging. Use this when users are approaching or have exceeded their free tier limits.",
+        schema: z.object({
+          userIdentifier: z
+            .string()
+            .describe("User identifier (chat_id, email, etc.)"),
+          currentUsage: z
+            .number()
+            .describe("Current number of messages used this month"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          // Generate premium feature explanation and upgrade call-to-action
+          const premiumFeatures = `🌟 **LinkedIn AI Assistant - Premium Features**
+
+**Unlimited Messaging**
+• No monthly limits - chat as much as you need
+• Instant responses without restrictions
+
+**Advanced Analytics**
+• Deep LinkedIn profile insights
+• Content performance analysis  
+• Network growth tracking
+• Engagement optimization tips
+
+**Profile Optimization**
+• AI-powered profile reviews
+• Headline and summary suggestions
+• Skill recommendations
+• Photo optimization advice
+
+**Content Strategy**
+• Post idea generation
+• Trending topic insights
+• Optimal posting times
+• Hashtag recommendations
+
+**Priority Support**
+• Faster response times
+• Direct access to our team
+• Feature request priority
+
+**💰 Pricing:** Just $9.97/month - Cancel anytime
+
+**🚀 Ready to upgrade?** 
+Simply say "I want to upgrade" or "Start my subscription" and I'll guide you through the secure checkout process!
+
+**Questions about any features?** I'm here to help explain what Premium can do for your LinkedIn success!`;
+
+          return premiumFeatures;
+        } catch (error) {
+          return `Error generating premium features info: ${error.message}`;
+        }
+      },
+      {
+        name: "explain_premium_features",
+        description:
+          "Provide detailed information about premium features and benefits when users ask about upgrading, pricing, or premium capabilities.",
+        schema: z.object({}),
+      }
+    ),
   ];
 }
 

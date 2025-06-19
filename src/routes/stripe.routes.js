@@ -15,7 +15,11 @@ router.post("/create-checkout-session", stripeController.createCheckoutSession);
  * @desc Handle Stripe webhook events
  * @access Public
  */
-router.post("/webhook", express.raw({ type: 'application/json' }), stripeController.handleStripeWebhook);
+router.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  stripeController.handleStripeWebhook
+);
 
 /**
  * @route POST /api/v1/stripe/invoices/create-and-pay
@@ -45,7 +49,11 @@ router.post("/customers", verifyToken, stripeController.manageStripeCustomer);
  * @param {string} paymentMethodId - Stripe PaymentMethod ID (from URL param)
  * @body {string} customerId - Stripe Customer ID to attach to
  */
-router.post("/payment-methods/:paymentMethodId/attach", verifyToken, stripeController.attachPaymentMethodToCustomer);
+router.post(
+  "/payment-methods/:paymentMethodId/attach",
+  verifyToken,
+  stripeController.attachPaymentMethodToCustomer
+);
 
 /**
  * @route POST /api/v1/stripe/payment-intents
@@ -57,7 +65,11 @@ router.post("/payment-methods/:paymentMethodId/attach", verifyToken, stripeContr
  * @body {string} currency - Currency code (e.g., 'usd')
  * @body {string} [description] - Optional description for the payment
  */
-router.post("/payment-intents", verifyToken, stripeController.createPaymentIntent);
+router.post(
+  "/payment-intents",
+  verifyToken,
+  stripeController.createPaymentIntent
+);
 
 /**
  * @route POST /api/v1/stripe/invoices
@@ -76,7 +88,11 @@ router.post("/invoices", verifyToken, stripeController.createDraftInvoice);
  * @access Protected (User must be authenticated)
  * @param {string} invoiceId - Stripe Invoice ID (from URL param)
  */
-router.post("/invoices/:invoiceId/finalize", verifyToken, stripeController.finalizeDraftInvoice);
+router.post(
+  "/invoices/:invoiceId/finalize",
+  verifyToken,
+  stripeController.finalizeDraftInvoice
+);
 
 /**
  * @route POST /api/v1/stripe/invoices/:invoiceId/pay
@@ -85,6 +101,22 @@ router.post("/invoices/:invoiceId/finalize", verifyToken, stripeController.final
  * @param {string} invoiceId - Stripe Invoice ID (from URL param)
  * @body {string} [paymentMethodId] - Optional: Specific PaymentMethod ID to use. If not provided, uses customer's default.
  */
-router.post("/invoices/:invoiceId/pay", verifyToken, stripeController.payInvoice);
+router.post(
+  "/invoices/:invoiceId/pay",
+  verifyToken,
+  stripeController.payInvoice
+);
+
+/**
+ * @route GET /api/v1/stripe/subscriptions/fetch-from-stripe/:email
+ * @desc Fetch subscription data directly from Stripe API by customer email
+ * @access Protected (User must be authenticated)
+ * @param {string} email - Customer email address (from URL param)
+ */
+router.get(
+  "/subscriptions/fetch-from-stripe/:email",
+  verifyToken,
+  stripeController.fetchStripeSubscriptionsByEmail
+);
 
 module.exports = router;

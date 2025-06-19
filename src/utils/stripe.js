@@ -30,23 +30,23 @@ async function createCheckoutSession(email, successUrl, cancelUrl) {
 
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       line_items: [
         {
           price: process.env.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
-      mode: 'subscription',
+      mode: "subscription",
       success_url: successUrl,
       cancel_url: cancelUrl,
       customer_email: email,
       payment_method_options: {
         card: {
-          setup_future_usage: 'off_session',
+          setup_future_usage: "off_session",
         },
       },
-      billing_address_collection: 'auto',
+      billing_address_collection: "auto",
       allow_promotion_codes: true,
       automatic_tax: { enabled: true },
     });
@@ -89,10 +89,14 @@ async function verifySubscription(subscriptionId) {
       subscription: {
         id: subscription.id,
         status: subscription.status,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+        currentPeriodEnd: new Date(
+          subscription.current_period_end * 1000
+        ).toISOString(),
         customerId: subscription.customer,
-        active: subscription.status === 'active',
-        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+        active: subscription.status === "active",
+        canceledAt: subscription.canceled_at
+          ? new Date(subscription.canceled_at * 1000).toISOString()
+          : null,
       },
     };
   } catch (error) {
@@ -201,12 +205,14 @@ async function getCustomerSubscriptions(customerId) {
 
     return {
       success: true,
-      subscriptions: subscriptions.data.map(sub => ({
+      subscriptions: subscriptions.data.map((sub) => ({
         id: sub.id,
         status: sub.status,
         currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
-        active: sub.status === 'active',
-        canceledAt: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : null,
+        active: sub.status === "active",
+        canceledAt: sub.canceled_at
+          ? new Date(sub.canceled_at * 1000).toISOString()
+          : null,
       })),
     };
   } catch (error) {
@@ -224,9 +230,11 @@ async function getCustomerSubscriptions(customerId) {
  * @param {number} limit - Optional: Number of subscriptions to retrieve per page. Defaults to 100.
  * @returns {Promise<Object>} List of subscriptions with customer details.
  */
-async function getAllStripeSubscriptions(status = 'all', limit = 100) {
+async function getAllStripeSubscriptions(status = "all", limit = 100) {
   try {
-    console.log(`Getting all Stripe subscriptions (status: ${status}, limit: ${limit})...`);
+    console.log(
+      `Getting all Stripe subscriptions (status: ${status}, limit: ${limit})...`
+    );
 
     if (!process.env.STRIPE_SECRET_KEY) {
       console.error("Stripe secret key is missing");
@@ -238,12 +246,12 @@ async function getAllStripeSubscriptions(status = 'all', limit = 100) {
     }
 
     const subscriptionsData = [];
-    let params = { 
+    let params = {
       limit,
-      expand: ['data.customer'], // Expand customer object for each subscription
+      expand: ["data.customer"], // Expand customer object for each subscription
     };
 
-    if (status !== 'all') {
+    if (status !== "all") {
       params.status = status;
     }
 
@@ -252,22 +260,34 @@ async function getAllStripeSubscriptions(status = 'all', limit = 100) {
       subscriptionsData.push({
         id: subscription.id,
         status: subscription.status,
-        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        current_period_start: new Date(
+          subscription.current_period_start * 1000
+        ).toISOString(),
+        current_period_end: new Date(
+          subscription.current_period_end * 1000
+        ).toISOString(),
         created: new Date(subscription.created * 1000).toISOString(),
-        customer_id: typeof customer === 'string' ? customer : customer?.id,
-        customer_email: typeof customer === 'string' ? null : customer?.email, // Email might be null if customer object is not fully expanded or deleted
-        customer_name: typeof customer === 'string' ? null : customer?.name,
+        customer_id: typeof customer === "string" ? customer : customer?.id,
+        customer_email: typeof customer === "string" ? null : customer?.email, // Email might be null if customer object is not fully expanded or deleted
+        customer_name: typeof customer === "string" ? null : customer?.name,
         plan_id: subscription.items.data[0]?.price.id,
         plan_nickname: subscription.items.data[0]?.price.nickname,
         plan_amount: subscription.items.data[0]?.price.unit_amount,
         plan_currency: subscription.items.data[0]?.price.currency,
         plan_interval: subscription.items.data[0]?.price.recurring?.interval,
         cancel_at_period_end: subscription.cancel_at_period_end,
-        canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
-        ended_at: subscription.ended_at ? new Date(subscription.ended_at * 1000).toISOString() : null,
-        trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-        trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+        canceled_at: subscription.canceled_at
+          ? new Date(subscription.canceled_at * 1000).toISOString()
+          : null,
+        ended_at: subscription.ended_at
+          ? new Date(subscription.ended_at * 1000).toISOString()
+          : null,
+        trial_start: subscription.trial_start
+          ? new Date(subscription.trial_start * 1000).toISOString()
+          : null,
+        trial_end: subscription.trial_end
+          ? new Date(subscription.trial_end * 1000).toISOString()
+          : null,
         metadata: subscription.metadata, // Include any metadata
       });
     }
@@ -286,6 +306,106 @@ async function getAllStripeSubscriptions(status = 'all', limit = 100) {
   }
 }
 
+/**
+ * Get subscriptions for a specific customer email from Stripe
+ * @param {string} email - Customer email
+ * @returns {Promise<Object>} List of subscriptions for the customer
+ */
+async function getStripeSubscriptionsByEmail(email) {
+  try {
+    console.log(`Getting Stripe subscriptions for email ${email}...`);
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("Stripe secret key is missing");
+      return {
+        success: false,
+        message: "Stripe configuration is missing",
+        subscriptions: [],
+      };
+    }
+
+    if (!email) {
+      return {
+        success: false,
+        message: "Email is required",
+        subscriptions: [],
+      };
+    }
+
+    // First, find the customer by email
+    const customers = await stripe.customers.list({
+      email: email,
+      limit: 10,
+    });
+
+    if (customers.data.length === 0) {
+      console.log(`No Stripe customer found for email ${email}`);
+      return {
+        success: true,
+        message: "No customer found for this email",
+        subscriptions: [],
+      };
+    }
+
+    const customer = customers.data[0]; // Take the first customer with this email
+    console.log(`Found Stripe customer ${customer.id} for email ${email}`);
+
+    // Get all subscriptions for this customer
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      limit: 100,
+    });
+
+    const subscriptionData = subscriptions.data.map((sub) => ({
+      id: sub.id,
+      status: sub.status,
+      active: sub.status === "active" || sub.status === "trialing",
+      current_period_start: new Date(
+        sub.current_period_start * 1000
+      ).toISOString(),
+      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      created: new Date(sub.created * 1000).toISOString(),
+      customer_id: customer.id,
+      customer_email: customer.email,
+      customer_name: customer.name,
+      cancel_at_period_end: sub.cancel_at_period_end,
+      canceled_at: sub.canceled_at
+        ? new Date(sub.canceled_at * 1000).toISOString()
+        : null,
+      ended_at: sub.ended_at
+        ? new Date(sub.ended_at * 1000).toISOString()
+        : null,
+      trial_start: sub.trial_start
+        ? new Date(sub.trial_start * 1000).toISOString()
+        : null,
+      trial_end: sub.trial_end
+        ? new Date(sub.trial_end * 1000).toISOString()
+        : null,
+    }));
+
+    console.log(`Found ${subscriptionData.length} subscriptions for ${email}`);
+    return {
+      success: true,
+      subscriptions: subscriptionData,
+      customer: {
+        id: customer.id,
+        email: customer.email,
+        name: customer.name,
+      },
+    };
+  } catch (error) {
+    console.error(
+      `Error getting Stripe subscriptions for email ${email}:`,
+      error
+    );
+    return {
+      success: false,
+      message: error.message || "Failed to get subscriptions",
+      subscriptions: [],
+    };
+  }
+}
+
 module.exports = {
   createCheckoutSession,
   verifySubscription,
@@ -293,4 +413,5 @@ module.exports = {
   cancelSubscription,
   getCustomerSubscriptions,
   getAllStripeSubscriptions,
+  getStripeSubscriptionsByEmail,
 };

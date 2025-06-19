@@ -4,6 +4,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { userStorage, subscriptionStorage } = require("../utils/storage");
 const {
   verifySubscription: verifyStripeSubscription,
+  getStripeSubscriptionsByEmail,
 } = require("../utils/stripe");
 
 /**
@@ -166,8 +167,7 @@ const verifySubscription = async (req, res) => {
     }
     // --- END MODIFICATION ---
 
-
-    // If still not verified, check for Stripe subscriptions
+    // If still not verified, check for Stripe subscriptions in local storage
     if (!hasValidSubscription && subscription.email) {
       // Check for Stripe subscriptions in our system
       const stripeSubscriptions =
@@ -217,6 +217,90 @@ const verifySubscription = async (req, res) => {
       }
     }
 
+    // If still not verified, fetch directly from Stripe API
+    if (!hasValidSubscription && subscription.email) {
+      console.log(
+        `No locally stored Stripe subscriptions for ${subscription.email}, fetching directly from Stripe.`
+      );
+
+      const stripeResult = await getStripeSubscriptionsByEmail(
+        subscription.email
+      );
+
+      if (stripeResult.success && stripeResult.subscriptions.length > 0) {
+        // Find the first active subscription
+        const activeStripeSubscription = stripeResult.subscriptions.find(
+          (sub) => sub.active === true
+        );
+
+        if (activeStripeSubscription) {
+          console.log(
+            `Found active Stripe subscription for ${subscription.email} directly from Stripe API`
+          );
+
+          // Create a new subscription ID for our system to store this Stripe subscription
+          const emailHash = Buffer.from(subscription.email)
+            .toString("base64")
+            .substring(0, 8);
+          const newSubscriptionId = `stripe_${emailHash}_${Date.now()}`;
+
+          // Create subscription data to store locally
+          const newSubscriptionData = {
+            id: newSubscriptionId,
+            active: true,
+            type: "premium",
+            email: subscription.email,
+            stripeSubscriptionId: activeStripeSubscription.id,
+            stripeCustomerId: activeStripeSubscription.customer_id,
+            updatedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            source: "stripe_direct_fetch",
+            stripeData: {
+              subscriptionId: activeStripeSubscription.id,
+              customerId: activeStripeSubscription.customer_id,
+              status: activeStripeSubscription.status,
+              currentPeriodEnd: activeStripeSubscription.current_period_end,
+              ...(activeStripeSubscription.trial_start && {
+                trial_start: activeStripeSubscription.trial_start,
+              }),
+              ...(activeStripeSubscription.trial_end && {
+                trial_end: activeStripeSubscription.trial_end,
+              }),
+            },
+          };
+
+          // Store the new subscription locally for future use
+          await subscriptionStorage.setSubscription(
+            newSubscriptionId,
+            newSubscriptionData
+          );
+
+          // Update the original subscription with the Stripe data
+          subscription.type = "premium";
+          subscription.active = true;
+          subscription.updatedAt = new Date().toISOString();
+          subscription.stripeData = newSubscriptionData.stripeData;
+          await subscriptionStorage.setSubscription(
+            subscriptionId,
+            subscription
+          );
+
+          // Update user data
+          if (user) {
+            user.subscription = {
+              verified: true,
+              verifiedAt: new Date().toISOString(),
+              stripeData: newSubscriptionData.stripeData,
+            };
+            user.subscriptionType = "premium";
+            await userStorage.setUser(subscription.email, user);
+          }
+
+          hasValidSubscription = true;
+        }
+      }
+    }
+
     // If user has a valid subscription, ensure they have premium access
     if (
       hasValidSubscription &&
@@ -243,7 +327,6 @@ const verifySubscription = async (req, res) => {
     res.status(500).json({ message: "Failed to verify subscription" });
   }
 };
-
 
 /**
  * Get subscription status by ID
@@ -386,12 +469,11 @@ const checkSubscriptionByEmail = async (req, res) => {
       return res.json({ success: true, ...responseDetails });
     }
 
-    // 2. If not found locally, check for Stripe subscriptions
+    // 2. If not found locally, check for Stripe subscriptions in local storage
     console.log(
-      `No active local subscription for ${email}, checking Stripe.`
+      `No active local subscription for ${email}, checking locally stored Stripe subscriptions.`
     );
 
-    // Check for Stripe subscriptions in our system
     const stripeSubscriptions =
       await subscriptionStorage.getSubscriptionsForEmail(email);
 
@@ -455,9 +537,95 @@ const checkSubscriptionByEmail = async (req, res) => {
       }
     }
 
+    // 3. If still not found, fetch directly from Stripe API
+    console.log(
+      `No locally stored Stripe subscriptions for ${email}, fetching directly from Stripe.`
+    );
+
+    const stripeResult = await getStripeSubscriptionsByEmail(email);
+
+    if (stripeResult.success && stripeResult.subscriptions.length > 0) {
+      // Find the first active subscription
+      const activeStripeSubscription = stripeResult.subscriptions.find(
+        (sub) => sub.active === true
+      );
+
+      if (activeStripeSubscription) {
+        console.log(
+          `Found active Stripe subscription for ${email} directly from Stripe API`
+        );
+
+        // Create a subscription ID for our system
+        const emailHash = Buffer.from(email).toString("base64").substring(0, 8);
+        const subscriptionId = `stripe_${emailHash}_${Date.now()}`;
+
+        // Create subscription data to store locally
+        const subscriptionData = {
+          id: subscriptionId,
+          active: true,
+          type: "premium",
+          email,
+          stripeSubscriptionId: activeStripeSubscription.id,
+          stripeCustomerId: activeStripeSubscription.customer_id,
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          source: "stripe_direct_fetch",
+          stripeData: {
+            subscriptionId: activeStripeSubscription.id,
+            customerId: activeStripeSubscription.customer_id,
+            status: activeStripeSubscription.status,
+            currentPeriodEnd: activeStripeSubscription.current_period_end,
+            ...(activeStripeSubscription.trial_start && {
+              trial_start: activeStripeSubscription.trial_start,
+            }),
+            ...(activeStripeSubscription.trial_end && {
+              trial_end: activeStripeSubscription.trial_end,
+            }),
+          },
+        };
+
+        // Store the subscription locally for future use
+        await subscriptionStorage.setSubscription(
+          subscriptionId,
+          subscriptionData
+        );
+
+        // Update or create user
+        if (!user) {
+          user = {
+            email,
+            name: stripeResult.customer?.name || email.split("@")[0],
+            subscriptionId: subscriptionId,
+            createdAt: new Date().toISOString(),
+            subscriptionType: "premium",
+          };
+        }
+
+        user.subscriptionId = subscriptionId;
+        user.subscriptionType = "premium";
+        user.subscription = {
+          verified: true,
+          verifiedAt: new Date().toISOString(),
+          stripeData: subscriptionData.stripeData,
+        };
+
+        await userStorage.setUser(email, user);
+
+        responseDetails = {
+          active: true,
+          type: "premium",
+          source: "stripe_direct",
+          email: email,
+          features: getFeaturesByType("premium"),
+        };
+
+        return res.json({ success: true, ...responseDetails });
+      }
+    }
+
     // 4. If not found in any source
     console.log(
-      `No active subscription found for ${email} locally or via Stripe.`
+      `No active subscription found for ${email} in local storage or Stripe.`
     );
     return res.status(404).json({
       success: false,

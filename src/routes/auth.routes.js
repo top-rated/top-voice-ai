@@ -33,4 +33,14 @@ router.get(
   authController.getSubscriptionStatus
 );
 
+/**
+ * @route POST /api/v1/auth/check-subscription/:email
+ * @desc Check subscription status by email (checks local storage first, then Stripe)
+ * @access Public
+ */
+router.post(
+  "/check-subscription/:email",
+  authController.checkSubscriptionByEmail
+);
+
 module.exports = router;

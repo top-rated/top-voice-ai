@@ -180,20 +180,68 @@ router.post(
  * @desc Get Stripe balance and subscription data for admin dashboard
  * @access Admin only
  */
-router.get("/stripe-dashboard", verifyAdmin, adminController.getStripeDashboardData);
+router.get(
+  "/stripe-dashboard",
+  verifyAdmin,
+  adminController.getStripeDashboardData
+);
 
 /**
  * @route GET /api/v1/admin/system-prompt
  * @desc Get the current system prompt configuration
  * @access Admin only
  */
-router.get("/system-prompt", verifyAdmin, adminController.getSystemPromptConfig);
+router.get(
+  "/system-prompt",
+  verifyAdmin,
+  adminController.getSystemPromptConfig
+);
 
 /**
  * @route PUT /api/v1/admin/system-prompt
  * @desc Update the system prompt configuration
  * @access Admin only
  */
-router.put("/system-prompt", verifyAdmin, adminController.updateSystemPromptConfig);
+router.put(
+  "/system-prompt",
+  verifyAdmin,
+  adminController.updateSystemPromptConfig
+);
+
+/**
+ * @route GET /api/v1/admin/usage/stats
+ * @desc Get usage statistics and overview
+ * @access Admin only
+ */
+router.get("/usage/stats", verifyAdmin, adminController.getUsageStats);
+
+/**
+ * @route GET /api/v1/admin/usage/report
+ * @desc Get detailed usage report with filters
+ * @access Admin only
+ */
+router.get("/usage/report", verifyAdmin, adminController.getUsageReport);
+
+/**
+ * @route GET /api/v1/admin/usage/user/:userIdentifier
+ * @desc Get usage data for a specific user
+ * @access Admin only
+ */
+router.get(
+  "/usage/user/:userIdentifier",
+  verifyAdmin,
+  adminController.getUserUsage
+);
+
+/**
+ * @route POST /api/v1/admin/usage/user/:userIdentifier/reset
+ * @desc Reset usage count for a specific user
+ * @access Admin only
+ */
+router.post(
+  "/usage/user/:userIdentifier/reset",
+  verifyAdmin,
+  adminController.resetUserUsage
+);
 
 module.exports = router;
