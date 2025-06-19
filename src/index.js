@@ -16,7 +16,7 @@ const stripeRoutes = require("./routes/stripe.routes"); // Added Stripe routes
 
 const { processQuery } = require("./chatbot/linkedin_chatbot");
 const { UnipileClient } = require("unipile-node-sdk");
-const {processLinkedInQuery} = require("./chatbot/linkedin_chatbot");
+const { processLinkedInQuery } = require("./chatbot/linkedin_chatbot");
 const recentlySentMessageIds = new Set();
 // Unipile Configuration and Helper
 const UNIPILE_BASE_URL = process.env.UNIPILE_BASE_URL;
@@ -24,34 +24,49 @@ const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
 
 async function sendUnipileMessage(chat_id, text) {
   if (!UNIPILE_BASE_URL || !UNIPILE_ACCESS_TOKEN) {
-    console.error("Unipile configuration (UNIPILE_BASE_URL or UNIPILE_ACCESS_TOKEN) is missing from .env file.");
+    console.error(
+      "Unipile configuration (UNIPILE_BASE_URL or UNIPILE_ACCESS_TOKEN) is missing from .env file."
+    );
     return null; // Return null or throw an error to indicate failure
   }
   try {
     const client = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
-    const response = await client.messaging.sendMessage({ // Capture response
+    const response = await client.messaging.sendMessage({
+      // Capture response
       chat_id,
       text,
     });
-    console.log('Unipile message sent successfully to chat_id:', chat_id, 'Response:', JSON.stringify(response));
-    
+    console.log(
+      "Unipile message sent successfully to chat_id:",
+      chat_id,
+      "Response:",
+      JSON.stringify(response)
+    );
+
     // Check if the response contains a message_id
     if (response && response.message_id) {
       const sentMessageId = response.message_id;
       recentlySentMessageIds.add(sentMessageId);
-      console.log(`Added message_id ${sentMessageId} to recentlySentMessageIds.`);
+      console.log(
+        `Added message_id ${sentMessageId} to recentlySentMessageIds.`
+      );
       // Remove the ID after a timeout (e.g., 60 seconds)
       setTimeout(() => {
         recentlySentMessageIds.delete(sentMessageId);
-        console.log(`Removed message_id ${sentMessageId} from recentlySentMessageIds after timeout.`);
+        console.log(
+          `Removed message_id ${sentMessageId} from recentlySentMessageIds after timeout.`
+        );
       }, 60000); // 60 seconds
       return sentMessageId; // Return the message ID
     } else {
-      console.warn('Unipile sendMessage response did not include a message_id:', response);
+      console.warn(
+        "Unipile sendMessage response did not include a message_id:",
+        response
+      );
       return null; // Indicate no message_id was found
     }
   } catch (error) {
-    console.error('Error sending Unipile message to chat_id:', chat_id, error);
+    console.error("Error sending Unipile message to chat_id:", chat_id, error);
     return null; // Return null or throw
   }
 }
@@ -121,7 +136,7 @@ app.use("/api", apiLimiter);
 
 // API routes
 // const API_PREFIX = process.env.API_V1_PREFIX;
-const API_PREFIX = "/api/v1"; 
+const API_PREFIX = "/api/v1";
 console.log(`Registering admin routes at: ${API_PREFIX}/admin`);
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/top-voices`, topVoicesRoutes);
@@ -129,7 +144,6 @@ app.use(`${API_PREFIX}/profiles`, profileRoutes);
 app.use(`${API_PREFIX}/search`, searchRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
-
 
 // Root route
 app.get("/", (req, res) => {
@@ -152,7 +166,7 @@ app.get("/api-docs", (req, res) => {
 });
 
 // Stripe payment success and cancel routes
-app.get('/payment-success', (req, res) => {
+app.get("/payment-success", (req, res) => {
   res.send(`
     <html>
       <head><title>Payment Successful</title></head>
@@ -165,7 +179,7 @@ app.get('/payment-success', (req, res) => {
   `);
 });
 
-app.get('/payment-cancelled', (req, res) => {
+app.get("/payment-cancelled", (req, res) => {
   res.send(`
     <html>
       <head><title>Payment Cancelled</title></head>
@@ -205,34 +219,38 @@ app.post("/api/v1/chat", async (req, res) => {
     // Enhanced logging to debug LangGraph streaming
     for await (const chunk of stream) {
       console.log("DEBUG - Full chunk:", JSON.stringify(chunk, null, 2));
-      
+
       // For streaming completion from LLM, the expected token format is in chunk.messages[last].content
       if (chunk && chunk.messages && chunk.messages.length > 0) {
         const msg = chunk.messages[chunk.messages.length - 1];
         console.log("DEBUG - Last message:", JSON.stringify(msg, null, 2));
-        
+
         // Check if this is an actual completion token
-        if (msg?.content !== undefined && typeof msg.content === 'string') {
+        if (msg?.content !== undefined && typeof msg.content === "string") {
           console.log("DEBUG - Found content token:", msg.content);
           // Send actual content to client for streaming display
           const contentEvent = { type: "content_chunk", data: msg.content };
           res.write(`data: ${JSON.stringify(contentEvent)}\n\n`);
           console.log(`Sent content chunk: "${msg.content}"`);
-        } 
+        }
         // Handle tool calls
         else if (msg?.tool_calls && msg.tool_calls.length > 0) {
           const toolEvent = { type: "tool_invocation", data: msg.tool_calls };
           res.write(`data: ${JSON.stringify(toolEvent)}\n\n`);
-          console.log(`Sent tool invocation: ${JSON.stringify(msg.tool_calls)}`);
+          console.log(
+            `Sent tool invocation: ${JSON.stringify(msg.tool_calls)}`
+          );
         }
         // Handle tool results
         else if (msg?.name) {
           const toolResultEvent = { type: "tool_result", data: msg };
           res.write(`data: ${JSON.stringify(toolResultEvent)}\n\n`);
-          console.log(`Sent tool result: ${msg.content?.substring(0, 30) || 'No content'}`);
+          console.log(
+            `Sent tool result: ${msg.content?.substring(0, 30) || "No content"}`
+          );
         }
         // Special case for empty content but valid message - could be start of token stream
-        else if (msg?.content === '') {
+        else if (msg?.content === "") {
           console.log("DEBUG - Found empty content token");
           const emptyContentEvent = { type: "content_chunk", data: "" };
           res.write(`data: ${JSON.stringify(emptyContentEvent)}\n\n`);
@@ -240,30 +258,41 @@ app.post("/api/v1/chat", async (req, res) => {
         // Handle any other message types - let's check for completion messages with specific format
         else {
           // Try to extract useful content from the message
-          let extractedContent = '';
-          
+          let extractedContent = "";
+
           // Check if message is a constructor with an id - might be initialization message
-          if (msg?.type === 'constructor' && msg?.id) {
+          if (msg?.type === "constructor" && msg?.id) {
             console.log("DEBUG - Constructor message, skipping");
             continue; // Skip constructor messages
           }
-          
+
           const unknownEvent = { type: "unknown", data: msg };
           res.write(`data: ${JSON.stringify(unknownEvent)}\n\n`);
-          console.log(`Sent unknown message type: ${JSON.stringify(msg).substring(0, 100)}`);
+          console.log(
+            `Sent unknown message type: ${JSON.stringify(msg).substring(
+              0,
+              100
+            )}`
+          );
         }
       } else if (chunk) {
-        console.log("Received non-message chunk:", JSON.stringify(chunk).substring(0, 100));
+        console.log(
+          "Received non-message chunk:",
+          JSON.stringify(chunk).substring(0, 100)
+        );
       }
     }
-    
+
     // Send a completion event to properly signal the end of the stream
     const completionEvent = { type: "complete", data: "Stream complete" };
     res.write(`data: ${JSON.stringify(completionEvent)}\n\n`);
   } catch (error) {
     console.error("Error during chat processing:", error);
     // Send an error event to the client before closing
-    const errorEvent = { type: "error", data: error.message || "An error occurred on the server." };
+    const errorEvent = {
+      type: "error",
+      data: error.message || "An error occurred on the server.",
+    };
     res.write(`data: ${JSON.stringify(errorEvent)}\n\n`);
     console.log("Error event sent to client");
   } finally {
@@ -272,62 +301,135 @@ app.post("/api/v1/chat", async (req, res) => {
   }
 });
 
-
 //linkedin webhook route
 app.post("/api/v1/linked/webhook", async (req, res) => {
-  const { account_id, chat_id, message, message_id, sender, subject, timestamp } = req.body;
-  
+  const {
+    account_id,
+    chat_id,
+    message,
+    message_id,
+    sender,
+    subject,
+    timestamp,
+  } = req.body;
+
   // Enhanced logging for better debugging
-  console.log(`LinkedIn Webhook received - AccountID: ${account_id}, ChatID: ${chat_id}, Message: "${message}", MessageID: ${message_id}, Sender: ${JSON.stringify(sender)}`);
+  console.log(
+    `LinkedIn Webhook received - AccountID: ${account_id}, ChatID: ${chat_id}, Message: "${message}", MessageID: ${message_id}, Sender: ${JSON.stringify(
+      sender
+    )}`
+  );
 
   // Return early if essential data is missing
   if (!chat_id || !message) {
-    console.warn('LinkedIn webhook missing required data (chat_id or message)');
-    return res.status(400).json({ status: "error", message: "Missing required parameters" });
+    console.warn("LinkedIn webhook missing required data (chat_id or message)");
+    return res
+      .status(400)
+      .json({ status: "error", message: "Missing required parameters" });
   }
 
   // CRITICAL: Check if this message_id was recently sent by the bot to avoid echo responses
   if (message_id && recentlySentMessageIds.has(message_id)) {
-    console.log(`Ignoring webhook for recently sent message_id ${message_id} (echo).`);
+    console.log(
+      `Ignoring webhook for recently sent message_id ${message_id} (echo).`
+    );
     recentlySentMessageIds.delete(message_id); // Remove it now as it's been processed as an echo
-    return res.status(200).json({ status: "received", message: "Webhook for self-sent message (echo) ignored." });
+    return res.status(200).json({
+      status: "received",
+      message: "Webhook for self-sent message (echo) ignored.",
+    });
   }
 
-  // Additional echo prevention - check if sender is our own account
+  // Enhanced echo prevention for different account types
   const targetAccountId = process.env.ACCOUNT_ID;
+  const targetCompanyId = process.env.COMPANY_MAILBOX_ID; // Add this to your .env
+
+  // Extract account_info from request body for organization accounts
+  const { account_info } = req.body;
+
+  // Check if sender is our own account (personal profile)
   if (sender && sender.id === targetAccountId) {
-    console.log(`Ignoring webhook for message from our own account ${targetAccountId}.`);
-    return res.status(200).json({ status: "received", message: "Webhook for self-sent message ignored." });
+    console.log(
+      `Ignoring webhook for message from our own personal account ${targetAccountId}.`
+    );
+    return res.status(200).json({
+      status: "received",
+      message: "Webhook for self-sent message ignored.",
+    });
+  }
+
+  // Check if sender is our own company page
+  if (sender && sender.attendee_provider_id === targetCompanyId) {
+    console.log(
+      `Ignoring webhook for message from our own company page ${targetCompanyId}.`
+    );
+    return res.status(200).json({
+      status: "received",
+      message: "Webhook for self-sent company message ignored.",
+    });
+  }
+
+  // Check if this is a company/organization account and sender matches the company
+  if (
+    account_info &&
+    account_info.feature === "organization" &&
+    account_info.mailbox_id &&
+    sender &&
+    sender.attendee_provider_id === account_info.mailbox_id
+  ) {
+    console.log(
+      `Ignoring webhook: sender ${sender.attendee_provider_id} matches organization mailbox_id ${account_info.mailbox_id}.`
+    );
+    return res.status(200).json({
+      status: "received",
+      message: "Webhook for organization self-message ignored.",
+    });
   }
 
   // Acknowledge webhook receipt immediately for non-echo messages
-  res.status(200).json({ status: "received", message: "Webhook received and processing initiated." });
+  res.status(200).json({
+    status: "received",
+    message: "Webhook received and processing initiated.",
+  });
 
   try {
     // Add a small delay to avoid rate limiting (50ms)
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
     // Process the message with the LinkedIn chatbot
     const fullReplyMessage = await processLinkedInQuery(chat_id, message);
-    console.log('Generated reply message:', fullReplyMessage);
-    
+    console.log("Generated reply message:", fullReplyMessage);
+
     // Check if we have a valid response
-    const hasContent = typeof fullReplyMessage === 'string' && fullReplyMessage.trim().length > 0;  
-    
+    const hasContent =
+      typeof fullReplyMessage === "string" &&
+      fullReplyMessage.trim().length > 0;
+
     if (hasContent) {
-      console.log(`Sending reply to LinkedIn chat_id ${chat_id}: "${fullReplyMessage}"`);
+      console.log(
+        `Sending reply to LinkedIn chat_id ${chat_id}: "${fullReplyMessage}"`
+      );
       const sentMessageId = await sendUnipileMessage(chat_id, fullReplyMessage);
-      
+
       if (sentMessageId) {
-        console.log(`Successfully sent reply (ID: ${sentMessageId}) for chat_id ${chat_id}.`);
+        console.log(
+          `Successfully sent reply (ID: ${sentMessageId}) for chat_id ${chat_id}.`
+        );
       } else {
-        console.warn(`Message processed but failed to send reply to chat_id ${chat_id}.`);
+        console.warn(
+          `Message processed but failed to send reply to chat_id ${chat_id}.`
+        );
       }
     } else {
-      console.log(`No reply content generated by processLinkedInQuery for chat_id ${chat_id}.`);
+      console.log(
+        `No reply content generated by processLinkedInQuery for chat_id ${chat_id}.`
+      );
     }
   } catch (error) {
-    console.error(`Error processing LinkedIn webhook for chat_id ${chat_id}:`, error);
+    console.error(
+      `Error processing LinkedIn webhook for chat_id ${chat_id}:`,
+      error
+    );
   }
 });
 
@@ -343,12 +445,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-module.exports = app; 
+module.exports = app;
