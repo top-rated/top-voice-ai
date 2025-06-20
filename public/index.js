@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "flex items-start w-full max-w-2xl mb-4 animate-fade-in";
           messageElement.innerHTML = `
             <div class="flex-shrink-0 mr-3 mt-1">
-              <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                              <div class="w-8 h-8 rounded-full flex items-center justify-center">
                 <span class="icon-user text-sm flex items-center justify-center w-full h-full"></span>
               </div>
             </div>
@@ -390,8 +390,8 @@ document.addEventListener("DOMContentLoaded", function () {
           const iconDiv = document.createElement("div");
           iconDiv.className = "flex-shrink-0 mr-3 mt-1";
           iconDiv.innerHTML = `
-            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
-              <span class="icon-robot text-white text-sm flex items-center justify-center w-full h-full"></span>
+                          <div class="w-8 h-8 rounded-full flex items-center justify-center">
+              <img src="/top-voices.png" alt="Bot" class="w-5 h-5">
             </div>
           `;
           messageElement.appendChild(iconDiv);

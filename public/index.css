@@ -690,13 +690,19 @@ p code, li code {
 
 /* User message styling */
 .user-message {
-  color: white !important; /* Ensure user messages are always white */
+  color: white !important; /* White text for dark mode */
+}
+
+/* User message styling for light mode */
+[data-theme="light"] .user-message {
+  color: #111827 !important; /* Dark text for light mode */
 }
 
 /* Icon styling for light mode */
 [data-theme="light"] .icon-comment, 
 [data-theme="light"] .icon-times,
-[data-theme="light"] .icon-robot {
+[data-theme="light"] .icon-robot,
+[data-theme="light"] .icon-user {
   color: var(--text-primary);
 }
 
