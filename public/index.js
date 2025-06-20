@@ -66,6 +66,32 @@ document.addEventListener("DOMContentLoaded", function () {
       "tsx",
     ],
   });
+
+  // Configure marked.js for proper markdown parsing
+  if (typeof marked !== "undefined") {
+    marked.setOptions({
+      highlight: function (code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(code, { language: lang }).value;
+          } catch (err) {
+            console.warn("Highlight.js error:", err);
+          }
+        }
+        try {
+          return hljs.highlightAuto(code).value;
+        } catch (err) {
+          console.warn("Highlight.js auto error:", err);
+          return code;
+        }
+      },
+      breaks: true,
+      gfm: true,
+      sanitize: false,
+      smartLists: true,
+      smartypants: false,
+    });
+  }
   // DOM Elements
   const chatForm = document.getElementById("chat-form");
   const messageInput = document.getElementById("message-input");
@@ -239,6 +265,37 @@ document.addEventListener("DOMContentLoaded", function () {
     const savedHistory = localStorage.getItem("topVoicesAI_chatHistory");
     if (savedHistory) {
       chatHistory = JSON.parse(savedHistory);
+
+      // Clean up any existing tool call JSON data from chat history
+      Object.keys(chatHistory).forEach((threadId) => {
+        const thread = chatHistory[threadId];
+        if (thread.messages) {
+          thread.messages = thread.messages
+            .map((message) => {
+              if (message.role === "assistant" && message.content) {
+                const cleanedContent = cleanToolCallData(message.content);
+                return {
+                  ...message,
+                  content: cleanedContent,
+                };
+              }
+              return message;
+            })
+            .filter((message) => {
+              // Remove empty assistant messages
+              if (
+                message.role === "assistant" &&
+                (!message.content || message.content.trim() === "")
+              ) {
+                return false;
+              }
+              return true;
+            });
+        }
+      });
+
+      // Save the cleaned history back
+      saveChatHistory();
       updateChatHistoryUI();
     }
   }
@@ -376,39 +433,44 @@ document.addEventListener("DOMContentLoaded", function () {
                 <span class="icon-user text-sm flex items-center justify-center w-full h-full"></span>
               </div>
             </div>
-            <div class="rounded-lg p-3 flex-grow markdown">
+            <div class="rounded-lg p-3 flex-grow">
               <p class="text-sm user-message">${escapeHtml(message.content)}</p>
             </div>
           `;
           chatContainer.appendChild(messageElement);
         } else if (message.role === "assistant") {
-          const messageElement = document.createElement("div");
-          messageElement.className =
-            "flex items-start w-full max-w-2xl mb-4 animate-fade-in";
+          // Clean the message content before processing
+          const cleanedContent = cleanToolCallData(message.content);
 
-          // Add bot icon
-          const iconDiv = document.createElement("div");
-          iconDiv.className = "flex-shrink-0 mr-3 mt-1";
-          iconDiv.innerHTML = `
-                          <div class="w-8 h-8 rounded-full flex items-center justify-center">
-              <img src="/top-voices.png" alt="Bot" class="w-5 h-5">
-            </div>
-          `;
-          messageElement.appendChild(iconDiv);
+          // Only create message element if there's content to display
+          if (cleanedContent && cleanedContent.trim() !== "") {
+            const messageElement = document.createElement("div");
+            messageElement.className =
+              "flex items-start w-full max-w-2xl mb-4 animate-fade-in";
 
-          const contentDiv = document.createElement("div");
-          contentDiv.className = "rounded-lg p-3 flex-grow markdown";
-          contentDiv.innerHTML = processMarkdown(message.content);
+            // Add bot icon
+            const iconDiv = document.createElement("div");
+            iconDiv.className = "flex-shrink-0 mr-3 mt-1";
+            iconDiv.innerHTML = `
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center">
+                <img src="/top-voices.png" alt="Bot" class="w-5 h-5">
+              </div>
+            `;
+            messageElement.appendChild(iconDiv);
 
-          messageElement.appendChild(contentDiv);
-          chatContainer.appendChild(messageElement);
+            const contentDiv = document.createElement("div");
+            contentDiv.className = "rounded-lg p-3 flex-grow markdown-content";
+            contentDiv.innerHTML = processMarkdown(cleanedContent);
+
+            messageElement.appendChild(contentDiv);
+            chatContainer.appendChild(messageElement);
+          }
         }
       });
 
       chatContainer.scrollTop = chatContainer.scrollHeight;
 
-      // Apply syntax highlighting to code blocks
-      applyHighlighting();
+      // Syntax highlighting is now handled by marked.js integration
     }
 
     // Update UI to show active chat
@@ -476,8 +538,8 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       </div>
       
-      <div class="rounded-lg p-3 flex-grow markdown">
-        <p class="text-sm">${escapeHtml(message)}</p>
+      <div class="rounded-lg p-3 flex-grow">
+        <p class="text-sm user-message">${escapeHtml(message)}</p>
       </div>
     `;
 
@@ -509,7 +571,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Create text content area for actual message content
     const textContent = document.createElement("div");
-    textContent.className = "text-content text-sm";
+    textContent.className = "text-content text-sm markdown-content";
     contentDiv.appendChild(textContent);
 
     // Create typing indicator (will be hidden when content is displayed)
@@ -528,84 +590,85 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Note: Typing indicator is now handled directly in the addBotMessage function
 
-  // Apply syntax highlighting to code blocks within a specific element
+  // Simplified highlighting function (highlighting is now handled by marked.js integration)
   function applyHighlightingInElement(element) {
-    element.querySelectorAll("pre code").forEach((block) => {
-      // Check if already highlighted to prevent re-highlighting
-      if (!block.classList.contains("hljs-added")) {
-        hljs.highlightElement(block);
-        block.classList.add("hljs-added"); // Mark as highlighted
-      }
-    });
+    // Marked.js now handles syntax highlighting automatically
+    // This function is kept for backwards compatibility but does nothing
+    console.debug("Syntax highlighting handled by marked.js");
   }
 
-  // Global highlighting function (can be called after major DOM changes if needed)
+  // Global highlighting function (legacy - marked.js handles this now)
   function applyHighlighting() {
-    applyHighlightingInElement(document.body); // Apply to the whole body or a specific container
+    // No longer needed as marked.js handles highlighting automatically
+    console.debug("Global highlighting handled by marked.js");
   }
 
-  // Process markdown in text
-  function processMarkdown(text) {
-    // Process code blocks with language support
-    text = text.replace(
-      /```([\w-]*)\s*\n([\s\S]*?)```/g,
-      function (_, language, code) {
-        const languageClass = language ? ` class="language-${language}"` : "";
-        // Use a data attribute instead of an inline onclick handler to avoid CSP issues
-        return `<pre><code${languageClass}>${escapeHtml(
-          code.trim()
-        )}</code><button class="copy-button" data-copy="true">Copy</button></pre>`;
-      }
-    );
+  // Clean tool call JSON data from content
+  function cleanToolCallData(text) {
+    if (!text || typeof text !== "string") return text;
 
-    // Process inline code
-    text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+    // Remove JSON-like content that starts with user query and contains tool data
+    const jsonPattern = /^(.*?)\{[\s\S]*"totalPosts"[\s\S]*\}$/;
+    const match = text.match(jsonPattern);
 
-    // Process headers (must be at start of line or after newline)
-    text = text.replace(/^#### (.+)$/gm, "<h4>$1</h4>");
-    text = text.replace(/^### (.+)$/gm, "<h3>$1</h3>");
-    text = text.replace(/^## (.+)$/gm, "<h2>$1</h2>");
-    text = text.replace(/^# (.+)$/gm, "<h1>$1</h1>");
-
-    // Process bold
-    text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-
-    // Process italic
-    text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-
-    // Process Stripe checkout URLs - convert to clean payment links
-    // Look for stripe checkout URLs in the text and completely replace them
-    const stripeUrlRegex = /(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/g;
-    if (stripeUrlRegex.test(text)) {
-      // If we have a Stripe URL, create a completely clean message
-      const matches = text.match(stripeUrlRegex);
-      if (matches && matches.length > 0) {
-        // Get the first URL (in case there are multiple)
-        const url = matches[0];
-        // Replace the entire text with a clean message
-        return `<p>Please use this secure link to complete your payment:</p>
-<p><a href="${url}" target="_blank" rel="noopener noreferrer" class="payment-button">Complete Your Payment</a></p>
-<p>You'll be redirected to Stripe to enter your payment details securely.</p>`;
-      }
+    if (match && match[1]) {
+      // Return just the user query part, removing the JSON
+      return match[1].trim();
     }
 
-    // Process links
-    text = text.replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-    );
-
-    // Process lists (simple implementation)
-    text = text.replace(/^\s*-\s+(.+)$/gm, "<li>$1</li>");
-    text = text.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
-
-    // Process paragraphs (simple implementation)
-    text = text.replace(/^(.+)$/gm, function (match) {
-      if (match.startsWith("<")) return match; // Skip HTML
-      return "<p>" + match + "</p>";
-    });
+    // Also remove standalone JSON blocks
+    const standaloneJsonPattern = /^\{[\s\S]*"totalPosts"[\s\S]*\}$/;
+    if (standaloneJsonPattern.test(text.trim())) {
+      return ""; // Return empty if it's just JSON
+    }
 
     return text;
+  }
+
+  // Process markdown using marked.js
+  function processMarkdown(text) {
+    if (typeof marked === "undefined") {
+      console.warn("Marked.js not loaded, falling back to plain text");
+      return escapeHtml(text).replace(/\n/g, "<br>");
+    }
+
+    try {
+      // Clean tool call data before processing
+      text = cleanToolCallData(text);
+
+      // If text is empty after cleaning, return empty
+      if (!text || text.trim() === "") {
+        return "";
+      }
+
+      // Handle Stripe checkout URLs specially
+      const stripeUrlRegex = /(https:\/\/checkout\.stripe\.com\/[^\s"'<>]+)/g;
+      if (stripeUrlRegex.test(text)) {
+        const matches = text.match(stripeUrlRegex);
+        if (matches && matches.length > 0) {
+          const url = matches[0];
+          return `<p>Please use this secure link to complete your payment:</p>
+<p><a href="${url}" target="_blank" rel="noopener noreferrer" class="payment-button">Complete Your Payment</a></p>
+<p>You'll be redirected to Stripe to enter your payment details securely.</p>`;
+        }
+      }
+
+      // Use marked.js to parse markdown
+      let html = marked.parse(text);
+
+      // Add copy buttons to code blocks
+      html = html.replace(
+        /<pre><code([^>]*)>([\s\S]*?)<\/code><\/pre>/g,
+        function (match, attrs, code) {
+          return `<pre><code${attrs}>${code}</code><button class="copy-button" data-copy="true">Copy</button></pre>`;
+        }
+      );
+
+      return html;
+    } catch (error) {
+      console.error("Error processing markdown:", error);
+      return escapeHtml(text).replace(/\n/g, "<br>");
+    }
   }
 
   // Escape HTML to prevent XSS
@@ -1037,7 +1100,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!isEchoedQueryProcessed && content === message) {
                   isEchoedQueryProcessed = true;
                   console.log("Skipped echoed user query:", content);
-                  accumulatedResponseForHistory += content; // Echoed query is part of history
+                  // Don't add echoed query to history
                   continue; // Skip to next iteration
                 }
 
@@ -1051,11 +1114,13 @@ document.addEventListener("DOMContentLoaded", function () {
                   );
                 };
 
-                // Skip json content (usually internal state)
+                // Skip json content completely - don't render or save to history
                 if (isLikelyJson(content)) {
-                  console.log("Skipped rendering likely JSON data:", content);
-                  accumulatedResponseForHistory += content;
-                  continue; // Skip to next iteration
+                  console.log(
+                    "Skipped JSON tool call data:",
+                    content.substring(0, 100) + "..."
+                  );
+                  continue; // Skip to next iteration completely
                 }
 
                 // Handle Stripe payment URLs - preprocess before rendering
@@ -1103,16 +1168,18 @@ document.addEventListener("DOMContentLoaded", function () {
                   botMessageBubble = addBotMessage();
                 }
 
-                // Process tool invocation without displaying in UI
+                // Process tool invocation without displaying in UI or saving to history
                 addToolInvocationMessage(eventData.data, botMessageBubble);
                 console.debug(
                   "Tool invocation processed silently:",
                   eventData.data.map((t) => t.name).join(", ")
                 );
+                // Don't add tool invocations to chat history
               } else if (eventData.type === "tool_result") {
-                // Process tool result without displaying in UI
+                // Process tool result without displaying in UI or saving to history
                 updateToolResultMessage(eventData.data);
-                // We don't add tool results to the accumulated response anymore
+                console.debug("Tool result processed silently");
+                // Don't add tool results to chat history
               } else if (eventData.type === "error") {
                 if (activeTextElement)
                   streamText(
