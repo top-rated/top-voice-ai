@@ -284,17 +284,10 @@ async function sendUnipileMessage(chat_id, text, account_id = null) {
       text,
     };
 
-    // If account_id is provided, add it to the payload for organization accounts
-    if (account_id) {
-      messagePayload.account_id = account_id;
-    }
-
     const response = await client.messaging.sendMessage(messagePayload);
     console.log(
       "Unipile message sent successfully to chat_id:",
       chat_id,
-      "Account ID:",
-      account_id || "default",
       "Response:",
       JSON.stringify(response)
     );
@@ -338,22 +331,13 @@ app.post(
   "/api/v1/linked/webhook",
   usageLimitMiddleware({ limit: 5 }),
   async (req, res) => {
-    const {
-      account_id,
-      chat_id,
-      message,
-      message_id,
-      sender,
-      subject,
-      timestamp,
-      account_info,
-    } = req.body;
+    const { chat_id, message, message_id, sender } = req.body;
 
-    // Enhanced logging for better debugging including account_info
+    // Enhanced logging for better debugging
     console.log(
-      `LinkedIn Webhook received - AccountID: ${account_id}, ChatID: ${chat_id}, Message: "${message}", MessageID: ${message_id}, Sender: ${JSON.stringify(
+      `LinkedIn Webhook received - ChatID: ${chat_id}, Message: "${message}", MessageID: ${message_id}, Sender: ${JSON.stringify(
         sender
-      )}, AccountInfo: ${JSON.stringify(account_info)}`
+      )}`
     );
 
     // Return early if essential data is missing
@@ -448,8 +432,7 @@ app.post(
       try {
         const sentMessageId = await sendUnipileMessage(
           chat_id,
-          req.limitExceededResponse,
-          account_id
+          req.limitExceededResponse
         );
         if (sentMessageId) {
           console.log(
@@ -493,13 +476,12 @@ app.post(
         // Use account_id when sending message for organization accounts
         const sentMessageId = await sendUnipileMessage(
           chat_id,
-          fullReplyMessage,
-          account_id
+          fullReplyMessage
         );
 
         if (sentMessageId) {
           console.log(
-            `Successfully sent reply (ID: ${sentMessageId}) for chat_id ${chat_id} using account_id ${account_id}.`
+            `Successfully sent reply (ID: ${sentMessageId}) for chat_id ${chat_id}.`
           );
 
           // Track usage after successful message sending (only if not exempt)
