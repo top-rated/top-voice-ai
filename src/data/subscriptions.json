@@ -38,5 +38,25 @@
   },
   "email:allandriodtricks@gmail.com": {
     "stripe_YWxsYW5k_1750370168410": true
+  },
+  "stripe_cmFoZWVz_1750496905644": {
+    "id": "stripe_cmFoZWVz_1750496905644",
+    "active": true,
+    "type": "premium",
+    "email": "raheesahmed256@gmail.com",
+    "stripeSubscriptionId": "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
+    "stripeCustomerId": "cus_SMOcRKXGTAacau",
+    "updatedAt": "2025-06-21T09:09:07.211Z",
+    "createdAt": "2025-06-21T09:08:25.644Z",
+    "source": "stripe_direct_fetch",
+    "stripeData": {
+      "subscriptionId": "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
+      "customerId": "cus_SMOcRKXGTAacau",
+      "status": "active",
+      "currentPeriodEnd": "2025-06-22T20:34:31.000Z"
+    }
+  },
+  "email:raheesahmed256@gmail.com": {
+    "stripe_cmFoZWVz_1750496905644": true
   }
 }

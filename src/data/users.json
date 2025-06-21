@@ -4,10 +4,32 @@
     "name": "Rahees Ahmed",
     "stripeCustomerId": "cus_SMOcRKXGTAacau",
     "active": true,
-    "subscriptionType": "Stripe: Premium",
+    "subscriptionType": "premium",
     "createdAt": "2025-05-22T20:34:31.000Z",
     "updatedAt": "2025-05-23T18:37:22.134Z",
-    "adminNotes": ""
+    "adminNotes": "",
+    "subscriptionId": "stripe_cmFoZWVz_1750496905644",
+    "subscription": {
+      "verified": true,
+      "verifiedAt": "2025-06-21T09:09:07.200Z",
+      "localData": {
+        "id": "stripe_cmFoZWVz_1750496905644",
+        "active": true,
+        "type": "premium",
+        "email": "raheesahmed256@gmail.com",
+        "stripeSubscriptionId": "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
+        "stripeCustomerId": "cus_SMOcRKXGTAacau",
+        "updatedAt": "2025-06-21T09:08:25.644Z",
+        "createdAt": "2025-06-21T09:08:25.644Z",
+        "source": "stripe_direct_fetch",
+        "stripeData": {
+          "subscriptionId": "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
+          "customerId": "cus_SMOcRKXGTAacau",
+          "status": "active",
+          "currentPeriodEnd": "2025-06-22T20:34:31.000Z"
+        }
+      }
+    }
   },
   "user2@example.com": {
     "email": "user2@example.com",

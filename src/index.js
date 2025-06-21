@@ -121,30 +121,11 @@ app.get("/api-docs", (req, res) => {
 
 // Stripe payment success and cancel routes
 app.get("/payment-success", (req, res) => {
-  res.send(`
-    <html>
-      <head><title>Payment Successful</title></head>
-      <body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-        <h1>Thank You!</h1>
-        <p>Your payment was successful and your subscription is now active.</p>
-        <p><a href="/">Go to Homepage</a></p> 
-      </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, "../public", "payment-success.html"));
 });
 
 app.get("/payment-cancelled", (req, res) => {
-  res.send(`
-    <html>
-      <head><title>Payment Cancelled</title></head>
-      <body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-        <h1>Payment Cancelled</h1>
-        <p>Your payment process was cancelled. You have not been charged.</p>
-        <p>If you'd like to try again, please restart the process from the chatbot.</p>
-        <p><a href="/">Go to Homepage</a></p>
-      </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, "../public", "payment-cancelled.html"));
 });
 
 // chat route with usage limiting
