@@ -220,10 +220,23 @@ function createProfileTools() {
     tool(
       async (input) => {
         try {
-          const response = await axios.post(`${BASE_URL}/profiles/analyze`, {
+          const requestData = {
             profileUrl: input.profileUrl,
-            subscriptionId: input.subscriptionId,
-          });
+          };
+
+          // Add either subscription ID or email for verification
+          if (input.subscriptionId) {
+            requestData.subscriptionId = input.subscriptionId;
+          } else if (input.email) {
+            requestData.email = input.email;
+          } else {
+            return "Error: Either subscriptionId or email is required for profile analysis.";
+          }
+
+          const response = await axios.post(
+            `${BASE_URL}/profiles/analyze`,
+            requestData
+          );
           return JSON.stringify(response.data);
         } catch (error) {
           return `Error analyzing profile: ${error.message}`;
@@ -232,12 +245,18 @@ function createProfileTools() {
       {
         name: "analyze_linkedin_profile",
         description:
-          "Analyze a LinkedIn profile. Requires a subscription ID for premium features.",
+          "Analyze a LinkedIn profile. Requires either a subscription ID or email address for premium features verification.",
         schema: z.object({
           profileUrl: z.string().describe("LinkedIn profile URL to analyze"),
           subscriptionId: z
             .string()
+            .optional()
             .describe("Subscription ID for premium features"),
+          email: z
+            .string()
+            .email()
+            .optional()
+            .describe("Email address of verified premium user"),
         }),
       }
     ),
@@ -245,13 +264,20 @@ function createProfileTools() {
     tool(
       async (input) => {
         try {
+          const params = {};
+
+          // Add either subscription ID or email for verification
+          if (input.subscriptionId) {
+            params.subscriptionId = input.subscriptionId;
+          } else if (input.email) {
+            params.email = input.email;
+          } else {
+            return "Error: Either subscriptionId or email is required for profile posts.";
+          }
+
           const response = await axios.get(
             `${BASE_URL}/profiles/posts/${input.profileId}`,
-            {
-              params: {
-                subscriptionId: input.subscriptionId,
-              },
-            }
+            { params }
           );
           return JSON.stringify(response.data);
         } catch (error) {
@@ -261,10 +287,15 @@ function createProfileTools() {
       {
         name: "get_profile_posts",
         description:
-          "Get posts from a specific LinkedIn profile. Requires a subscription ID.",
+          "Get posts from a specific LinkedIn profile. Requires either a subscription ID or email address for verification.",
         schema: z.object({
           profileId: z.string().describe("LinkedIn profile ID"),
-          subscriptionId: z.string().describe("Subscription ID"),
+          subscriptionId: z.string().optional().describe("Subscription ID"),
+          email: z
+            .string()
+            .email()
+            .optional()
+            .describe("Email address of verified premium user"),
         }),
       }
     ),
@@ -272,10 +303,19 @@ function createProfileTools() {
     tool(
       async (input) => {
         try {
+          const params = {};
+
+          // Add either subscription ID or email for verification
+          if (input.subscriptionId) {
+            params.subscriptionId = input.subscriptionId;
+          } else if (input.email) {
+            params.email = input.email;
+          } else {
+            return "Error: Either subscriptionId or email is required for recent profiles.";
+          }
+
           const response = await axios.get(`${BASE_URL}/profiles/recent`, {
-            params: {
-              subscriptionId: input.subscriptionId,
-            },
+            params: params,
           });
           return JSON.stringify(response.data);
         } catch (error) {
@@ -285,9 +325,14 @@ function createProfileTools() {
       {
         name: "get_recent_profiles",
         description:
-          "Get recently analyzed LinkedIn profiles. Requires a subscription ID.",
+          "Get recently analyzed LinkedIn profiles. Requires either a subscription ID or email address for verification.",
         schema: z.object({
-          subscriptionId: z.string().describe("Subscription ID"),
+          subscriptionId: z.string().optional().describe("Subscription ID"),
+          email: z
+            .string()
+            .email()
+            .optional()
+            .describe("Email address of verified premium user"),
         }),
       }
     ),
@@ -421,7 +466,15 @@ function createAuthAndLicenseTools() {
             {},
             { headers }
           );
-          return JSON.stringify(response.data);
+
+          const result = response.data;
+          if (result.success && result.subscriptionId) {
+            // Store the subscription ID for future use in this conversation
+            global.userSubscriptionCache = global.userSubscriptionCache || {};
+            global.userSubscriptionCache[input.email] = result.subscriptionId;
+          }
+
+          return JSON.stringify(result);
         } catch (error) {
           return `Error checking subscription: ${
             error.response?.data?.message || error.message
@@ -431,7 +484,7 @@ function createAuthAndLicenseTools() {
       {
         name: "check_subscription_by_email",
         description:
-          "Check subscription status for a user by their email address. This will check local storage first, then fetch directly from Stripe if needed.",
+          "Check subscription status for a user by their email address. This will check local storage first, then fetch directly from Stripe if needed. Returns subscription details including the subscriptionId needed for subsequent API calls.",
         schema: z.object({
           email: z.string().email().describe("User's email address"),
           authToken: z
@@ -468,6 +521,57 @@ function createAuthAndLicenseTools() {
           email: z.string().email().describe("Customer's email address"),
           authToken: z
             .string()
+            .describe("The JWT token for authorizing the API call"),
+        }),
+      }
+    ),
+
+    tool(
+      async (input) => {
+        try {
+          // First check if we have the subscription ID cached from a previous verification
+          global.userSubscriptionCache = global.userSubscriptionCache || {};
+          const cachedSubscriptionId =
+            global.userSubscriptionCache[input.email];
+
+          if (cachedSubscriptionId) {
+            return cachedSubscriptionId;
+          }
+
+          // If not cached, call the check subscription endpoint to get it
+          const headers = {};
+          if (input.authToken) {
+            headers["Authorization"] = `Bearer ${input.authToken}`;
+          }
+          const response = await axios.post(
+            `${BASE_URL}/auth/check-subscription/${input.email}`,
+            {},
+            { headers }
+          );
+
+          const result = response.data;
+          if (result.success && result.subscriptionId) {
+            // Cache it for future use
+            global.userSubscriptionCache[input.email] = result.subscriptionId;
+            return result.subscriptionId;
+          } else {
+            return `No valid subscription found for ${input.email}`;
+          }
+        } catch (error) {
+          return `Error retrieving subscription ID: ${
+            error.response?.data?.message || error.message
+          }`;
+        }
+      },
+      {
+        name: "get_subscription_id_by_email",
+        description:
+          "Get the subscription ID for a verified user by their email address. This is needed to make subsequent API calls that require a subscription ID. Use this after verifying a user's subscription with check_subscription_by_email.",
+        schema: z.object({
+          email: z.string().email().describe("User's email address"),
+          authToken: z
+            .string()
+            .optional()
             .describe("The JWT token for authorizing the API call"),
         }),
       }
@@ -1032,12 +1136,12 @@ function createContentAnalysisTools() {
       async (input) => {
         try {
           const { post_text, reference_author_style_id } = input;
-          const apiKey = process.env.OPENAI_API_KEY;
+          const apiKey = process.env.AZURE_OPENAI_API_KEY;
 
           if (!apiKey) {
             return JSON.stringify({
               error:
-                "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable.",
+                "OpenAI API key is not configured. Please set AZURE_OPENAI_API_KEY environment variable.",
             });
           }
 

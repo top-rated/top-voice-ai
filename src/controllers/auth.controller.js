@@ -433,6 +433,7 @@ const checkSubscriptionByEmail = async (req, res) => {
         type: activeSubscriptionData.type,
         source: activeSubscriptionData.source || "local",
         email: activeSubscriptionData.email,
+        subscriptionId: activeSubscriptionData.id || user.subscriptionId,
         features: getFeaturesByType(activeSubscriptionData.type),
       };
 
@@ -528,6 +529,7 @@ const checkSubscriptionByEmail = async (req, res) => {
               type: "premium",
               source: "stripe",
               email: email,
+              subscriptionId: subId,
               features: getFeaturesByType("premium"),
             };
 
@@ -614,8 +616,9 @@ const checkSubscriptionByEmail = async (req, res) => {
         responseDetails = {
           active: true,
           type: "premium",
-          source: "stripe_direct",
+          source: "stripe_direct_fetch",
           email: email,
+          subscriptionId: subscriptionId,
           features: getFeaturesByType("premium"),
         };
 

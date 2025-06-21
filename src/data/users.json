@@ -11,7 +11,7 @@
     "subscriptionId": "stripe_cmFoZWVz_1750496905644",
     "subscription": {
       "verified": true,
-      "verifiedAt": "2025-06-21T09:09:07.200Z",
+      "verifiedAt": "2025-06-21T09:47:11.651Z",
       "localData": {
         "id": "stripe_cmFoZWVz_1750496905644",
         "active": true,
@@ -19,7 +19,7 @@
         "email": "raheesahmed256@gmail.com",
         "stripeSubscriptionId": "sub_1RRfoxPCUfEbUbEPjPeeGwMf",
         "stripeCustomerId": "cus_SMOcRKXGTAacau",
-        "updatedAt": "2025-06-21T09:08:25.644Z",
+        "updatedAt": "2025-06-21T09:09:07.211Z",
         "createdAt": "2025-06-21T09:08:25.644Z",
         "source": "stripe_direct_fetch",
         "stripeData": {
