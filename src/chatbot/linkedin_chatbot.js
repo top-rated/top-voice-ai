@@ -109,7 +109,7 @@ async function processLinkedInQuery(threadId, query) {
   }
   const memory = memoryStore.get(threadId);
 
-  const newPrompt = `NOTE:Markdown is not allowed on LinkedIn so use LinkedIn styling for response rendering ${basePrompt} `;
+  const newPrompt = `NOTE:Markdown is not allowed on LinkedIn so always use LinkedIn styling here is the base prompt: ${basePrompt} `;
 
   // Create agent with thread-specific memory
   const agent = createReactAgent({

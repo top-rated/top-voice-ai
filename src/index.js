@@ -501,6 +501,10 @@ app.post(
   }
 );
 
+app.get(async (req, res) => {
+  res.send("LinkedIN Route is working...");
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
