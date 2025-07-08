@@ -99,6 +99,61 @@ app.use(`${API_PREFIX}/search`, searchRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
 
+// Test endpoint for debugging Unipile connection
+app.post("/api/v1/test-unipile", async (req, res) => {
+  console.log("=== TESTING UNIPILE CONNECTION ===");
+  console.log("Request body:", JSON.stringify(req.body, null, 2));
+
+  const { chat_id, message } = req.body;
+
+  if (!chat_id || !message) {
+    return res.status(400).json({
+      error: "Missing chat_id or message",
+      required: ["chat_id", "message"],
+    });
+  }
+
+  try {
+    // Test the processLinkedInQuery function
+    console.log("Testing processLinkedInQuery...");
+    const reply = await processLinkedInQuery(chat_id, message);
+    console.log("processLinkedInQuery result:", reply);
+
+    // Test sending message
+    console.log("Testing sendUnipileMessage...");
+    const sentMessageId = await sendUnipileMessage(chat_id, reply);
+    console.log("sendUnipileMessage result:", sentMessageId);
+
+    res.json({
+      success: true,
+      processedMessage: reply,
+      sentMessageId: sentMessageId,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Test endpoint error:", error);
+    res.status(500).json({
+      error: error.message,
+      stack: error.stack,
+    });
+  }
+});
+
+// Test webhook endpoint - just logs everything
+app.post("/api/v1/test-webhook", (req, res) => {
+  console.log("=== TEST WEBHOOK RECEIVED ===");
+  console.log("Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("Body:", JSON.stringify(req.body, null, 2));
+  console.log("Query:", JSON.stringify(req.query, null, 2));
+
+  res.json({
+    received: true,
+    timestamp: new Date().toISOString(),
+    body: req.body,
+    headers: req.headers,
+  });
+});
+
 // Root route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"));
@@ -249,21 +304,37 @@ app.post(
 const UNIPILE_BASE_URL = process.env.UNIPILE_BASE_URL;
 const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
 
+// Debug environment variables
+console.log("Environment variables loaded:");
+console.log("UNIPILE_BASE_URL:", UNIPILE_BASE_URL ? "✓" : "✗");
+console.log("UNIPILE_ACCESS_TOKEN:", UNIPILE_ACCESS_TOKEN ? "✓" : "✗");
+console.log("ACCOUNT_ID:", process.env.ACCOUNT_ID ? "✓" : "✗");
+
 async function sendUnipileMessage(chat_id, text, account_id = null) {
   if (!UNIPILE_BASE_URL || !UNIPILE_ACCESS_TOKEN) {
     console.error(
       "Unipile configuration (UNIPILE_BASE_URL or UNIPILE_ACCESS_TOKEN) is missing from .env file."
     );
-    return null; // Return null or throw an error to indicate failure
+    return null;
   }
   try {
-    const client = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
+    // Remove quotes from the base URL if present
+    const cleanBaseUrl = UNIPILE_BASE_URL.replace(/"/g, "");
+    const cleanToken = UNIPILE_ACCESS_TOKEN.replace(/"/g, "");
+
+    const client = new UnipileClient(cleanBaseUrl, cleanToken);
 
     // Prepare message payload
     const messagePayload = {
       chat_id,
       text,
+      account_id: account_id || process.env.ACCOUNT_ID,
     };
+
+    console.log(
+      "Sending message with payload:",
+      JSON.stringify(messagePayload)
+    );
 
     const response = await client.messaging.sendMessage(messagePayload);
     console.log(
@@ -312,9 +383,11 @@ app.post(
   "/api/v1/linked/webhook",
   usageLimitMiddleware({ limit: 5 }),
   async (req, res) => {
-    const { chat_id, message, message_id, sender } = req.body;
+    const { chat_id, message, message_id, sender, account_info } = req.body;
 
     // Enhanced logging for better debugging
+    console.log("=== LINKEDIN WEBHOOK RECEIVED ===");
+    console.log("Full request body:", JSON.stringify(req.body, null, 2));
     console.log(
       `LinkedIn Webhook received - ChatID: ${chat_id}, Message: "${message}", MessageID: ${message_id}, Sender: ${JSON.stringify(
         sender
@@ -441,8 +514,10 @@ app.post(
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Process the message with the LinkedIn chatbot
+      console.log("Calling processLinkedInQuery with:", { chat_id, message });
       const fullReplyMessage = await processLinkedInQuery(chat_id, message);
       console.log("Generated reply message:", fullReplyMessage);
+      console.log("Reply message type:", typeof fullReplyMessage);
 
       // Check if we have a valid response
       const hasContent =
