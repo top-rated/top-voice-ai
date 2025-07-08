@@ -257,7 +257,7 @@ console.log("ACCOUNT_ID:", process.env.ACCOUNT_ID ? "✓" : "✗");
 
 // Test webhook endpoint
 app.post(
-  "/api/v1/linked/webhook",
+  "/api/v1/webhook",
   usageLimitMiddleware({ limit: 5 }),
   trackUsageMiddleware,
   async (req, res) => {
