@@ -256,81 +256,88 @@ console.log("ACCOUNT_ID:", process.env.ACCOUNT_ID ? "✓" : "✗");
 //linkedin webhook route with usage limiting
 
 // Test webhook endpoint
-app.post("/api/v1/linked/webhook", async (req, res) => {
-  console.log("=== WEBHOOK RECEIVED ===");
-  console.log("Full request body:", JSON.stringify(req.body, null, 2));
+app.post(
+  "/api/v1/linked/webhook",
+  usageLimitMiddleware({ limit: 5 }),
+  trackUsageMiddleware,
+  async (req, res) => {
+    console.log("=== WEBHOOK RECEIVED ===");
+    console.log("Full request body:", JSON.stringify(req.body, null, 2));
 
-  const { chat_id, message, message_id, sender, account_info } = req.body;
+    const { chat_id, message, message_id, sender, account_info } = req.body;
 
-  // Log individual fields
-  console.log(`Chat ID: ${chat_id}`);
-  console.log(`Message: ${message}`);
-  console.log(`Message ID: ${message_id}`);
-  console.log(`Sender:`, JSON.stringify(sender));
-  console.log(`Account Info:`, JSON.stringify(account_info));
+    // Log individual fields
+    console.log(`Chat ID: ${chat_id}`);
+    console.log(`Message: ${message}`);
+    console.log(`Message ID: ${message_id}`);
+    console.log(`Sender:`, JSON.stringify(sender));
+    console.log(`Account Info:`, JSON.stringify(account_info));
 
-  // Validate required fields
-  if (!chat_id || !message) {
-    console.warn("Missing required data (chat_id or message)");
-    return res.status(400).json({
-      status: "error",
-      message: "Missing required parameters",
-    });
-  }
+    // Validate required fields
+    if (!chat_id || !message) {
+      console.warn("Missing required data (chat_id or message)");
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required parameters",
+      });
+    }
 
-  // 🛡️ PREVENT INFINITE LOOP - Don't reply to our own messages!
-  const myPersonalAccountId = ACCOUNT_ID; // Individual account
-  const myOrganizationId = account_info?.mailbox_id; // Organization page ID
-  const senderAccountId = sender?.attendee_provider_id;
+    // 🛡️ PREVENT INFINITE LOOP - Don't reply to our own messages!
+    const myPersonalAccountId = ACCOUNT_ID; // Individual account
+    const myOrganizationId = account_info?.mailbox_id; // Organization page ID
+    const senderAccountId = sender?.attendee_provider_id;
 
-  console.log(`🔍 Checking sender: ${senderAccountId}`);
-  console.log(`   vs Personal Account: ${myPersonalAccountId}`);
-  console.log(`   vs Organization ID: ${myOrganizationId}`);
-  console.log(`   Sender Name: ${sender?.attendee_name}`);
+    console.log(`🔍 Checking sender: ${senderAccountId}`);
+    console.log(`   vs Personal Account: ${myPersonalAccountId}`);
+    console.log(`   vs Organization ID: ${myOrganizationId}`);
+    console.log(`   Sender Name: ${sender?.attendee_name}`);
 
-  // Check if message is from our personal account OR our organization page
-  const isMyMessage =
-    senderAccountId === myPersonalAccountId ||
-    senderAccountId === myOrganizationId ||
-    sender?.attendee_name === "Cloud Nine" ||
-    sender?.attendee_name === "Rahees Ahmed";
+    // Check if message is from our personal account OR our organization page
+    const isMyMessage =
+      senderAccountId === myPersonalAccountId ||
+      senderAccountId === myOrganizationId ||
+      sender?.attendee_name === "Cloud Nine" ||
+      sender?.attendee_name === "Rahees Ahmed";
 
-  if (isMyMessage) {
-    console.log("🛑 IGNORING - This is my own message, won't reply to myself!");
-    return res.json({
-      status: "ignored",
-      reason: "Own message detected - preventing infinite loop",
-      sender: sender?.attendee_name,
-      sender_id: senderAccountId,
+    if (isMyMessage) {
+      console.log(
+        "🛑 IGNORING - This is my own message, won't reply to myself!"
+      );
+      return res.json({
+        status: "ignored",
+        reason: "Own message detected - preventing infinite loop",
+        sender: sender?.attendee_name,
+        sender_id: senderAccountId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Respond immediately
+    res.status(200).json({
+      status: "received",
+      message: "Webhook received and processing initiated.",
       timestamp: new Date().toISOString(),
     });
-  }
 
-  // Respond immediately
-  res.status(200).json({
-    status: "received",
-    message: "Webhook received and processing initiated.",
-    timestamp: new Date().toISOString(),
-  });
+    try {
+      // Process the message (simulate AI response)
+      const replyMessage = await processLinkedInQuery(chat_id, message);
+      console.log(`Generated reply: ${replyMessage}`);
 
-  try {
-    // Process the message (simulate AI response)
-    const replyMessage = await processLinkedInQuery(chat_id, message);
-    console.log(`Generated reply: ${replyMessage}`);
+      // Send reply using Unipile
+      console.log("Attempting to send reply via Unipile...");
+      const sentMessageId = await sendUnipileMessage(chat_id, replyMessage);
 
-    // Send reply using Unipile
-    console.log("Attempting to send reply via Unipile...");
-    const sentMessageId = await sendUnipileMessage(chat_id, replyMessage);
-
-    if (sentMessageId) {
-      console.log(`✅ Successfully sent reply! Message ID: ${sentMessageId}`);
-    } else {
-      console.log("❌ Failed to send reply");
+      if (sentMessageId) {
+        console.log(`✅ Successfully sent reply! Message ID: ${sentMessageId}`);
+      } else {
+        console.log("❌ Failed to send reply");
+      }
+    } catch (error) {
+      console.error("Error processing webhook:", error);
     }
-  } catch (error) {
-    console.error("Error processing webhook:", error);
   }
-});
+);
 const client = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
 
 // Function to send message via Unipile
