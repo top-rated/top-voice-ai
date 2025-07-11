@@ -301,11 +301,11 @@ app.post(
 );
 
 // Unipile Configuration and Helper
-const UNIPIL_DSN = process.env.UNIPIL_DSN;
-const UNIPIL_API_KEY = process.env.UNIPIL_API_KEY;
+const UNIPILE_BASE_URL = process.env.UNIPILE_BASE_URL;
+const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
 const ACCOUNT_ID = process.env.ACCOUNT_ID;
 
-const unipile = new UnipileClient(UNIPIL_DSN, UNIPIL_API_KEY);
+const unipile = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
 
 app.post("/api/v1/webhook", async (req, res) => {
   const { body } = req;
