@@ -6,7 +6,6 @@ const { getSystemPrompt } = require("../utils/systemPromptManager");
 const { getAllApiTools } = require("../utils/api_tools");
 const { HumanMessage } = require("@langchain/core/messages");
 dotenv.config();
-const { linkedInSystemPrompt } = require("../utils/linked_system_prompt");
 
 const azureConfig = {
   model: process.env.MODEL_NAME,
@@ -101,13 +100,16 @@ async function processQuery(threadId, query) {
 }
 
 async function processLinkedInQuery(threadId, query) {
+  // Get current prompt
+  const basePrompt = await getCurrentPrompt();
+
   // Initialize or retrieve memory for this thread
   if (!memoryStore.has(threadId)) {
     memoryStore.set(threadId, new MemorySaver());
   }
   const memory = memoryStore.get(threadId);
 
-  const newPrompt = linkedInSystemPrompt;
+  const newPrompt = `NOTE:Markdown is not allowed on LinkedIn so always use LinkedIn styling here is the base prompt: ${basePrompt} `;
 
   // Create agent with thread-specific memory
   const agent = createReactAgent({
@@ -126,64 +128,7 @@ async function processLinkedInQuery(threadId, query) {
   const response =
     agentFinalState.messages[agentFinalState.messages.length - 1].content;
 
-  // 🛡️ FORCE REMOVE ALL MARKDOWN - LinkedIn doesn't support it!
-  const cleanedResponse = cleanMarkdownForLinkedIn(response);
-
-  return cleanedResponse;
-}
-
-/**
- * Remove all markdown formatting and convert to LinkedIn-friendly format
- * @param {string} text - Text that may contain markdown
- * @returns {string} - Clean text without any markdown
- */
-function cleanMarkdownForLinkedIn(text) {
-  if (!text) return text;
-
-  let cleaned = text;
-
-  // Remove bold markdown and convert to UPPERCASE
-  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, (match, content) => {
-    return content.toUpperCase();
-  });
-
-  // Remove alternative bold markdown and convert to UPPERCASE
-  cleaned = cleaned.replace(/__([^_]+)__/g, (match, content) => {
-    return content.toUpperCase();
-  });
-
-  // Remove italic markdown and convert to UPPERCASE
-  cleaned = cleaned.replace(/\*([^*]+)\*/g, (match, content) => {
-    return content.toUpperCase();
-  });
-
-  // Remove alternative italic markdown and convert to UPPERCASE
-  cleaned = cleaned.replace(/_([^_]+)_/g, (match, content) => {
-    return content.toUpperCase();
-  });
-
-  // Remove code blocks
-  cleaned = cleaned.replace(/```[\s\S]*?```/g, (match) => {
-    return match.replace(/```/g, "").trim();
-  });
-
-  // Remove inline code
-  cleaned = cleaned.replace(/`([^`]+)`/g, "$1");
-
-  // Remove headers (# ## ###)
-  cleaned = cleaned.replace(/^#{1,6}\s+(.+)$/gm, "$1");
-
-  // Remove blockquotes
-  cleaned = cleaned.replace(/^>\s+(.+)$/gm, "$1");
-
-  // Convert markdown links to plain text
-  cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-
-  console.log("🧹 Cleaned markdown from response");
-  console.log("Original length:", text.length);
-  console.log("Cleaned length:", cleaned.length);
-
-  return cleaned;
+  return response;
 }
 module.exports = {
   processQuery,

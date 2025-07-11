@@ -641,8 +641,25 @@ document.addEventListener("DOMContentLoaded", function () {
         return "";
       }
 
-      // Use marked.js to parse markdown
-      let html = marked.parse(text);
+      // Create a custom renderer for links
+      const renderer = new marked.Renderer();
+      renderer.link = function(href, title, text) {
+        // Check if the link is a LinkedIn post URL
+        const isLinkedInPost = href && (
+          href.includes('linkedin.com/posts/') ||
+          href.includes('linkedin.com/feed/update/') ||
+          href.includes('linkedin.com/pulse/') ||
+          href.includes('linkedin.com/in/') && href.includes('/recent-activity/')
+        );
+        
+        const titleAttr = title ? ` title="${title}"` : '';
+        const target = isLinkedInPost ? ' target="_blank" rel="noopener noreferrer"' : '';
+        
+        return `<a href="${href}"${titleAttr}${target}>${text}</a>`;
+      };
+
+      // Use marked.js to parse markdown with custom renderer
+      let html = marked.parse(text, { renderer: renderer });
 
       // Add copy buttons to code blocks
       html = html.replace(
