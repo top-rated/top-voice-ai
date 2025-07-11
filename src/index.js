@@ -72,7 +72,7 @@ app.use(cors()); // Enable CORS for all routes
 app.use(express.json({ limit: "50mb" })); // Parse JSON bodies with increased size limit
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Add support for URL-encoded bodies
 app.use(morgan("dev")); // Logging
-
+app.use(bodyParser.json());
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(express.json());
