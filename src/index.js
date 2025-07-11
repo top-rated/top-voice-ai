@@ -307,7 +307,7 @@ const ACCOUNT_ID = process.env.ACCOUNT_ID;
 
 const unipile = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
 
-app.post("/api/v1/webhook", async (req, res) => {
+app.post("/api/v1/linked/webhook", async (req, res) => {
   const { body } = req;
 
   // Check if it's a new message event
