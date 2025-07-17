@@ -176,7 +176,7 @@ app.get("/api-docs", (req, res) => {
 
 // Stripe payment success and cancel routes
 app.get("/payment-success", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public", "payment-success.html"));
+  res.redirect("/");
 });
 
 app.get("/payment-cancelled", (req, res) => {
