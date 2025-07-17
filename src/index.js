@@ -266,6 +266,13 @@ app.post("/api/v1/linked/webhook", async (req, res) => {
     );
     console.log('Full webhook payload:', JSON.stringify(body, null, 2));
 
+    // Check if the message is from the correct account (filter by account_id)
+    if (body.account_id !== ACCOUNT_ID) {
+      console.log('Skipping auto-reply - message is from different account');
+      console.log('Expected account_id:', ACCOUNT_ID, 'Received account_id:', body.account_id);
+      return res.status(200).json({ status: 'ignored', reason: 'wrong_account' });
+    }
+
     // Check if the message is from the bot itself (to prevent infinite loops)
     // The bot's user_id is in account_info.user_id, and when bot sends a message,
     // it comes back as sender.attendee_provider_id
