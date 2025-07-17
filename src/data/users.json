@@ -73,5 +73,22 @@
         "currentPeriodEnd": "2025-06-30T19:51:45.000Z"
       }
     }
+  },
+  "raheesahmed58@gmail.com": {
+    "email": "raheesahmed58@gmail.com",
+    "name": "Rahees Ahmed",
+    "subscriptionId": "stripe_cmFoZWVz_1752742714375",
+    "createdAt": "2025-07-17T08:58:34.379Z",
+    "subscriptionType": "premium",
+    "subscription": {
+      "verified": true,
+      "verifiedAt": "2025-07-17T08:58:34.379Z",
+      "stripeData": {
+        "subscriptionId": "sub_1RlncZPCUfEbUbEPCRR4TXvK",
+        "customerId": "cus_ShC05xXozKleUU",
+        "status": "active",
+        "currentPeriodEnd": "2025-08-17T08:56:55.000Z"
+      }
+    }
   }
 }

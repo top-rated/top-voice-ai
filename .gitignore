@@ -5,6 +5,7 @@
 /test/results.xml
 /test/results.json
 feedback.md
+/docs/
 /test/results.html
 env.example
 unipile_testing.js

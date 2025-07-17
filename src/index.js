@@ -99,60 +99,7 @@ app.use(`${API_PREFIX}/search`, searchRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
 
-// Test endpoint for debugging Unipile connection
-app.post("/api/v1/test-unipile", async (req, res) => {
-  console.log("=== TESTING UNIPILE CONNECTION ===");
-  console.log("Request body:", JSON.stringify(req.body, null, 2));
 
-  const { chat_id, message } = req.body;
-
-  if (!chat_id || !message) {
-    return res.status(400).json({
-      error: "Missing chat_id or message",
-      required: ["chat_id", "message"],
-    });
-  }
-
-  try {
-    // Test the processLinkedInQuery function
-    console.log("Testing processLinkedInQuery...");
-    const reply = await processLinkedInQuery(chat_id, message);
-    console.log("processLinkedInQuery result:", reply);
-
-    // Test sending message
-    console.log("Testing sendUnipileMessage...");
-    const sentMessageId = await sendUnipileMessage(chat_id, reply);
-    console.log("sendUnipileMessage result:", sentMessageId);
-
-    res.json({
-      success: true,
-      processedMessage: reply,
-      sentMessageId: sentMessageId,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Test endpoint error:", error);
-    res.status(500).json({
-      error: error.message,
-      stack: error.stack,
-    });
-  }
-});
-
-// Test webhook endpoint - just logs everything
-app.post("/api/v1/test-webhook", (req, res) => {
-  console.log("=== TEST WEBHOOK RECEIVED ===");
-  console.log("Headers:", JSON.stringify(req.headers, null, 2));
-  console.log("Body:", JSON.stringify(req.body, null, 2));
-  console.log("Query:", JSON.stringify(req.query, null, 2));
-
-  res.json({
-    received: true,
-    timestamp: new Date().toISOString(),
-    body: req.body,
-    headers: req.headers,
-  });
-});
 
 // Root route
 app.get("/", (req, res) => {

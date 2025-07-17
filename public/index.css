@@ -16,7 +16,96 @@
   --input-bg: #212121;
 }
 
+/* Safari mobile input field fixes */
+@supports (-webkit-appearance: none) {
+  #message-input {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0.5rem;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  
+  #message-input:focus {
+    border-color: var(--border-color);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  #message-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
+  }
+  
+  #message-input::-webkit-input-placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
+  }
+}
 
+/* iOS Safari specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  #message-input {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0.5rem !important;
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    font-size: 16px !important;
+    min-height: 3rem;
+    line-height: 1.5;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  #chat-form {
+    position: relative;
+    z-index: 1;
+  }
+  
+  #chat-form .flex-1 {
+    position: relative;
+  }
+}
+
+/* Additional mobile Safari fixes */
+@media screen and (max-width: 768px) {
+  #message-input {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-clip: padding-box;
+    -webkit-background-clip: padding-box;
+    transform: translateZ(0); /* Force hardware acceleration */
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  
+  /* Ensure input container is properly visible */
+  #chat-form,
+  #chat-form .flex-1,
+  #chat-form .relative {
+    position: relative;
+    z-index: 10;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
 
 #welcome-message-box .welcome-text-item {
   color: rgba(255, 255, 255, 0.7); /* Default secondary text color for animated items */

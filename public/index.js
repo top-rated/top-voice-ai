@@ -1288,7 +1288,48 @@ document.addEventListener("DOMContentLoaded", function () {
   loadChatHistory();
 
   // Focus input on page load
-  messageInput.focus();
+  // Add delay for mobile Safari
+  setTimeout(() => {
+    messageInput.focus();
+  }, 100);
+  
+  // Mobile Safari input field visibility fix
+  function ensureInputVisibility() {
+    const input = document.getElementById('message-input');
+    if (input) {
+      input.style.display = 'block';
+      input.style.visibility = 'visible';
+      input.style.opacity = '1';
+      input.style.webkitAppearance = 'none';
+      input.style.appearance = 'none';
+    }
+  }
+  
+  // Check if running on mobile Safari
+  const isMobileSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  
+  if (isMobileSafari) {
+    // Ensure input is visible on mobile Safari
+    ensureInputVisibility();
+    
+    // Re-check visibility after DOM changes
+    const observer = new MutationObserver(() => {
+      ensureInputVisibility();
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+    
+    // Handle viewport changes that might affect input visibility
+    window.addEventListener('resize', ensureInputVisibility);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(ensureInputVisibility, 500);
+    });
+  }
 
   // Add form submission handler
   chatForm.addEventListener("submit", function (event) {
