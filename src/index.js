@@ -71,6 +71,7 @@ app.use(
 );
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json({ limit: "50mb" })); // Parse JSON bodies with increased size limit
+app.use(express.raw({ type: "application/json" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Add support for URL-encoded bodies
 app.use(morgan("dev")); // Logging
 app.use(bodyParser.json());
@@ -98,8 +99,6 @@ app.use(`${API_PREFIX}/profiles`, profileRoutes);
 app.use(`${API_PREFIX}/search`, searchRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/stripe`, stripeRoutes); // Added Stripe routes
-
-
 
 // Root route
 app.get("/", (req, res) => {
@@ -247,112 +246,178 @@ app.post(
   }
 );
 
-// Unipile Configuration and Helper
-const UNIPILE_BASE_URL = process.env.UNIPILE_BASE_URL;
+// Unipile configuration
+const UNIPILE_BASE_URL =
+  process.env.UNIPILE_BASE_URL || "https://api1.unipile.com:13153";
 const UNIPILE_ACCESS_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
 const ACCOUNT_ID = process.env.ACCOUNT_ID;
 
-const unipile = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
+// Fallback auto-reply message (used when AI processing fails)
+const AUTO_REPLY_MESSAGE = "Thanks! I will be back soon 😊";
 
-app.post("/api/v1/linked/webhook", async (req, res) => {
-  const { body } = req;
+// Store processed message IDs to avoid duplicate replies
+const processedMessages = new Set();
 
-  // Check if it's a new message event
-  if (body.event === "message_received" && body.account_type === "LINKEDIN") {
-    const { chat_id, sender } = body;
+// Initialize Unipile client
+const client = new UnipileClient(UNIPILE_BASE_URL, UNIPILE_ACCESS_TOKEN);
 
-    console.log(
-      `New LinkedIn message received in chat: ${chat_id} from ${sender.attendee_name}`
-    );
-    console.log('Full webhook payload:', JSON.stringify(body, null, 2));
+// Helper function to send message via Unipile SDK
+async function sendReply(accountId, chatId, message, originalMessageId) {
+  try {
+    console.log(`🚀 Sending reply to chat ${chatId} for account ${accountId}`);
 
-    // Check if the message is from the correct account (filter by account_id)
-    if (body.account_id !== ACCOUNT_ID) {
-      console.log('Skipping auto-reply - message is from different account');
-      console.log('Expected account_id:', ACCOUNT_ID, 'Received account_id:', body.account_id);
-      return res.status(200).json({ status: 'ignored', reason: 'wrong_account' });
+    const response = await client.messaging.sendMessage({
+      account_id: accountId,
+      chat_id: chatId,
+      text: message,
+    });
+
+    console.log(`✅ Reply sent successfully:`, response);
+    return response;
+  } catch (error) {
+    console.error(`❌ Error sending reply:`, {
+      message: error.message,
+      response: error.response?.data || error.data,
+      status: error.response?.status || error.status,
+    });
+    throw error;
+  }
+}
+
+// Main webhook endpoint
+app.post("/webhook", async (req, res) => {
+  try {
+    console.log("\n🔔 Webhook received!");
+    console.log("Headers:", req.headers);
+    console.log("Body:", JSON.stringify(req.body, null, 2));
+
+    const webhookData = req.body;
+
+    // Extract message details from Unipile webhook format
+    const messageId = webhookData.message_id;
+    const chatId = webhookData.chat_id;
+    const accountId = webhookData.account_id || ACCOUNT_ID;
+    const sender = webhookData.sender;
+    const messageText = webhookData.message;
+    const timestamp = webhookData.timestamp;
+
+    console.log(`📩 Message received:`, {
+      messageId,
+      chatId,
+      accountId,
+      sender: sender?.name || sender,
+      messageText: messageText?.substring(0, 100) + "...",
+      timestamp,
+    });
+
+    // Skip if no required data
+    if (!messageId || !chatId || !messageText) {
+      console.log("⚠️  Missing required data, skipping");
+      return res.status(200).json({
+        status: "ignored",
+        reason: "missing_required_data",
+        received: { messageId, chatId, messageText },
+      });
     }
 
-    // Check if the message is from the bot itself (to prevent infinite loops)
-    // The bot's user_id is in account_info.user_id, and when bot sends a message,
-    // it comes back as sender.attendee_provider_id
-    const botUserId = body.account_info?.user_id;
-    if (sender.attendee_provider_id === botUserId || body.sender_is_bot || body.is_from_bot) {
-      console.log('Skipping auto-reply - message is from bot itself');
-      console.log('Bot user_id:', botUserId, 'Sender attendee_provider_id:', sender.attendee_provider_id);
-      return res.status(200).json({ status: 'ignored', reason: 'bot_message' });
+    // Avoid replying to our own messages or duplicate processing
+    if (processedMessages.has(messageId)) {
+      console.log("⚠️  Message already processed, skipping");
+      return res
+        .status(200)
+        .json({ status: "ignored", reason: "already_processed" });
     }
 
+    // Skip if the message is from ourselves (avoid infinite loops)
+    if (
+      sender?.attendee_name &&
+      (sender.attendee_name.toLowerCase().includes("top-voice.ai") ||
+        sender.attendee_name.toLowerCase().includes("lisa green") ||
+        sender.attendee_provider_id === "79109442")
+    ) {
+      console.log("⚠️  Message from our own account, skipping");
+      return res.status(200).json({ status: "ignored", reason: "own_message" });
+    }
+
+    // Also skip if message text matches our auto-reply (additional safety)
+    if (messageText && messageText.trim() === AUTO_REPLY_MESSAGE.trim()) {
+      console.log("⚠️  Message matches our auto-reply text, skipping");
+      return res
+        .status(200)
+        .json({ status: "ignored", reason: "auto_reply_detected" });
+    }
+
+    // Mark message as processed
+    processedMessages.add(messageId);
+
+    // Process the query using LinkedIn chatbot and send intelligent reply
     try {
-      let threadId = chat_id;
-      let query = body.message;
-      const auto_response = await processLinkedInQuery(threadId, query);
-      
-      // Check if this is an InMail message
-      if (body.message_type === 'INMAIL_ACCEPT' && body.chat_content_type === 'inmail') {
-        console.log('Handling InMail message - using startNewChat approach...');
-        console.log('Sending InMail with params:', {
-            account_id: body.account_id,
-            attendees_ids: [sender.attendee_provider_id],
-            text: auto_response.substring(0, 50) + '...'
+      console.log(`🤖 Processing LinkedIn query with threadId: ${chatId}`);
+
+      // Use processLinkedInQuery to generate intelligent response
+      const intelligentResponse = await processLinkedInQuery(
+        chatId,
+        messageText
+      );
+
+      console.log(
+        `🧠 Generated response: ${intelligentResponse?.substring(0, 100)}...`
+      );
+
+      // Send the intelligent response
+      await sendReply(accountId, chatId, intelligentResponse, messageId);
+
+      res.status(200).json({
+        status: "success",
+        message: "Intelligent reply sent",
+        messageId,
+        chatId,
+        threadId: chatId,
+        reply: intelligentResponse?.substring(0, 200) + "...", // Truncate for logging
+      });
+    } catch (replyError) {
+      console.error(
+        "❌ Failed to process query or send reply:",
+        replyError.message
+      );
+
+      // Fallback to auto-reply if AI processing fails
+      try {
+        console.log("🔄 Falling back to auto-reply due to error");
+        await sendReply(accountId, chatId, AUTO_REPLY_MESSAGE, messageId);
+        res.status(200).json({
+          status: "fallback_success",
+          message: "Fallback auto-reply sent due to AI processing error",
+          messageId,
+          chatId,
+          error: replyError.message,
+          reply: AUTO_REPLY_MESSAGE,
         });
-        
-        try {
-          
-        
-          const response = await unipile.messaging.startNewChat({
-            account_id: ACCOUNT_ID,
-            text: auto_response,
-            attendees_ids: [sender.attendee_provider_id],
-            options: {
-              linkedin: {
-                api: 'classic',
-                inmail: true
-              }
-            }
-          });
-          
-          console.log('using  ACCOUNT_ID:', ACCOUNT_ID);
-          console.log('InMail auto-reply sent successfully:', response);
-        } catch (inmailError) {
-          console.error('InMail startNewChat failed:', inmailError);
-          
-          // Fallback: Try using sendMessage with the original chat_id
-          console.log('Attempting fallback to sendMessage...');
-          try {
-            const fallbackResponse = await unipile.messaging.sendMessage({
-              chat_id: body.chat_id,
-              text: auto_response
-            });
-            console.log('Fallback sendMessage response:', fallbackResponse);
-          } catch (fallbackError) {
-            console.error('Fallback sendMessage also failed:', fallbackError);
-            throw new Error(`Both InMail and fallback failed: ${inmailError.message}`);
-          }
-        }
-      } else {
-        console.log('Handling regular LinkedIn message...');
-        await unipile.messaging.sendMessage({
-          chat_id: chat_id,
-          text: auto_response,
+      } catch (fallbackError) {
+        console.error("❌ Even fallback failed:", fallbackError.message);
+        res.status(200).json({
+          status: "webhook_received",
+          error: "failed_to_reply",
+          messageId,
+          chatId,
+          aiError: replyError.message,
+          fallbackError: fallbackError.message,
         });
       }
-      
-      console.log(`Auto-reply sent to chat: ${chat_id}`);
-      res.status(200).send("Auto-reply sent successfully.");
-    } catch (error) {
-      console.error("Error sending auto-reply:", error);
-      res.status(500).send("Error sending auto-reply.");
     }
-  } else {
-    // Acknowledge other webhook events without taking action
-    res.status(200).send("Webhook received.");
+  } catch (error) {
+    console.error("❌ Webhook processing error:", error);
+    res.status(200).json({
+      status: "error",
+      message: error.message,
+    });
   }
 });
 
-
-app.get(async (req, res) => {
-  res.send("LinkedIN Route is working...");
+// Graceful shutdown
+process.on("SIGINT", () => {
+  console.log("\n👋 Shutting down webhook server...");
+  process.exit(0);
 });
 
 // Error handling middleware
