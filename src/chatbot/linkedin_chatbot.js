@@ -5,6 +5,7 @@ const { MemorySaver } = require("@langchain/langgraph");
 const { getSystemPrompt } = require("../utils/systemPromptManager");
 const { getAllApiTools } = require("../utils/api_tools");
 const { HumanMessage } = require("@langchain/core/messages");
+const { linkedInSystemPrompt } = require("../utils/linked_system_prompt");
 dotenv.config();
 
 const azureConfig = {
@@ -101,7 +102,7 @@ async function processQuery(threadId, query) {
 
 async function processLinkedInQuery(threadId, query) {
   // Get current prompt
-  const basePrompt = await getCurrentPrompt();
+  const basePrompt = linkedInSystemPrompt;
 
   // Initialize or retrieve memory for this thread
   if (!memoryStore.has(threadId)) {
@@ -109,14 +110,12 @@ async function processLinkedInQuery(threadId, query) {
   }
   const memory = memoryStore.get(threadId);
 
-  const newPrompt = `NOTE:Markdown is not allowed on LinkedIn so always use LinkedIn styling here is the base prompt: ${basePrompt} `;
-
   // Create agent with thread-specific memory
   const agent = createReactAgent({
     llm: llm,
     tools: apiTools,
     checkpointSaver: memory,
-    stateModifier: newPrompt,
+    stateModifier: basePrompt,
   });
 
   // Process the query with thread_id in the configurable and stream the response
