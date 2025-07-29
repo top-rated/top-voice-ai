@@ -280,16 +280,16 @@
 
       <!-- Input Area -->
       <div class="bg-[var(--bg-primary)] p-4 flex justify-center">
-        <form id="chat-form" class="flex items-end space-x-2 w-full max-w-2xl">
+        <form id="chat-form" class="flex items-center space-x-3 w-full max-w-2xl">
           <div class="flex-1 relative">
             <input
               id="message-input"
-              class="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg py-4 px-4 pr-12 focus:outline-none focus:border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
+              class="w-full bg-[var(--input-bg)] border border-[var(--border-color)] rounded-lg py-4 px-4 pr-14 focus:outline-none focus:border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
               placeholder="Ask Knowledge Base for LinkedIn Top Voices..."
               type="text"
             />
-            <button type="submit" class="absolute right-2 bottom-1/2 transform translate-y-1/2 hover:text-gray-300 transition-colors">
-              <i id="send-button-icon" class="fas fa-solid fa-arrow-up w-5 h-5 flex items-center justify-center pr-4"></i>
+            <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gray-500 hover:bg-gray-600 text-white rounded-full p-2 transition-colors duration-200 flex items-center justify-center w-8 h-8 border-0 outline-none opacity-50">
+              <i id="send-button-icon" class="fas fa-arrow-up text-sm text-white"></i>
             </button>
           </div>
         </form>

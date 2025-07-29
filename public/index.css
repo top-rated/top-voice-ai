@@ -93,11 +93,30 @@
     -webkit-transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    position: relative !important;
+    z-index: 10 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-width: 0 !important;
+    width: 100% !important;
   }
   
   /* Ensure input container is properly visible */
-  #chat-form,
-  #chat-form .flex-1,
+  #chat-form {
+    position: relative !important;
+    z-index: 5 !important;
+    display: flex !important;
+    visibility: visible !important;
+  }
+  
+  #chat-form .flex-1 {
+    position: relative !important;
+    z-index: 6 !important;
+    display: block !important;
+    visibility: visible !important;
+    min-width: 0 !important;
+  }
   #chat-form .relative {
     position: relative;
     z-index: 10;
@@ -138,7 +157,83 @@
 
   /* Send Button Icon Styling */
 #send-button-icon {
-  color: var(--text-secondary); /* Default color for dark mode */
+  color: white;
+  background: none !important;
+  border: none !important;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+#send-button-icon.highlighted {
+  color: white;
+  background: none !important;
+  border: none !important;
+  transform: scale(1.05);
+}
+
+/* Desktop send button styling */
+#chat-form button[type="submit"] {
+  background: #6b7280 !important;
+  opacity: 0.5 !important;
+  transition: all 0.2s ease !important;
+}
+
+#chat-form button[type="submit"]:hover {
+  background: #374151 !important;
+}
+
+#chat-form button[type="submit"].highlighted {
+  background: #3b82f6 !important;
+  opacity: 1 !important;
+}
+
+#chat-form button[type="submit"].highlighted:hover {
+  background: #2563eb !important;
+}
+
+/* Mobile specific send button styling */
+@media screen and (max-width: 768px) {
+  #send-button-icon {
+    color: white !important;
+    background: none !important;
+    border: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1001 !important;
+    font-size: 14px !important;
+  }
+  
+  #chat-form button[type="submit"] {
+    position: absolute !important;
+    right: 0.5rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: #6b7280 !important;
+    border: none !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 1001 !important;
+    opacity: 0.5 !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  #chat-form button[type="submit"]:hover {
+    background: #374151 !important;
+  }
+  
+  #chat-form button[type="submit"].highlighted {
+    background: #3b82f6 !important;
+    opacity: 1 !important;
+  }
+  
+  #chat-form button[type="submit"].highlighted:hover {
+    background: #2563eb !important;
+  }
 }
 
 /* Ensure message text is readable in light mode */
@@ -149,9 +244,6 @@
     color: var(--text-primary);
   }
 
-  #send-button-icon {
-    color: var(--text-primary); /* Color for light mode */
-  }
 }
 
 /* Font Awesome icons are now used directly in the HTML */
@@ -871,4 +963,3 @@ p code, li code {
   text-decoration: none !important;
   border: none !important;
 }
-

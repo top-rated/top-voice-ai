@@ -643,18 +643,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Create a custom renderer for links
       const renderer = new marked.Renderer();
-      renderer.link = function(href, title, text) {
+      renderer.link = function (href, title, text) {
         // Check if the link is a LinkedIn post URL
-        const isLinkedInPost = href && (
-          href.includes('linkedin.com/posts/') ||
-          href.includes('linkedin.com/feed/update/') ||
-          href.includes('linkedin.com/pulse/') ||
-          href.includes('linkedin.com/in/') && href.includes('/recent-activity/')
-        );
-        
-        const titleAttr = title ? ` title="${title}"` : '';
-        const target = isLinkedInPost ? ' target="_blank" rel="noopener noreferrer"' : '';
-        
+        const isLinkedInPost =
+          href &&
+          (href.includes("linkedin.com/posts/") ||
+            href.includes("linkedin.com/feed/update/") ||
+            href.includes("linkedin.com/pulse/") ||
+            (href.includes("linkedin.com/in/") &&
+              href.includes("/recent-activity/")));
+
+        const titleAttr = title ? ` title="${title}"` : "";
+        const target = isLinkedInPost
+          ? ' target="_blank" rel="noopener noreferrer"'
+          : "";
+
         return `<a href="${href}"${titleAttr}${target}>${text}</a>`;
       };
 
@@ -1292,44 +1295,98 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     messageInput.focus();
   }, 100);
-  
+
   // Mobile Safari input field visibility fix
   function ensureInputVisibility() {
-    const input = document.getElementById('message-input');
+    const input = document.getElementById("message-input");
+    const chatForm = document.getElementById("chat-form");
+    const flexContainer = chatForm?.querySelector(".flex-1");
+
     if (input) {
-      input.style.display = 'block';
-      input.style.visibility = 'visible';
-      input.style.opacity = '1';
-      input.style.webkitAppearance = 'none';
-      input.style.appearance = 'none';
+      // Force input visibility with important styles
+      input.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 10 !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        background-color: var(--input-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        font-size: 16px !important;
+      `;
+    }
+
+    if (chatForm) {
+      chatForm.style.cssText = `
+        display: flex !important;
+        visibility: visible !important;
+        position: relative !important;
+        z-index: 5 !important;
+      `;
+    }
+
+    if (flexContainer) {
+      flexContainer.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        position: relative !important;
+        z-index: 6 !important;
+        min-width: 0 !important;
+        flex: 1 !important;
+      `;
     }
   }
-  
+
   // Check if running on mobile Safari
-  const isMobileSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  
+  const isMobileSafari =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
   if (isMobileSafari) {
     // Ensure input is visible on mobile Safari
     ensureInputVisibility();
-    
+
     // Re-check visibility after DOM changes
     const observer = new MutationObserver(() => {
       ensureInputVisibility();
     });
-    
+
     observer.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['style', 'class']
+      attributeFilter: ["style", "class"],
     });
-    
+
     // Handle viewport changes that might affect input visibility
-    window.addEventListener('resize', ensureInputVisibility);
-    window.addEventListener('orientationchange', () => {
+    window.addEventListener("resize", ensureInputVisibility);
+    window.addEventListener("orientationchange", () => {
       setTimeout(ensureInputVisibility, 500);
     });
   }
+
+  // Add send button highlighting functionality
+  const sendButton = chatForm.querySelector('button[type="submit"]');
+
+  function updateSendButtonState() {
+    const hasText = messageInput.value.trim().length > 0;
+    if (hasText) {
+      sendButton.classList.add("highlighted");
+    } else {
+      sendButton.classList.remove("highlighted");
+    }
+  }
+
+  // Add input event listeners for send button highlighting
+  messageInput.addEventListener("input", updateSendButtonState);
+  messageInput.addEventListener("keyup", updateSendButtonState);
+  messageInput.addEventListener("paste", () => {
+    setTimeout(updateSendButtonState, 10);
+  });
 
   // Add form submission handler
   chatForm.addEventListener("submit", function (event) {
@@ -1340,6 +1397,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (message) {
       sendMessage(message);
       messageInput.value = "";
+      // Remove highlighting after sending
+      sendButton.classList.remove("highlighted");
     }
   });
 
