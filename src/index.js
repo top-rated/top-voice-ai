@@ -46,6 +46,7 @@ app.use(
           "unpkg.com",
           "cdn.jsdelivr.net",
           "api.leadpipe.com",
+          "www.googletagmanager.com",
         ],
         styleSrc: [
           "'self'",
